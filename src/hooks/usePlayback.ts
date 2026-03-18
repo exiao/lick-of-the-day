@@ -120,13 +120,31 @@ export function usePlayback(
         ? parseInt(lick.timeSignature.split("/")[0])
         : 4;
 
+      // Snap each chord's start to the nearest melody note onset so they don't drift
+      const scaledNoteTimes = notes.map(n => n.time * tempoRatio);
+
+      function snapToMelody(gridSecs: number): number {
+        if (scaledNoteTimes.length === 0) return gridSecs;
+        let closest = scaledNoteTimes[0];
+        let bestDist = Math.abs(gridSecs - closest);
+        for (let i = 1; i < scaledNoteTimes.length; i++) {
+          const dist = Math.abs(gridSecs - scaledNoteTimes[i]);
+          if (dist < bestDist) { bestDist = dist; closest = scaledNoteTimes[i]; }
+        }
+        // Only snap if within half a beat; otherwise keep the grid time
+        const halfBeat = (60 / tempo) * 0.5;
+        return bestDist <= halfBeat ? closest : gridSecs;
+      }
+
       // Build bass note events — just the root, one octave below middle C
       const chordEvents = chords.map((c, i) => {
-        const startSecs = chordTimeToSeconds(c.bar, c.beat, originalTempo, beatsPerBar) * tempoRatio;
+        const gridSecs = chordTimeToSeconds(c.bar, c.beat, originalTempo, beatsPerBar) * tempoRatio;
+        const startSecs = snapToMelody(gridSecs);
         const nextChord = chords[i + 1];
-        const endSecs = nextChord
+        const nextGrid = nextChord
           ? chordTimeToSeconds(nextChord.bar, nextChord.beat, originalTempo, beatsPerBar) * tempoRatio
           : (notes.length > 0 ? notes[notes.length - 1].time * tempoRatio + 2 : startSecs + 2);
+        const endSecs = snapToMelody(nextGrid);
         const duration = Math.max(0.1, endSecs - startSecs - 0.05); // small gap between bass notes
         // Parse root from chord symbol (e.g. "Cm7" -> "C", "Bb7" -> "Bb")
         const rootMatch = c.chord.match(/^([A-G][b#]?)/);
