@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import * as Tone from "tone";
 import type { Note, Articulation, Lick } from "../types/lick";
+import { chordToNotes, chordTimeToSeconds } from "../utils/chords";
 
 // Articulation presets: velocity, attack, release, duration multiplier
 const ARTICULATION_PRESETS: Record<Articulation, { velocity: number; attack: number; release: number; durationMod: number }> = {
@@ -20,14 +21,24 @@ interface UsePlaybackReturn {
   playNote: (pitch: string) => void;
   tempo: number;
   setTempo: (bpm: number) => void;
+  chordsEnabled: boolean;
+  setChordsEnabled: (enabled: boolean) => void;
 }
 
-export function usePlayback(notes: Note[], originalTempo: number, lick?: Pick<Lick, "swing">): UsePlaybackReturn {
+export function usePlayback(
+  notes: Note[],
+  originalTempo: number,
+  lick?: Pick<Lick, "swing" | "chords" | "timeSignature">,
+): UsePlaybackReturn {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentNoteIndex, setCurrentNoteIndex] = useState(-1);
   const [tempo, setTempoState] = useState(originalTempo);
+  const [chordsEnabled, setChordsEnabled] = useState(true);
+
   const synthRef = useRef<Tone.PolySynth | null>(null);
+  const chordSynthRef = useRef<Tone.PolySynth | null>(null);
   const partRef = useRef<Tone.Part | null>(null);
+  const chordPartRef = useRef<Tone.Part | null>(null);
 
   useEffect(() => {
     setTempoState(originalTempo);
@@ -43,6 +54,18 @@ export function usePlayback(notes: Note[], originalTempo: number, lick?: Pick<Li
     return synthRef.current;
   }, []);
 
+  const getChordSynth = useCallback(() => {
+    if (!chordSynthRef.current) {
+      chordSynthRef.current = new Tone.PolySynth(Tone.Synth, {
+        oscillator: { type: "sine" },
+        envelope: { attack: 0.08, decay: 0.5, sustain: 0.4, release: 2.0 },
+      }).toDestination();
+      // Lower volume for chord backing
+      chordSynthRef.current.volume.value = -10;
+    }
+    return chordSynthRef.current;
+  }, []);
+
   const playNote = useCallback((pitch: string) => {
     getSynth().triggerAttackRelease(pitch, "8n");
   }, [getSynth]);
@@ -51,10 +74,8 @@ export function usePlayback(notes: Note[], originalTempo: number, lick?: Pick<Li
     const transport = Tone.getTransport();
     transport.stop();
     transport.cancel();
-    if (partRef.current) {
-      partRef.current.dispose();
-      partRef.current = null;
-    }
+    if (partRef.current) { partRef.current.dispose(); partRef.current = null; }
+    if (chordPartRef.current) { chordPartRef.current.dispose(); chordPartRef.current = null; }
     setIsPlaying(false);
     setCurrentNoteIndex(-1);
   }, []);
@@ -67,13 +88,12 @@ export function usePlayback(notes: Note[], originalTempo: number, lick?: Pick<Li
     const transport = Tone.getTransport();
 
     transport.bpm.value = tempo;
-
-    // Apply swing — Tone.js handles the upbeat eighth offset natively
     transport.swing = lick?.swing ?? 0;
     transport.swingSubdivision = "8n";
 
     const tempoRatio = originalTempo / tempo;
 
+    // --- Melody part ---
     const partEvents = notes.map((note, index) => ({
       time: note.time * tempoRatio,
       note,
@@ -84,38 +104,60 @@ export function usePlayback(notes: Note[], originalTempo: number, lick?: Pick<Li
       const { note, index } = event;
       const preset = ARTICULATION_PRESETS[note.articulation ?? "normal"];
       const velocity = note.velocity ?? preset.velocity;
-
-      // Encode articulation via duration mod only — do NOT call synth.set() here.
-      // PolySynth shares the envelope across all voices; mutating it mid-playback
-      // cuts off any already-sustaining notes (e.g. legato notes with long release).
       const baseDuration = Tone.Time(note.duration).toSeconds();
       const adjustedDuration = baseDuration * preset.durationMod;
-
       synth.triggerAttackRelease(note.pitch, adjustedDuration, time, velocity);
-
-      Tone.getDraw().schedule(() => {
-        setCurrentNoteIndex(index);
-      }, time);
+      Tone.getDraw().schedule(() => { setCurrentNoteIndex(index); }, time);
     }, partEvents);
 
     part.start(0);
+    partRef.current = part;
 
+    // --- Chord part ---
+    const chords = lick?.chords;
+    if (chordsEnabled && chords && chords.length > 0) {
+      const chordSynth = getChordSynth();
+      const beatsPerBar = lick?.timeSignature
+        ? parseInt(lick.timeSignature.split("/")[0])
+        : 4;
+
+      // Build chord events with durations
+      const chordEvents = chords.map((c, i) => {
+        const startSecs = chordTimeToSeconds(c.bar, c.beat, originalTempo, beatsPerBar) * tempoRatio;
+        const nextChord = chords[i + 1];
+        const endSecs = nextChord
+          ? chordTimeToSeconds(nextChord.bar, nextChord.beat, originalTempo, beatsPerBar) * tempoRatio
+          : (notes.length > 0 ? notes[notes.length - 1].time * tempoRatio + 2 : startSecs + 2);
+        const duration = Math.max(0.1, endSecs - startSecs);
+        const pitches = chordToNotes(c.chord, 3);
+        return { time: startSecs, pitches, duration };
+      });
+
+      const chordPart = new Tone.Part(
+        (time, event: { pitches: string[]; duration: number }) => {
+          chordSynth.triggerAttackRelease(event.pitches, event.duration, time, 0.3);
+        },
+        chordEvents,
+      );
+      chordPart.start(0);
+      chordPartRef.current = chordPart;
+    }
+
+    // Stop after last note
     if (notes.length > 0) {
-      const lastNote = notes[notes.length - 1];
-      const lastTime = lastNote.time * tempoRatio;
+      const lastTime = notes[notes.length - 1].time * tempoRatio;
       transport.scheduleOnce(() => {
         Tone.getDraw().schedule(() => {
           setIsPlaying(false);
           setCurrentNoteIndex(-1);
         }, Tone.now());
         transport.stop();
-      }, lastTime + 1.5);
+      }, lastTime + 2.5);
     }
 
-    partRef.current = part;
     transport.start();
     setIsPlaying(true);
-  }, [notes, tempo, originalTempo, lick, getSynth, stop]);
+  }, [notes, tempo, originalTempo, lick, chordsEnabled, getSynth, getChordSynth, stop]);
 
   const pause = useCallback(() => {
     if (isPlaying) {
@@ -137,8 +179,10 @@ export function usePlayback(notes: Note[], originalTempo: number, lick?: Pick<Li
       stop();
       synthRef.current?.dispose();
       synthRef.current = null;
+      chordSynthRef.current?.dispose();
+      chordSynthRef.current = null;
     };
   }, [stop]);
 
-  return { isPlaying, currentNoteIndex, play, pause, stop, playNote, tempo, setTempo };
+  return { isPlaying, currentNoteIndex, play, pause, stop, playNote, tempo, setTempo, chordsEnabled, setChordsEnabled };
 }
