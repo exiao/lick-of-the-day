@@ -1,7 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import * as Tone from "tone";
-import type { Note, Articulation, Lick } from "../types/lick";
-import { chordTimeToSeconds } from "../utils/chords";
+import type { Note, Articulation, Genre, Lick } from "../types/lick";
 
 // Articulation presets: velocity, attack, release, duration multiplier
 const ARTICULATION_PRESETS: Record<Articulation, { velocity: number; attack: number; release: number; durationMod: number }> = {
@@ -11,6 +10,45 @@ const ARTICULATION_PRESETS: Record<Articulation, { velocity: number; attack: num
   accent:   { velocity: 0.95, attack: 0.001, release: 0.6,  durationMod: 1.0 },
   ghost:    { velocity: 0.3,  attack: 0.01,  release: 0.4,  durationMod: 0.8 },
 };
+
+// Genre-based sound duration multiplier.
+// This controls how long the note *sounds* relative to its rhythmic slot.
+// A short multiplier = staccato/punchy feel. Long = smooth/connected.
+// The note still occupies its full rhythmic duration before the next note plays.
+const GENRE_SOUND_MULTIPLIER: Record<Genre, number> = {
+  funk:  0.5,   // tight, punchy
+  blues: 0.75,  // slightly detached
+  jazz:  0.9,   // connected, flowing
+  rnb:   0.85,  // smooth
+  bossa: 0.8,   // gentle
+};
+
+// Convert Tone.js duration string to fraction of a whole note
+// so we can accumulate musical time as "bars:beats:sixteenths"
+function durationToBeats(dur: string): number {
+  switch (dur) {
+    case "1n":  return 4;
+    case "2n":  return 2;
+    case "2n.": return 3;
+    case "4n":  return 1;
+    case "4n.": return 1.5;
+    case "8n":  return 0.5;
+    case "8n.": return 0.75;
+    case "16n": return 0.25;
+    case "16n.": return 0.375;
+    case "32n": return 0.125;
+    default:    return 0.5; // fallback to eighth
+  }
+}
+
+// Convert beat offset to Tone.js transport time string "bars:quarters:sixteenths"
+function beatsToTransportTime(beats: number, beatsPerBar: number): string {
+  const bars = Math.floor(beats / beatsPerBar);
+  const remaining = beats - bars * beatsPerBar;
+  const quarters = Math.floor(remaining);
+  const sixteenths = (remaining - quarters) * 4;
+  return `${bars}:${quarters}:${sixteenths}`;
+}
 
 interface UsePlaybackReturn {
   isPlaying: boolean;
@@ -28,7 +66,7 @@ interface UsePlaybackReturn {
 export function usePlayback(
   notes: Note[],
   originalTempo: number,
-  lick?: Pick<Lick, "swing" | "chords" | "timeSignature">,
+  lick?: Pick<Lick, "swing" | "chords" | "timeSignature" | "genre">,
 ): UsePlaybackReturn {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentNoteIndex, setCurrentNoteIndex] = useState(-1);
@@ -85,71 +123,69 @@ export function usePlayback(
 
     const synth = getSynth();
     const transport = Tone.getTransport();
+    const beatsPerBar = lick?.timeSignature
+      ? parseInt(lick.timeSignature.split("/")[0])
+      : 4;
 
     transport.bpm.value = tempo;
     transport.swing = lick?.swing ?? 0;
     transport.swingSubdivision = "8n";
 
-    const tempoRatio = originalTempo / tempo;
+    const genre = lick?.genre ?? "jazz";
+    const genreMod = GENRE_SOUND_MULTIPLIER[genre] ?? 0.85;
 
-    // --- Melody part ---
-    const partEvents = notes.map((note, index) => ({
-      time: note.time * tempoRatio,
-      note,
-      index,
-    }));
+    // --- Compute note times from duration sequence ---
+    // Accumulate beat offsets so Tone.js transport handles swing/tempo.
+    let beatCursor = 0;
+    const partEvents = notes.map((note, index) => {
+      const transportTime = beatsToTransportTime(beatCursor, beatsPerBar);
+      const durationBeats = durationToBeats(note.duration);
+      beatCursor += durationBeats;
+      return { transportTime, note, index, durationBeats };
+    });
 
-    const part = new Tone.Part((time, event: { note: Note; index: number }) => {
-      const { note, index } = event;
+    const totalBeats = beatCursor;
+
+    const part = new Tone.Part((time, event: { note: Note; index: number; durationBeats: number }) => {
+      const { note, index, durationBeats } = event;
       const preset = ARTICULATION_PRESETS[note.articulation ?? "normal"];
       const velocity = note.velocity ?? preset.velocity;
-      const baseDuration = Tone.Time(note.duration).toSeconds();
-      const adjustedDuration = baseDuration * preset.durationMod;
-      synth.triggerAttackRelease(note.pitch, adjustedDuration, time, velocity);
+
+      // Sound duration = rhythmic slot * genre multiplier * articulation multiplier
+      // Capped at the full rhythmic duration so it never bleeds into the next note
+      const slotSeconds = (60 / tempo) * durationBeats;
+      const soundDuration = Math.min(slotSeconds, slotSeconds * genreMod * preset.durationMod);
+
+      synth.triggerAttackRelease(note.pitch, soundDuration, time, velocity);
       Tone.getDraw().schedule(() => { setCurrentNoteIndex(index); }, time);
-    }, partEvents);
+    }, partEvents.map(e => ({ time: e.transportTime, note: e.note, index: e.index, durationBeats: e.durationBeats })));
 
     part.start(0);
     partRef.current = part;
 
-    // --- Chord part ---
+    // --- Chord part (bass notes on the same transport grid) ---
     const chords = lick?.chords;
     if (chordsEnabled && chords && chords.length > 0) {
       const chordSynth = getChordSynth();
-      const beatsPerBar = lick?.timeSignature
-        ? parseInt(lick.timeSignature.split("/")[0])
-        : 4;
 
-      // Use melody note times as the single source of truth for chord onsets.
-      // For each chord at (bar, beat), find the first melody note at or after
-      // that grid position and use its exact time — both voices hit together.
-      const scaledNoteTimes = notes.map(n => n.time * tempoRatio);
-
-      function melodyTimeAt(gridSecs: number): number {
-        if (scaledNoteTimes.length === 0) return gridSecs;
-        // First melody note at or after the grid position
-        for (let i = 0; i < scaledNoteTimes.length; i++) {
-          if (scaledNoteTimes[i] >= gridSecs - 0.01) return scaledNoteTimes[i];
-        }
-        // All melody notes are before this chord — use last note's time
-        return scaledNoteTimes[scaledNoteTimes.length - 1];
-      }
-
-      // Build bass note events — just the root, one octave below middle C
       const chordEvents = chords.map((c, i) => {
-        const gridSecs = chordTimeToSeconds(c.bar, c.beat, originalTempo, beatsPerBar) * tempoRatio;
-        const startSecs = melodyTimeAt(gridSecs);
+        // Convert bar/beat to beat offset (both 1-indexed in the data)
+        const chordBeat = (c.bar - 1) * beatsPerBar + (c.beat - 1);
+        const transportTime = beatsToTransportTime(chordBeat, beatsPerBar);
+
+        // Duration: until next chord or end of lick
         const nextChord = chords[i + 1];
-        const nextGrid = nextChord
-          ? chordTimeToSeconds(nextChord.bar, nextChord.beat, originalTempo, beatsPerBar) * tempoRatio
-          : (notes.length > 0 ? scaledNoteTimes[scaledNoteTimes.length - 1] + 2 : startSecs + 2);
-        const endSecs = melodyTimeAt(nextGrid);
-        const duration = Math.max(0.1, endSecs - startSecs - 0.05); // small gap between bass notes
-        // Parse root from chord symbol (e.g. "Cm7" -> "C", "Bb7" -> "Bb")
+        const nextBeat = nextChord
+          ? (nextChord.bar - 1) * beatsPerBar + (nextChord.beat - 1)
+          : totalBeats;
+        const durationBeats = Math.max(0.5, nextBeat - chordBeat);
+        const durationSecs = (60 / tempo) * durationBeats - 0.05; // small gap
+
         const rootMatch = c.chord.match(/^([A-G][b#]?)/);
         const root = rootMatch ? rootMatch[1] : "C";
-        const bassNote = `${root}2`; // two octaves below middle C — deep, clear
-        return { time: startSecs, bassNote, duration };
+        const bassNote = `${root}2`;
+
+        return { time: transportTime, bassNote, duration: Math.max(0.1, durationSecs) };
       });
 
       const chordPart = new Tone.Part(
@@ -164,14 +200,14 @@ export function usePlayback(
 
     // Stop after last note
     if (notes.length > 0) {
-      const lastTime = notes[notes.length - 1].time * tempoRatio;
+      const endTime = beatsToTransportTime(totalBeats + 2, beatsPerBar);
       transport.scheduleOnce(() => {
         Tone.getDraw().schedule(() => {
           setIsPlaying(false);
           setCurrentNoteIndex(-1);
         }, Tone.now());
         transport.stop();
-      }, lastTime + 2.5);
+      }, endTime);
     }
 
     transport.start();

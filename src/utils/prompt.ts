@@ -39,7 +39,6 @@ Generate a ${bars}-bar lick. Respond with this exact JSON structure:
     {
       "pitch": "<scientific pitch like C4 or Eb5>",
       "duration": "<Tone.js duration like 8n, 4n, 16n>",
-      "time": <offset in seconds from start at the given tempo>,
       "velocity": <0.0-1.0 dynamics>,
       "articulation": "<normal|staccato|legato|accent|ghost>"
     }
@@ -70,8 +69,8 @@ Important rules for the notes array:
 - Pitch must use scientific pitch notation (C4 = middle C)
 - Use sharps/flats matching the key signature (e.g., Eb not D# in Bb major)
 - Duration uses Tone.js format: "16n"=sixteenth, "8n"=eighth, "4n"=quarter, "2n"=half, "1n"=whole
-- Time is in seconds, calculated from the tempo. At tempo=120, a quarter note = 0.5s
-- Notes must be sequential and time values must be monotonically increasing
+- Do NOT include "time" — timing is computed from the duration sequence at playback
+- Notes must be in sequential order
 - The total duration of notes must fit within ${bars} bars of the time signature`;
 
   return { system, user };

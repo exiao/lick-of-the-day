@@ -3,7 +3,7 @@ export type Articulation = "normal" | "staccato" | "legato" | "accent" | "ghost"
 export interface Note {
   pitch: string;          // e.g. "C4", "Eb5"
   duration: string;       // Tone.js format: "8n", "4n", "2n", etc.
-  time: number;           // seconds from start at the given tempo
+  time?: number;          // DEPRECATED — computed from duration sequence at playback
   // Articulation (optional, defaults applied in playback)
   velocity?: number;      // 0.0-1.0 dynamics. accent=0.9+, ghost=0.2-0.4
   articulation?: Articulation;

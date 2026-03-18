@@ -74,12 +74,4 @@ export function pitchesMatch(a: string, b: string): boolean {
   }
 }
 
-/** Rescale note times for a different tempo */
-export function rescaleNoteTimes(
-  notes: { pitch: string; duration: string; time: number }[],
-  originalTempo: number,
-  newTempo: number,
-): { pitch: string; duration: string; time: number }[] {
-  const ratio = originalTempo / newTempo;
-  return notes.map(n => ({ ...n, time: n.time * ratio }));
-}
+
