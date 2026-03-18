@@ -194,7 +194,7 @@ export function Piano({
       </div>
 
       <div className="mt-2 text-center text-xs text-gray-400 hidden sm:block">
-        A S D F G H J = C D E F G A B | W E T Y U = sharps | K L ; = upper octave | +/- = shift octave
+        Type on your keyboard to play the notes
       </div>
     </div>
   );
