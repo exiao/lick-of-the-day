@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { Lick, Genre } from "../types/lick";
 import { FALLBACK_LICK } from "../utils/mock-lick";
 
@@ -54,6 +54,11 @@ export function useLick(): UseLickReturn {
       setLoading(false);
     }
   }, []);
+
+  // Fetch daily lick on mount
+  useEffect(() => {
+    fetchDaily();
+  }, [fetchDaily]);
 
   return { lick, loading, error, fetchDaily, fetchRandom, isDaily };
 }
