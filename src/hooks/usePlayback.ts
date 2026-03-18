@@ -1,6 +1,15 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import * as Tone from "tone";
-import type { Note } from "../types/lick";
+import type { Note, Articulation, Lick } from "../types/lick";
+
+// Articulation presets: velocity, attack, release, duration multiplier
+const ARTICULATION_PRESETS: Record<Articulation, { velocity: number; attack: number; release: number; durationMod: number }> = {
+  normal:   { velocity: 0.7,  attack: 0.005, release: 0.8,  durationMod: 1.0 },
+  staccato: { velocity: 0.75, attack: 0.005, release: 0.1,  durationMod: 0.5 },
+  legato:   { velocity: 0.65, attack: 0.02,  release: 1.5,  durationMod: 1.2 },
+  accent:   { velocity: 0.95, attack: 0.001, release: 0.6,  durationMod: 1.0 },
+  ghost:    { velocity: 0.3,  attack: 0.01,  release: 0.4,  durationMod: 0.8 },
+};
 
 interface UsePlaybackReturn {
   isPlaying: boolean;
@@ -13,14 +22,13 @@ interface UsePlaybackReturn {
   setTempo: (bpm: number) => void;
 }
 
-export function usePlayback(notes: Note[], originalTempo: number): UsePlaybackReturn {
+export function usePlayback(notes: Note[], originalTempo: number, lick?: Pick<Lick, "swing">): UsePlaybackReturn {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentNoteIndex, setCurrentNoteIndex] = useState(-1);
   const [tempo, setTempoState] = useState(originalTempo);
   const synthRef = useRef<Tone.PolySynth | null>(null);
   const partRef = useRef<Tone.Part | null>(null);
 
-  // Reset tempo when lick changes
   useEffect(() => {
     setTempoState(originalTempo);
   }, [originalTempo]);
@@ -36,8 +44,7 @@ export function usePlayback(notes: Note[], originalTempo: number): UsePlaybackRe
   }, []);
 
   const playNote = useCallback((pitch: string) => {
-    const synth = getSynth();
-    synth.triggerAttackRelease(pitch, "8n");
+    getSynth().triggerAttackRelease(pitch, "8n");
   }, [getSynth]);
 
   const stop = useCallback(() => {
@@ -59,35 +66,55 @@ export function usePlayback(notes: Note[], originalTempo: number): UsePlaybackRe
     const synth = getSynth();
     const transport = Tone.getTransport();
 
-    // Use a fixed BPM and convert all note times to beat-relative positions.
-    // This lets Tone.Part handle timing precisely in a single scheduled unit.
     transport.bpm.value = tempo;
+
+    // Apply swing — Tone.js handles the upbeat eighth offset natively
+    transport.swing = lick?.swing ?? 0;
+    transport.swingSubdivision = "8n";
 
     const tempoRatio = originalTempo / tempo;
 
-    // Build note events for Tone.Part: [timeInSeconds, { pitch, duration, index }]
     const partEvents = notes.map((note, index) => ({
       time: note.time * tempoRatio,
-      pitch: note.pitch,
-      duration: note.duration,
+      note,
       index,
     }));
 
-    const part = new Tone.Part((time, event) => {
-      synth.triggerAttackRelease(event.pitch, event.duration, time);
-      // Update UI on the main thread
+    const part = new Tone.Part((time, event: { note: Note; index: number }) => {
+      const { note, index } = event;
+      const preset = ARTICULATION_PRESETS[note.articulation ?? "normal"];
+      const velocity = note.velocity ?? preset.velocity;
+
+      // Apply per-note envelope override if provided
+      if (note.attack !== undefined || note.release !== undefined) {
+        synth.set({
+          envelope: {
+            attack: note.attack ?? preset.attack,
+            release: note.release ?? preset.release,
+          },
+        });
+      } else {
+        synth.set({
+          envelope: { attack: preset.attack, release: preset.release },
+        });
+      }
+
+      // Adjust duration by articulation modifier
+      const baseDuration = Tone.Time(note.duration).toSeconds();
+      const adjustedDuration = baseDuration * preset.durationMod;
+
+      synth.triggerAttackRelease(note.pitch, adjustedDuration, time, velocity);
+
       Tone.getDraw().schedule(() => {
-        setCurrentNoteIndex(event.index);
+        setCurrentNoteIndex(index);
       }, time);
     }, partEvents);
 
     part.start(0);
 
-    // Schedule stop after last note finishes
     if (notes.length > 0) {
       const lastNote = notes[notes.length - 1];
       const lastTime = lastNote.time * tempoRatio;
-      // Add generous buffer for the last note to ring out
       transport.scheduleOnce(() => {
         Tone.getDraw().schedule(() => {
           setIsPlaying(false);
@@ -100,7 +127,7 @@ export function usePlayback(notes: Note[], originalTempo: number): UsePlaybackRe
     partRef.current = part;
     transport.start();
     setIsPlaying(true);
-  }, [notes, tempo, originalTempo, getSynth, stop]);
+  }, [notes, tempo, originalTempo, lick, getSynth, stop]);
 
   const pause = useCallback(() => {
     if (isPlaying) {
@@ -117,7 +144,6 @@ export function usePlayback(notes: Note[], originalTempo: number): UsePlaybackRe
     Tone.getTransport().bpm.value = bpm;
   }, []);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       stop();
