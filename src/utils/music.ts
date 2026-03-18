@@ -36,31 +36,30 @@ export function isBlackKey(midi: number): boolean {
   return [1, 3, 6, 8, 10].includes(n);
 }
 
-/** Get the range of white keys needed to display a set of notes, with padding */
+/**
+ * Compute piano range: always starts on C, always ends on B,
+ * covers at least 2 octaves, centered around the lick's notes.
+ */
 export function computePianoRange(notes: { pitch: string }[]): { low: number; high: number } {
   if (notes.length === 0) {
-    return { low: 60, high: 84 }; // C4 to C6 default
+    return { low: 48, high: 83 }; // C3 to B5 (3 octaves)
   }
 
   const midis = notes.map(n => parsePitch(n.pitch).midi);
-  let low = Math.min(...midis);
-  let high = Math.max(...midis);
+  const minNote = Math.min(...midis);
+  const maxNote = Math.max(...midis);
 
-  // Pad 4 white keys on each side
-  for (let i = 0; i < 4; i++) {
-    low--;
-    while (isBlackKey(low)) low--;
-  }
-  for (let i = 0; i < 4; i++) {
-    high++;
-    while (isBlackKey(high)) high++;
-  }
+  // Start on C at or below the lowest note (with some padding)
+  let low = minNote - 5;
+  low = low - (low % 12); // snap down to nearest C
 
-  // Ensure minimum 2 octaves (24 semitones)
-  if (high - low < 24) {
-    const deficit = 24 - (high - low);
-    low -= Math.floor(deficit / 2);
-    high += Math.ceil(deficit / 2);
+  // End on B at or above the highest note (with some padding)
+  let high = maxNote + 5;
+  high = high - (high % 12) + 11; // snap up to nearest B
+
+  // Ensure minimum 2 octaves
+  while (high - low < 23) {
+    high += 12;
   }
 
   return { low, high };

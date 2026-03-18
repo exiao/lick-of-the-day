@@ -6,10 +6,7 @@ interface PianoProps {
   lowMidi: number;
   highMidi: number;
   onNotePlay: (pitch: string, midi: number) => void;
-  highlightedMidi?: number | null;  // current note in listen mode
-  expectedMidi?: number | null;     // expected note in practice mode
-  showHint?: boolean;
-  lastResult?: "correct" | "incorrect" | null;
+  highlightedMidi?: number | null;
 }
 
 export function Piano({
@@ -17,14 +14,17 @@ export function Piano({
   highMidi,
   onNotePlay,
   highlightedMidi,
-  expectedMidi,
-  showHint,
-  lastResult,
 }: PianoProps) {
   const [activeKeys, setActiveKeys] = useState<Set<number>>(new Set());
-  const [flashMidi, setFlashMidi] = useState<{ midi: number; type: "correct" | "incorrect" } | null>(null);
+  const [octaveShift, setOctaveShift] = useState(0);
 
-  // Build list of all MIDI notes in range
+  // Anchor keyboard to the piano's low C, shifted by octave offset
+  const anchorC = lowMidi + octaveShift * 12;
+
+  // Clamp octave shift so keyboard stays within piano range
+  const canShiftUp = anchorC + 12 <= highMidi;
+  const canShiftDown = anchorC - 12 >= lowMidi;
+
   const allMidis: number[] = [];
   for (let m = lowMidi; m <= highMidi; m++) {
     allMidis.push(m);
@@ -37,27 +37,40 @@ export function Piano({
     (midi: number) => {
       const pitch = midiToNote(midi);
       onNotePlay(pitch, midi);
-
-      // Flash effect
-      setFlashMidi({ midi, type: lastResult === "incorrect" ? "incorrect" : "correct" });
-      setTimeout(() => setFlashMidi(null), 200);
     },
-    [onNotePlay, lastResult],
+    [onNotePlay],
   );
 
-  // Keyboard event handler
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.repeat) return;
-      const midi = keyToMidi(e.key, lowMidi);
-      if (midi !== null && midi <= highMidi) {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
+
+      // +/= to shift octave up, - to shift down
+      if (e.key === "=" || e.key === "+") {
+        setOctaveShift(prev => {
+          const next = prev + 1;
+          return lowMidi + next * 12 <= highMidi ? next : prev;
+        });
+        return;
+      }
+      if (e.key === "-") {
+        setOctaveShift(prev => {
+          const next = prev - 1;
+          return lowMidi + next * 12 >= lowMidi ? next : prev;
+        });
+        return;
+      }
+
+      const midi = keyToMidi(e.key, anchorC);
+      if (midi !== null && midi >= lowMidi && midi <= highMidi) {
         setActiveKeys(prev => new Set(prev).add(midi));
         handlePlay(midi);
       }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      const midi = keyToMidi(e.key, lowMidi);
+      const midi = keyToMidi(e.key, anchorC);
       if (midi !== null) {
         setActiveKeys(prev => {
           const next = new Set(prev);
@@ -73,33 +86,26 @@ export function Piano({
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [lowMidi, highMidi, handlePlay]);
+  }, [anchorC, lowMidi, highMidi, handlePlay]);
+
+  // Figure out which octave label the keyboard is currently on
+  const currentOctave = Math.floor(anchorC / 12) - 1;
 
   const getWhiteKeyStyle = (midi: number): string => {
     const base = "relative h-36 sm:h-44 border border-gray-300 rounded-b cursor-pointer select-none transition-colors duration-100 flex flex-col justify-end items-center pb-2";
-    if (flashMidi?.midi === midi) {
-      return `${base} ${flashMidi.type === "correct" ? "bg-green-300" : "bg-red-300"}`;
-    }
     if (highlightedMidi === midi) return `${base} bg-blue-200`;
-    if (expectedMidi === midi && showHint) return `${base} bg-yellow-100`;
     if (activeKeys.has(midi)) return `${base} bg-gray-200`;
     return `${base} bg-white hover:bg-gray-50`;
   };
 
   const getBlackKeyStyle = (midi: number): string => {
-    const base = "absolute top-0 w-[60%] h-24 sm:h-28 rounded-b z-10 cursor-pointer select-none transition-colors duration-100 flex flex-col justify-end items-center pb-1";
-    if (flashMidi?.midi === midi) {
-      return `${base} ${flashMidi.type === "correct" ? "bg-green-500" : "bg-red-500"}`;
-    }
+    const base = "absolute top-0 rounded-b z-10 cursor-pointer select-none transition-colors duration-100 flex flex-col justify-end items-center pb-1";
     if (highlightedMidi === midi) return `${base} bg-blue-500`;
-    if (expectedMidi === midi && showHint) return `${base} bg-yellow-400 text-black`;
     if (activeKeys.has(midi)) return `${base} bg-gray-600`;
     return `${base} bg-gray-900 hover:bg-gray-700 text-white`;
   };
 
-  // Calculate black key position relative to white keys
   const getBlackKeyPosition = (midi: number): number | null => {
-    // Find the white key just below this black key
     const prevWhite = midi - 1;
     const whiteIndex = whiteMidis.indexOf(prevWhite);
     if (whiteIndex === -1) return null;
@@ -110,11 +116,31 @@ export function Piano({
 
   return (
     <div className="w-full bg-gray-100 rounded-lg p-3 sm:p-4 shadow-sm border border-gray-200">
+      {/* Octave shift controls */}
+      <div className="flex items-center justify-center gap-3 mb-3">
+        <button
+          onClick={() => canShiftDown && setOctaveShift(s => s - 1)}
+          disabled={!canShiftDown}
+          className="px-3 py-1 text-lg font-bold bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed"
+        >
+          &minus;
+        </button>
+        <span className="text-sm text-gray-600 font-mono">
+          Octave C{currentOctave}
+        </span>
+        <button
+          onClick={() => canShiftUp && setOctaveShift(s => s + 1)}
+          disabled={!canShiftUp}
+          className="px-3 py-1 text-lg font-bold bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed"
+        >
+          +
+        </button>
+      </div>
+
       <div className="relative" style={{ height: "clamp(144px, 20vw, 176px)" }}>
-        {/* White keys */}
         <div className="flex h-full">
           {whiteMidis.map(midi => {
-            const label = midiToKeyLabel(midi, lowMidi);
+            const label = midiToKeyLabel(midi, anchorC);
             return (
               <div
                 key={midi}
@@ -135,14 +161,13 @@ export function Piano({
           })}
         </div>
 
-        {/* Black keys */}
         {blackMidis.map(midi => {
           const whiteIndex = getBlackKeyPosition(midi);
           if (whiteIndex === null) return null;
 
           const leftPercent = ((whiteIndex + 0.65) / whiteMidis.length) * 100;
           const widthPercent = (0.7 / whiteMidis.length) * 100;
-          const label = midiToKeyLabel(midi, lowMidi);
+          const label = midiToKeyLabel(midi, anchorC);
 
           return (
             <div
@@ -169,7 +194,7 @@ export function Piano({
       </div>
 
       <div className="mt-2 text-center text-xs text-gray-400 hidden sm:block">
-        Keyboard: A-K = white keys, W/E/T/Y/U = sharps/flats | Z-M = upper octave
+        A S D F G H J = C D E F G A B | W E T Y U = sharps | K L ; = upper octave | +/- = shift octave
       </div>
     </div>
   );
