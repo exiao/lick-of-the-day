@@ -15,6 +15,7 @@ export function buildLickPrompt(genre: Genre, bars: number): { system: string; u
 - Playable on piano with one hand
 - Interesting and educational for practice
 - Using correct ABC notation compatible with the abcjs library
+- Expressive: vary velocity and articulation like a real musician — not every note the same
 
 You must respond with ONLY valid JSON matching the exact schema provided. No markdown, no explanation, just JSON.`;
 
@@ -24,19 +25,41 @@ Generate a ${bars}-bar lick. Respond with this exact JSON structure:
 
 {
   "genre": "${genre}",
-  "title": "<descriptive title of the lick, e.g. 'Bebop ii-V-I in F'>",
+  "title": "<descriptive title>",
   "bars": ${bars},
-  "tempo": <appropriate tempo as integer, e.g. 120>,
+  "tempo": <appropriate tempo as integer>,
   "timeSignature": "4/4",
   "key": "<key signature, e.g. 'Bb', 'F', 'C'>",
+  "swing": <0.0 to 1.0 — 0=straight, 0.33=light swing, 0.5=medium swing, 0.67=hard swing>,
+  "feel": "<short description, e.g. 'medium swing', 'straight with ghost notes', 'shuffle'>",
   "chords": [
     {"chord": "<chord symbol>", "bar": <bar number starting at 1>, "beat": <beat number starting at 1>}
   ],
   "abc": "<valid ABC notation string with X:1, M:, L:, K: headers and chord symbols in quotes above notes>",
   "notes": [
-    {"pitch": "<scientific pitch like C4 or Eb5>", "duration": "<Tone.js duration like 8n, 4n, 16n>", "time": <offset in seconds from start at the given tempo>}
+    {
+      "pitch": "<scientific pitch like C4 or Eb5>",
+      "duration": "<Tone.js duration like 8n, 4n, 16n>",
+      "time": <offset in seconds from start at the given tempo>,
+      "velocity": <0.0-1.0 dynamics>,
+      "articulation": "<normal|staccato|legato|accent|ghost>"
+    }
   ]
 }
+
+Important rules for swing:
+- Jazz: 0.33–0.67 (always swing)
+- Blues: 0.33–0.5 (shuffle feel)
+- Funk: 0.0–0.2 (mostly straight, tight 16th notes)
+- R&B: 0.1–0.4 (laid-back, behind the beat)
+- Bossa Nova: 0.0 (always straight — syncopation comes from rhythm, not swing)
+
+Important rules for articulation:
+- velocity: varies naturally. Accents (0.85-1.0) on downbeats and target chord tones.
+  Ghost notes (0.2-0.4) for approach tones, passing tones, and rhythmic texture.
+  Medium (0.55-0.75) for most notes.
+- articulation: use "staccato" for short punchy notes (funk, blues). Use "legato" for smooth connected phrases (jazz, bossa). Use "accent" for strong beats and arrivals. Use "ghost" for quiet passing tones. Use "normal" as default.
+- Vary both velocity AND articulation — real musicians don't play robotically.
 
 Important rules for the ABC notation:
 - Start with X:1, then M: (meter), L: (default note length), K: (key)

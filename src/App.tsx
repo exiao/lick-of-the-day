@@ -13,7 +13,7 @@ function App() {
   const [genre, setGenre] = useState<Genre>("jazz");
   const [bars, setBars] = useState(4);
 
-  const playback = usePlayback(lick.notes, lick.tempo);
+  const playback = usePlayback(lick.notes, lick.tempo, lick);
   const pianoRange = computePianoRange(lick.notes);
 
   const handleNewLick = useCallback(() => {
