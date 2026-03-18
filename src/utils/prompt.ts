@@ -64,6 +64,7 @@ Important rules for the ABC notation:
 - Put chord symbols in double quotes above the notes: "Cm7" CDEF
 - Use | for bar lines
 - The ABC must be a single string (use \\n for newlines)
+- CRITICAL: To beam eighth notes together (connected flags), write them WITHOUT spaces: CDEF not C D E F. Group beams by beat (e.g. in 4/4 with L:1/8, beam pairs: CD EF GA Bc). Only put spaces where you want a beam break.
 
 Important rules for the notes array:
 - Pitch must use scientific pitch notation (C4 = middle C)

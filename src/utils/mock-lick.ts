@@ -17,7 +17,7 @@ export const FALLBACK_LICK: Lick = {
     { chord: "Abmaj7", bar: 3, beat: 1 },
     { chord: "Bb7", bar: 4, beat: 1 },
   ],
-  abc: `X:1\nM:4/4\nL:1/8\nK:Eb\n|:"Ebmaj7" E2G2 B2d2|"Cm7" c2_B2 G2E2|"Abmaj7" _A,2C2 E2G2|"Bb7" F2D2 E4:|`,
+  abc: `X:1\nM:4/4\nL:1/8\nK:Eb\n|:"Ebmaj7" E2G2B2d2|"Cm7" c2_B2G2E2|"Abmaj7" _A,2C2E2G2|"Bb7" F2D2E4:|`,
   notes: [
     // Bar 1: Ebmaj7 - ascending arpeggio, accent on root
     { pitch: "Eb4", duration: "4n", time: 0.0,   velocity: 0.85, articulation: "accent" },
