@@ -1,4 +1,5 @@
 import { buildLickPrompt } from "../_shared/prompt";
+import { extractJSON } from "../_shared/parse";
 
 interface Env {
   ANTHROPIC_API_KEY: string;
@@ -7,7 +8,8 @@ interface Env {
 const VALID_GENRES = new Set(["jazz", "blues", "funk", "rnb", "bossa"]);
 const VALID_BARS = new Set([2, 4, 6, 8]);
 
-// Simple rate limiting per IP
+// Simple rate limiting per IP (in-memory, resets on isolate restart).
+// TODO: Move to KV or D1 for cross-isolate persistence.
 const rateLimit = new Map<string, { count: number; resetAt: number }>();
 
 function checkRateLimit(ip: string): boolean {
@@ -34,7 +36,15 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     );
   }
 
-  const { genre, bars } = (await context.request.json()) as { genre?: string; bars?: number };
+  let genre: string | undefined;
+  let bars: number | undefined;
+  try {
+    const body = (await context.request.json()) as { genre?: string; bars?: number };
+    genre = body.genre;
+    bars = body.bars;
+  } catch {
+    return Response.json({ error: "Invalid or missing JSON body" }, { status: 400 });
+  }
 
   if (!genre || !VALID_GENRES.has(genre)) {
     return Response.json(
@@ -61,7 +71,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-6-20250514",
+        model: "claude-sonnet-4-6",
         max_tokens: 2048,
         system,
         messages: [{ role: "user", content: user }],
@@ -69,18 +79,19 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     });
 
     if (!res.ok) {
-      console.error("Anthropic API error:", res.status, await res.text());
-      return Response.json({ error: "Failed to generate lick" }, { status: 500 });
+      const errText = await res.text();
+      console.error("Anthropic API error:", res.status, errText);
+      return Response.json({ error: "Anthropic API error", status: res.status, detail: errText }, { status: 502 });
     }
 
     const data = (await res.json()) as { content: { type: string; text: string }[] };
-    const text = data.content[0]?.type === "text" ? data.content[0].text : "";
+    const rawText = data.content[0]?.type === "text" ? data.content[0].text : "";
     const id = `${new Date().toISOString().split("T")[0]}-${Date.now()}`;
-    const lick = { id, ...JSON.parse(text) };
+    const lick = { id, ...JSON.parse(extractJSON(rawText)) };
 
     return Response.json(lick);
   } catch (err) {
     console.error("Failed to generate random lick:", err);
-    return Response.json({ error: "Failed to generate lick" }, { status: 500 });
+    return Response.json({ error: "Failed to generate lick", detail: String(err) }, { status: 500 });
   }
 };
