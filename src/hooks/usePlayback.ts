@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import * as Tone from "tone";
 import type { Note, Articulation, Lick } from "../types/lick";
-import { chordToNotes, chordTimeToSeconds } from "../utils/chords";
+import { chordTimeToSeconds } from "../utils/chords";
 
 // Articulation presets: velocity, attack, release, duration multiplier
 const ARTICULATION_PRESETS: Record<Articulation, { velocity: number; attack: number; release: number; durationMod: number }> = {
@@ -58,10 +58,9 @@ export function usePlayback(
     if (!chordSynthRef.current) {
       chordSynthRef.current = new Tone.PolySynth(Tone.Synth, {
         oscillator: { type: "sine" },
-        envelope: { attack: 0.08, decay: 0.5, sustain: 0.4, release: 2.0 },
+        envelope: { attack: 0.02, decay: 0.3, sustain: 0.6, release: 0.3 },
       }).toDestination();
-      // Lower volume for chord backing
-      chordSynthRef.current.volume.value = -10;
+      chordSynthRef.current.volume.value = -8;
     }
     return chordSynthRef.current;
   }, []);
@@ -121,21 +120,24 @@ export function usePlayback(
         ? parseInt(lick.timeSignature.split("/")[0])
         : 4;
 
-      // Build chord events with durations
+      // Build bass note events — just the root, one octave below middle C
       const chordEvents = chords.map((c, i) => {
         const startSecs = chordTimeToSeconds(c.bar, c.beat, originalTempo, beatsPerBar) * tempoRatio;
         const nextChord = chords[i + 1];
         const endSecs = nextChord
           ? chordTimeToSeconds(nextChord.bar, nextChord.beat, originalTempo, beatsPerBar) * tempoRatio
           : (notes.length > 0 ? notes[notes.length - 1].time * tempoRatio + 2 : startSecs + 2);
-        const duration = Math.max(0.1, endSecs - startSecs);
-        const pitches = chordToNotes(c.chord, 3);
-        return { time: startSecs, pitches, duration };
+        const duration = Math.max(0.1, endSecs - startSecs - 0.05); // small gap between bass notes
+        // Parse root from chord symbol (e.g. "Cm7" -> "C", "Bb7" -> "Bb")
+        const rootMatch = c.chord.match(/^([A-G][b#]?)/);
+        const root = rootMatch ? rootMatch[1] : "C";
+        const bassNote = `${root}2`; // two octaves below middle C — deep, clear
+        return { time: startSecs, bassNote, duration };
       });
 
       const chordPart = new Tone.Part(
-        (time, event: { pitches: string[]; duration: number }) => {
-          chordSynth.triggerAttackRelease(event.pitches, event.duration, time, 0.3);
+        (time, event: { bassNote: string; duration: number }) => {
+          chordSynth.triggerAttackRelease(event.bassNote, event.duration, time, 0.5);
         },
         chordEvents,
       );
