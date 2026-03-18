@@ -85,21 +85,9 @@ export function usePlayback(notes: Note[], originalTempo: number, lick?: Pick<Li
       const preset = ARTICULATION_PRESETS[note.articulation ?? "normal"];
       const velocity = note.velocity ?? preset.velocity;
 
-      // Apply per-note envelope override if provided
-      if (note.attack !== undefined || note.release !== undefined) {
-        synth.set({
-          envelope: {
-            attack: note.attack ?? preset.attack,
-            release: note.release ?? preset.release,
-          },
-        });
-      } else {
-        synth.set({
-          envelope: { attack: preset.attack, release: preset.release },
-        });
-      }
-
-      // Adjust duration by articulation modifier
+      // Encode articulation via duration mod only — do NOT call synth.set() here.
+      // PolySynth shares the envelope across all voices; mutating it mid-playback
+      // cuts off any already-sustaining notes (e.g. legato notes with long release).
       const baseDuration = Tone.Time(note.duration).toSeconds();
       const adjustedDuration = baseDuration * preset.durationMod;
 

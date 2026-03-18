@@ -66,6 +66,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     return Response.json(lick);
   } catch (err) {
     console.error("Failed to generate daily lick:", err);
+    // Do not cache the fallback — let next request retry the API
     return Response.json(FALLBACK_LICK);
   }
 };
