@@ -40,8 +40,8 @@ export function Header({
             Lick of the Day
           </h1>
           <p className="text-sm text-gray-500">
-            {today} &middot; {lickGenre} &middot; Key of {lickKey}
-            {isDaily && " &middot; Daily"}
+            {today} · {lickGenre} · Key of {lickKey}
+            {isDaily && " · Daily"}
           </p>
         </div>
 
