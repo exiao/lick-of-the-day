@@ -1,4 +1,5 @@
 import { buildLickPrompt } from "../_shared/prompt";
+import { extractJSON } from "../_shared/parse";
 
 interface Env {
   ANTHROPIC_API_KEY: string;
@@ -61,7 +62,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-6-20250514",
+        model: "claude-sonnet-4-6",
         max_tokens: 2048,
         system,
         messages: [{ role: "user", content: user }],
@@ -69,18 +70,19 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     });
 
     if (!res.ok) {
-      console.error("Anthropic API error:", res.status, await res.text());
-      return Response.json({ error: "Failed to generate lick" }, { status: 500 });
+      const errText = await res.text();
+      console.error("Anthropic API error:", res.status, errText);
+      return Response.json({ error: "Anthropic API error", status: res.status, detail: errText }, { status: 502 });
     }
 
     const data = (await res.json()) as { content: { type: string; text: string }[] };
-    const text = data.content[0]?.type === "text" ? data.content[0].text : "";
+    const rawText = data.content[0]?.type === "text" ? data.content[0].text : "";
     const id = `${new Date().toISOString().split("T")[0]}-${Date.now()}`;
-    const lick = { id, ...JSON.parse(text) };
+    const lick = { id, ...JSON.parse(extractJSON(rawText)) };
 
     return Response.json(lick);
   } catch (err) {
     console.error("Failed to generate random lick:", err);
-    return Response.json({ error: "Failed to generate lick" }, { status: 500 });
+    return Response.json({ error: "Failed to generate lick", detail: String(err) }, { status: 500 });
   }
 };
