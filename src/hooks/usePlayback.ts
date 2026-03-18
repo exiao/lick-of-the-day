@@ -120,31 +120,30 @@ export function usePlayback(
         ? parseInt(lick.timeSignature.split("/")[0])
         : 4;
 
-      // Snap each chord's start to the nearest melody note onset so they don't drift
+      // Use melody note times as the single source of truth for chord onsets.
+      // For each chord at (bar, beat), find the first melody note at or after
+      // that grid position and use its exact time — both voices hit together.
       const scaledNoteTimes = notes.map(n => n.time * tempoRatio);
 
-      function snapToMelody(gridSecs: number): number {
+      function melodyTimeAt(gridSecs: number): number {
         if (scaledNoteTimes.length === 0) return gridSecs;
-        let closest = scaledNoteTimes[0];
-        let bestDist = Math.abs(gridSecs - closest);
-        for (let i = 1; i < scaledNoteTimes.length; i++) {
-          const dist = Math.abs(gridSecs - scaledNoteTimes[i]);
-          if (dist < bestDist) { bestDist = dist; closest = scaledNoteTimes[i]; }
+        // First melody note at or after the grid position
+        for (let i = 0; i < scaledNoteTimes.length; i++) {
+          if (scaledNoteTimes[i] >= gridSecs - 0.01) return scaledNoteTimes[i];
         }
-        // Only snap if within half a beat; otherwise keep the grid time
-        const halfBeat = (60 / tempo) * 0.5;
-        return bestDist <= halfBeat ? closest : gridSecs;
+        // All melody notes are before this chord — use last note's time
+        return scaledNoteTimes[scaledNoteTimes.length - 1];
       }
 
       // Build bass note events — just the root, one octave below middle C
       const chordEvents = chords.map((c, i) => {
         const gridSecs = chordTimeToSeconds(c.bar, c.beat, originalTempo, beatsPerBar) * tempoRatio;
-        const startSecs = snapToMelody(gridSecs);
+        const startSecs = melodyTimeAt(gridSecs);
         const nextChord = chords[i + 1];
         const nextGrid = nextChord
           ? chordTimeToSeconds(nextChord.bar, nextChord.beat, originalTempo, beatsPerBar) * tempoRatio
-          : (notes.length > 0 ? notes[notes.length - 1].time * tempoRatio + 2 : startSecs + 2);
-        const endSecs = snapToMelody(nextGrid);
+          : (notes.length > 0 ? scaledNoteTimes[scaledNoteTimes.length - 1] + 2 : startSecs + 2);
+        const endSecs = melodyTimeAt(nextGrid);
         const duration = Math.max(0.1, endSecs - startSecs - 0.05); // small gap between bass notes
         // Parse root from chord symbol (e.g. "Cm7" -> "C", "Bb7" -> "Bb")
         const rootMatch = c.chord.match(/^([A-G][b#]?)/);
