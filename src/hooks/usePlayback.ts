@@ -148,6 +148,12 @@ export function usePlayback(
 
     const part = new Tone.Part((time, event: { note: Note; index: number; durationBeats: number }) => {
       const { note, index, durationBeats } = event;
+      // Rests: advance the highlight cursor but produce no sound
+      if (note.pitch === "rest") {
+        Tone.getDraw().schedule(() => { setCurrentNoteIndex(index); }, time);
+        return;
+      }
+
       const preset = ARTICULATION_PRESETS[note.articulation ?? "normal"];
       const velocity = note.velocity ?? preset.velocity;
 

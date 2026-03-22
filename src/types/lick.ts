@@ -1,7 +1,7 @@
 export type Articulation = "normal" | "staccato" | "legato" | "accent" | "ghost";
 
 export interface Note {
-  pitch: string;          // e.g. "C4", "Eb5"
+  pitch: string;          // e.g. "C4", "Eb5", or "rest" for silence
   duration: string;       // Tone.js format: "8n", "4n", "2n", etc.
   time?: number;          // DEPRECATED — computed from duration sequence at playback
   // Articulation (optional, defaults applied in playback)

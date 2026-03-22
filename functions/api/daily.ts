@@ -1,6 +1,6 @@
 import { buildLickPrompt } from "../_shared/prompt";
 import { FALLBACK_LICK } from "../_shared/fallback";
-import { extractJSON } from "../_shared/parse";
+import { extractJSON, validateNotes } from "../_shared/parse";
 
 interface Env {
   ANTHROPIC_API_KEY: string;
@@ -60,7 +60,9 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
     const data = (await res.json()) as { content: { type: string; text: string }[] };
     const rawText = data.content[0]?.type === "text" ? data.content[0].text : "";
-    const lick = { id: getTodayKey(), ...JSON.parse(extractJSON(rawText)) };
+    const parsed = JSON.parse(extractJSON(rawText));
+    validateNotes(parsed.notes, parsed.bars ?? 4);
+    const lick = { id: getTodayKey(), ...parsed };
 
     // Write to KV so subsequent requests (and isolates) get the same lick
     if (context.env.LICK_STORE) {

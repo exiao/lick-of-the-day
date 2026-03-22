@@ -1,5 +1,5 @@
 import { buildLickPrompt } from "../_shared/prompt";
-import { extractJSON } from "../_shared/parse";
+import { extractJSON, validateNotes } from "../_shared/parse";
 
 interface Env {
   ANTHROPIC_API_KEY: string;
@@ -87,7 +87,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const data = (await res.json()) as { content: { type: string; text: string }[] };
     const rawText = data.content[0]?.type === "text" ? data.content[0].text : "";
     const id = `${new Date().toISOString().split("T")[0]}-${Date.now()}`;
-    const lick = { id, ...JSON.parse(extractJSON(rawText)) };
+    const parsed = JSON.parse(extractJSON(rawText));
+    validateNotes(parsed.notes, parsed.bars ?? bars);
+    const lick = { id, ...parsed };
 
     return Response.json(lick);
   } catch (err) {
