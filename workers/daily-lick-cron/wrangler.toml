@@ -1,6 +1,9 @@
-name = "lick-of-the-day"
+name = "lick-of-the-day-cron"
+main = "index.ts"
 compatibility_date = "2024-12-01"
-pages_build_output_dir = "dist"
+
+[triggers]
+crons = ["0 0 * * *"]  # midnight UTC daily
 
 [[kv_namespaces]]
 binding = "LICK_STORE"

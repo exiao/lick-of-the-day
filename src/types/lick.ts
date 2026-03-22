@@ -1,7 +1,14 @@
+export type Articulation = "normal" | "staccato" | "legato" | "accent" | "ghost";
+
 export interface Note {
-  pitch: string;    // e.g. "C4", "Eb5"
-  duration: string; // Tone.js format: "8n", "4n", "2n", etc.
-  time: number;     // seconds from start at the given tempo
+  pitch: string;          // e.g. "C4", "Eb5", or "rest" for silence
+  duration: string;       // Tone.js format: "8n", "4n", "2n", etc.
+  time?: number;          // DEPRECATED — computed from duration sequence at playback
+  // Articulation (optional, defaults applied in playback)
+  velocity?: number;      // 0.0-1.0 dynamics. accent=0.9+, ghost=0.2-0.4
+  articulation?: Articulation;
+  attack?: number;        // seconds, overrides synth default
+  release?: number;       // seconds, overrides synth default
 }
 
 export interface Chord {
@@ -23,6 +30,9 @@ export interface Lick {
   chords: Chord[];
   abc: string;
   notes: Note[];
+  // Expressive feel (optional, hidden from user)
+  swing?: number;   // 0.0-1.0: 0=straight, 0.5=moderate swing, 1.0=hard swing
+  feel?: string;    // e.g. "medium swing", "straight with ghost notes"
 }
 
 export const GENRES: { value: Genre; label: string }[] = [

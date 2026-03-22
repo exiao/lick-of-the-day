@@ -5,6 +5,8 @@ interface TransportControlsProps {
   onStop: () => void;
   tempo: number;
   onTempoChange: (bpm: number) => void;
+  chordsEnabled: boolean;
+  onChordsToggle: (enabled: boolean) => void;
 }
 
 export function TransportControls({
@@ -14,6 +16,8 @@ export function TransportControls({
   onStop,
   tempo,
   onTempoChange,
+  chordsEnabled,
+  onChordsToggle,
 }: TransportControlsProps) {
   return (
     <div className="flex items-center justify-center gap-4 py-3">
@@ -52,6 +56,18 @@ export function TransportControls({
         />
         <span className="text-sm font-mono w-8 text-right">{tempo}</span>
       </div>
+
+      <button
+        onClick={() => onChordsToggle(!chordsEnabled)}
+        title={chordsEnabled ? "Chords on" : "Chords off"}
+        className={`px-3 py-2 rounded-lg text-sm transition-colors ${
+          chordsEnabled
+            ? "bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
+            : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+        }`}
+      >
+        🎹 Chords
+      </button>
     </div>
   );
 }

@@ -1,9 +1,10 @@
 import { buildLickPrompt } from "../_shared/prompt";
 import { FALLBACK_LICK } from "../_shared/fallback";
-import { extractJSON } from "../_shared/parse";
+import { extractJSON, validateNotes } from "../_shared/parse";
 
 interface Env {
   ANTHROPIC_API_KEY: string;
+  LICK_STORE: KVNamespace;
 }
 
 type Genre = "jazz" | "blues" | "funk" | "rnb" | "bossa";
@@ -20,18 +21,18 @@ function getTodayKey(): string {
   return new Date().toISOString().split("T")[0];
 }
 
-// In-memory cache (persists within a single isolate).
-// TODO: Move to KV or D1 for cross-isolate persistence.
-const cache = new Map<string, { lick: unknown; expires: number }>();
-
 export const onRequestGet: PagesFunction<Env> = async (context) => {
-  const todayKey = `lick:${getTodayKey()}`;
+  const kvKey = `daily:${getTodayKey()}`;
 
-  const cached = cache.get(todayKey);
-  if (cached && cached.expires > Date.now()) {
-    return Response.json(cached.lick);
+  // Try KV first — shared across all isolates, written by cron worker at midnight
+  if (context.env.LICK_STORE) {
+    const cached = await context.env.LICK_STORE.get(kvKey);
+    if (cached) {
+      return Response.json(JSON.parse(cached));
+    }
   }
 
+  // Cold start: cron hasn't run yet (or KV unavailable) — generate on demand
   const genre = GENRES[getDayOfYear() % GENRES.length];
 
   try {
@@ -59,13 +60,21 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
     const data = (await res.json()) as { content: { type: string; text: string }[] };
     const rawText = data.content[0]?.type === "text" ? data.content[0].text : "";
-    const lick = { id: getTodayKey(), ...JSON.parse(extractJSON(rawText)) };
+    const parsed = JSON.parse(extractJSON(rawText));
+    validateNotes(parsed.notes, parsed.bars ?? 4);
+    const lick = { id: getTodayKey(), ...parsed };
 
-    cache.set(todayKey, { lick, expires: Date.now() + 24 * 60 * 60 * 1000 });
+    // Write to KV so subsequent requests (and isolates) get the same lick
+    if (context.env.LICK_STORE) {
+      await context.env.LICK_STORE.put(kvKey, JSON.stringify(lick), {
+        expirationTtl: 90000,
+      });
+    }
 
     return Response.json(lick);
   } catch (err) {
     console.error("Failed to generate daily lick:", err);
+    // Do not cache the fallback — let next request retry the API
     return Response.json(FALLBACK_LICK);
   }
 };
