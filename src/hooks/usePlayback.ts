@@ -169,22 +169,48 @@ export function usePlayback(
     part.start(0);
     partRef.current = part;
 
-    // --- Chord part (bass notes on the same transport grid) ---
+    // --- Chord part (bass notes snapped to melody timeline) ---
     const chords = lick?.chords;
     if (chordsEnabled && chords && chords.length > 0) {
       const chordSynth = getChordSynth();
 
+      // Build array of melody beat onsets for snapping
+      const melodyOnsets: number[] = partEvents.map(e => {
+        let b = 0;
+        // Recompute beat offset from the partEvents transportTime
+        const parts = e.transportTime.split(":").map(Number);
+        b = parts[0] * beatsPerBar + parts[1] + parts[2] / 4;
+        return b;
+      });
+
       const chordEvents = chords.map((c, i) => {
-        // Convert bar/beat to beat offset (both 1-indexed in the data)
-        const chordBeat = (c.bar - 1) * beatsPerBar + (c.beat - 1);
-        const transportTime = beatsToTransportTime(chordBeat, beatsPerBar);
+        // Target beat from bar/beat grid
+        const targetBeat = (c.bar - 1) * beatsPerBar + (c.beat - 1);
+
+        // Snap to nearest melody onset within half a beat;
+        // if no melody note is close, use the grid time as fallback
+        let snappedBeat = targetBeat;
+        let minDist = Infinity;
+        for (const onset of melodyOnsets) {
+          const dist = Math.abs(onset - targetBeat);
+          if (dist < minDist) {
+            minDist = dist;
+            snappedBeat = onset;
+          }
+        }
+        // Only snap if within half a beat; otherwise keep the grid position
+        if (minDist > 0.5) {
+          snappedBeat = targetBeat;
+        }
+
+        const transportTime = beatsToTransportTime(snappedBeat, beatsPerBar);
 
         // Duration: until next chord or end of lick
         const nextChord = chords[i + 1];
-        const nextBeat = nextChord
+        const nextTargetBeat = nextChord
           ? (nextChord.bar - 1) * beatsPerBar + (nextChord.beat - 1)
           : totalBeats;
-        const durationBeats = Math.max(0.5, nextBeat - chordBeat);
+        const durationBeats = Math.max(0.5, nextTargetBeat - snappedBeat);
         const durationSecs = (60 / tempo) * durationBeats - 0.05; // small gap
 
         const rootMatch = c.chord.match(/^([A-G][b#]?)/);
