@@ -42,10 +42,10 @@ jobs:
             /code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}
 
             REVIEW SUBMISSION:
-            After completing your review, you MUST submit a formal GitHub review:
+            After completing your review, submit a formal GitHub review using gh pr review:
             - If you found issues: `gh pr review ${{ github.event.pull_request.number }} --request-changes --body "Summary of issues found"`
             - If LGTM: `gh pr review ${{ github.event.pull_request.number }} --approve --body "LGTM - brief summary"`
-            Every review must end with one of these two commands.
+            If gh pr review fails (e.g. permissions), fall back to posting a comment with `gh pr comment` instead.
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
           claude_args: |
