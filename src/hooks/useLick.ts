@@ -36,13 +36,17 @@ export function useLick(): UseLickReturn {
 
   // Background-prefetched next lick (random genre), so "New Lick" is instant.
   const prefetchRef = useRef<Promise<Lick> | null>(null);
+  // Guard the mount fetch against React Strict Mode's double-invoke in dev.
+  const initialFetchRef = useRef(false);
 
   // Kick off a background fetch for the next random lick.
   const startPrefetch = useCallback(() => {
-    const p = generateLick(randomGenre(), DEFAULT_BARS).catch((err) => {
+    const p = generateLick(randomGenre(), DEFAULT_BARS);
+    // Swallow the rejection here so an unconsumed prefetch never triggers an
+    // unhandled-rejection warning; newLick still catches it when it awaits `p`.
+    p.catch(() => {
       // Drop a failed prefetch so the next request retries fresh.
       if (prefetchRef.current === p) prefetchRef.current = null;
-      throw err;
     });
     prefetchRef.current = p;
   }, []);
@@ -110,6 +114,8 @@ export function useLick(): UseLickReturn {
 
   // Fetch daily lick on mount, then warm the prefetch cache for the first "New Lick".
   useEffect(() => {
+    if (initialFetchRef.current) return;
+    initialFetchRef.current = true;
     fetchDaily().then(() => startPrefetch());
   }, [fetchDaily, startPrefetch]);
 

@@ -46,6 +46,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       max_tokens: LICK_MAX_TOKENS,
       system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
       messages: [{ role: "user", content: user }],
+    }, {
+      headers: { "anthropic-beta": "prompt-caching-2024-07-31" },
     });
 
     const text = message.content[0].type === "text" ? message.content[0].text : "";

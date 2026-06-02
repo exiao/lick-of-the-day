@@ -31,6 +31,7 @@ async function generateLick(genre: Genre, apiKey: string): Promise<unknown> {
       "Content-Type": "application/json",
       "x-api-key": apiKey,
       "anthropic-version": "2023-06-01",
+      "anthropic-beta": "prompt-caching-2024-07-31",
     },
     body: JSON.stringify({
       model: LICK_MODEL,
