@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import * as Tone from "tone";
-import { unlockAudio } from "../utils/audio-unlock";
+import { unlockAudio, audioFullyUnlocked } from "../utils/audio-unlock";
 import type { Note, Articulation, Genre, Lick } from "../types/lick";
 
 // Articulation presets: velocity, attack, release, duration multiplier
@@ -105,9 +105,12 @@ export function usePlayback(
   }, []);
 
   const playNote = useCallback((pitch: string) => {
-    // If audio is already running, trigger synchronously for zero latency.
-    // Otherwise unlock first (iOS), then play once the context is live.
-    if (Tone.getContext().state === "running") {
+    // Fast path: only when audio is FULLY unlocked (context running AND the iOS
+    // media prime succeeded) trigger synchronously for zero latency. If the
+    // media prime hasn't landed yet, route through unlockAudio() so a failed
+    // prime keeps getting retried on each key tap (otherwise iPad piano
+    // previews stay stuck in the mute-silenced ambient session).
+    if (audioFullyUnlocked()) {
       getSynth().triggerAttackRelease(pitch, "8n");
     } else {
       void unlockAudio().then(() => {

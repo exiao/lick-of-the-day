@@ -72,6 +72,15 @@ async function primeMedia(): Promise<void> {
 }
 
 /**
+ * Whether audio is fully unlocked: context running, buffer primed, and the
+ * HTMLMediaElement prime has actually succeeded. When false, callers should
+ * route through unlockAudio() again so a failed media prime gets retried.
+ */
+export function audioFullyUnlocked(): boolean {
+  return mediaUnlocked && bufferPrimed && Tone.getContext().state === "running";
+}
+
+/**
  * Unlock audio for iOS/iPadOS. Must be called synchronously from inside a user
  * gesture handler (click/touch). Safe to call repeatedly; it skips work that's
  * already done but keeps retrying the media prime until it actually succeeds.
