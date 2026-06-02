@@ -63,19 +63,20 @@ def midi(pitch: str):
     return (octv + 1) * 12 + pc
 
 
-def chord_tones(symbol: str) -> set[int]:
-    """Pitch classes of the chord's 1-3-5-(7) from a chord symbol like 'Dm7'."""
+def _chord_intervals(symbol: str):
+    """(root_pc, [intervals]) for a chord symbol, or None if unparseable.
+    Intervals are ordered 1-3-5-(7), so the first three are always the triad."""
     m = re.match(r"^([A-G][b#]?)(.*)$", symbol)
     if not m:
-        return set()
+        return None
     rm = re.match(r"^([A-G])(b|#)?$", m.group(1))
     if not rm:
-        return set()
+        return None
     root = NOTE_PC[rm.group(1)] + (1 if rm.group(2) == "#" else -1 if rm.group(2) == "b" else 0)
     root %= 12
     g2 = m.group(2)
     q = g2.lower()
-    # Major-seventh family, including extensions (maj7, maj9, maj11, maj13, ma7, M7, Δ).
+    # Major-seventh family, including extensions (maj7/9/11/13, M7/9, Δ).
     if re.search(r"(maj|ma)(7|9|11|13)", q) or re.search(r"M(7|9|11|13)", g2) or "Δ" in g2 or "∆" in g2:
         iv = [0, 4, 7, 11]
     elif "m7b5" in q or "ø" in q or "min7b5" in q:
@@ -84,7 +85,8 @@ def chord_tones(symbol: str) -> set[int]:
         iv = [0, 3, 6, 9]
     elif "dim" in q:
         iv = [0, 3, 6]
-    elif re.search(r"(m|min|-)7", q):
+    # Minor seventh family, including minor extensions (m7/9/11/13, -9, min11).
+    elif re.search(r"(m|min|-)(7|9|11|13)", q):
         iv = [0, 3, 7, 10]
     elif "m6" in q or "min6" in q:
         iv = [0, 3, 7, 9]
@@ -98,7 +100,26 @@ def chord_tones(symbol: str) -> set[int]:
         iv = [0, 4, 7, 10]  # dominant
     else:
         iv = [0, 4, 7]  # plain major triad
+    return root, iv
+
+
+def chord_tones(symbol: str) -> set[int]:
+    """Pitch classes of the chord's 1-3-5-(7) from a chord symbol like 'Dm7'."""
+    r = _chord_intervals(symbol)
+    if r is None:
+        return set()
+    root, iv = r
     return {(root + i) % 12 for i in iv}
+
+
+def chord_triad(symbol: str) -> set[int]:
+    """Pitch classes of just the root, 3rd, and 5th (no 7th). The prompt's
+    'strong ending' rule allows only these for the final note."""
+    r = _chord_intervals(symbol)
+    if r is None:
+        return set()
+    root, iv = r
+    return {(root + i) % 12 for i in iv[:3]}
 
 
 def _active_chord_tones(chord_offsets, beat):
@@ -146,18 +167,19 @@ def score_lick(lick: dict[str, Any], bars: int, beats_per_bar: int = 4) -> dict[
     ]
 
     # 2. Strong-beat chord-tone targeting (beats 1 & 3 of each bar).
-    #    A rest or unparseable pitch on a strong beat counts as a miss: the
-    #    prompt mandates a chord tone there, so silence is non-compliant.
+    #    A rest, unparseable pitch, or a beat the lick never reaches counts as a
+    #    miss: the prompt mandates a chord tone on every beat 1 & 3, so silence
+    #    or a too-short lick is non-compliant.
     hits = total_strong = 0
     for b in range(bars):
         for beat in (0, 2):
             gt = b * beats_per_bar + beat
-            if gt >= total:
-                continue
             ct = _active_chord_tones(chord_offsets, gt)
             if not ct:
                 continue
             total_strong += 1
+            if gt >= total:
+                continue  # lick ended before this strong beat = miss
             active = None
             for onset, n in timeline:
                 if onset <= gt + 1e-6:
@@ -189,17 +211,18 @@ def score_lick(lick: dict[str, Any], bars: int, beats_per_bar: int = 4) -> dict[
     want = max(1, bars // 2)
     out["rest_density"] = 1.0 if rests >= want else rests / want
 
-    # 6. Strong ending: last note a chord tone of the final chord, quarter+
-    #    long, AND landing on strong beat 1 or 3 of the final bar.
+    # 6. Strong ending: last note a root/3rd/5th of the final chord (prompt rule
+    #    6 excludes the 7th), quarter+ long, AND landing on strong beat 1 or 3.
     last = notes[-1]
     last_onset = timeline[-1][0]
     beat_in_bar = last_onset % beats_per_bar
     on_strong = abs(beat_in_bar) < 1e-6 or abs(beat_in_bar - 2) < 1e-6
     ending = 0.0
     if DUR_BEATS.get(last.get("duration"), 0) >= 1:
-        ct = chord_offsets[-1][1] if chord_offsets else set()
+        final_chord = chords[-1].get("chord") or "" if chords else ""
+        triad = chord_triad(final_chord)
         pcm = pitch_class(last.get("pitch") or "") if last.get("pitch") != "rest" else None
-        if pcm and pcm[0] in ct:
+        if pcm and pcm[0] in triad:
             ending = 1.0 if on_strong else 0.5
         elif pcm:
             ending = 0.5 if on_strong else 0.25

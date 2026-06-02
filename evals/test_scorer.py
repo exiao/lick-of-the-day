@@ -105,6 +105,16 @@ print("\nextended-harmony chord tones:")
 check("Fmaj9 contains its maj7 (E)", chord_tones("Fmaj9") == chord_tones("Fmaj7"))
 check("Cmaj13 has maj 7th (B)", 11 in chord_tones("Cmaj13"))
 check("CM9 has maj 7th (B)", 11 in chord_tones("CM9"))
+check("Dm9 is a minor-7th chord (has b7 C)", chord_tones("Dm9") == chord_tones("Dm7"))
+check("Am11 has minor 7th (G)", 7 in chord_tones("Am11") and chord_tones("Am11") == chord_tones("Am7"))
+
+print("\nstrong ending excludes the 7th (prompt rule 6 = root/3rd/5th):")
+from scorer import chord_triad
+check("Cmaj7 triad has no B (maj7)", 11 not in chord_triad("Cmaj7"))
+# Last note = B (the maj7 of Cmaj7) on a strong beat: allowed as a chord tone but
+# NOT a valid strong ending per rule 6, so it should not get full 1.0 credit.
+seventh_end = {**GOOD, "notes": GOOD["notes"][:-1] + [{"pitch": "B4", "duration": "2n"}]}
+check("7th as final note not full strong_ending", score_lick(seventh_end, 4)["strong_ending"] < 1.0)
 
 print("\noctave-boundary accidentals:")
 check("Cb4 midi == B3 (59)", midi("Cb4") == 59)
@@ -135,6 +145,12 @@ restbeat = {**GOOD, "notes": [
 clean_sbc = score_lick(GOOD, 4)["strong_beat_chordtones"]
 rest_sbc = score_lick(restbeat, 4)["strong_beat_chordtones"]
 check("rest on strong beat lowers strong_beat_chordtones", rest_sbc < clean_sbc)
+
+# A lick scored as 4 bars but only filling 1 bar must NOT get full strong-beat
+# credit: the unreached beats 1/3 count as misses, not skips.
+onebar = {**GOOD, "notes": GOOD["notes"][:5]}  # ~2 beats of material
+check("short lick counts unreached strong beats as misses",
+      score_lick(onebar, 4)["strong_beat_chordtones"] < clean_sbc)
 
 print("\nnote count window:")
 check("good lick note_count == 1.0", score_lick(GOOD, 4)["note_count"] == 1.0)
