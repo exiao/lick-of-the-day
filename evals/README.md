@@ -54,13 +54,15 @@ mandates. The `composite` weights playback/theory correctness highest.
 | Check | Weight | Catches |
 |-------|--------|---------|
 | `duration_fits` | 3 | Note durations don't sum to the bar count (broken rhythm) |
-| `strong_beat_chordtones` | 3 | Beats 1 & 3 aren't real chord tones |
-| `strong_ending` | 2 | Last note isn't a chord tone held a quarter+ |
+| `strong_beat_chordtones` | 3 | Beats 1 & 3 aren't real chord tones (a rest or unparseable pitch there counts as a miss) |
+| `strong_ending` | 2 | Last note isn't a chord tone held a quarter+ landing on strong beat 1 or 3 |
+| `valid_durations` | 2 | Notes use durations outside the Tone.js set (unplayable) |
 | `in_range` | 1 | Notes outside the one-hand C4–E5 range |
 | `rhythmic_variety` | 1 | Fewer than 3 distinct durations |
 | `rest_density` | 1 | Fewer than one rest per 2 bars |
 | `enharmonic_sane` | 1 | Double accidentals (e.g. `Bbb`, `F##`) |
 | `playable_leaps` | 1 | Consecutive jumps bigger than a major 10th |
+| `note_count` | 1 | Note count outside the mandated 12–24 window |
 | `abc_valid` | 1 | Missing ABC headers or too few barlines |
 
 It deliberately scores *constraint compliance*, not "is this beautiful music"

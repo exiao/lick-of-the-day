@@ -70,10 +70,22 @@ def _post(url, headers, body, timeout=120):
 
 
 def _parse(txt):
+    """Best-effort JSON extraction. Handles fenced ```json blocks and models
+    that wrap the object in conversational text by falling back to the first
+    balanced {...} span."""
     try:
         return json.loads(re.sub(r"```json?|```", "", txt).strip())
     except Exception:
-        return None
+        pass
+    # Fallback: grab the outermost {...} and try that.
+    start = txt.find("{")
+    end = txt.rfind("}")
+    if start != -1 and end > start:
+        try:
+            return json.loads(txt[start:end + 1])
+        except Exception:
+            return None
+    return None
 
 
 def gen_anthropic(model, system, user, _opts):
@@ -130,10 +142,14 @@ def main():
                         print(f"  {arm:14}{g:6} #{i} PARSE_FAIL ms={ms:.0f} out={out_tok} think={think_tok}")
                         continue
                     s = score_lick(j, BARS)
+                    # Parsed-but-empty licks return only {parse, composite}; use
+                    # .get so the row still records comp=0.0 (a real, low score)
+                    # instead of falling into the exception handler as comp=None.
+                    sub = {k: s.get(k) for k in ("duration_fits", "strong_beat_chordtones",
+                                                 "enharmonic_sane", "strong_ending", "valid_durations",
+                                                 "note_count")}
                     rows.append({"arm": arm, "genre": g, "ms": ms, "out": out_tok,
-                                 "think": think_tok, "comp": s["composite"], **{
-                                     k: s[k] for k in ("duration_fits", "strong_beat_chordtones",
-                                                       "enharmonic_sane", "strong_ending")}})
+                                 "think": think_tok, "comp": s["composite"], **sub})
                     print(f"  {arm:14}{g:6} #{i} comp={s['composite']:.3f} ms={ms:.0f} out={out_tok} think={think_tok}")
                 except Exception as e:
                     rows.append({"arm": arm, "genre": g, "ms": None, "comp": None, "fail": str(e)[:80]})

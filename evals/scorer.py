@@ -26,6 +26,9 @@ DUR_BEATS = {
     "1n": 4, "2n.": 3, "2n": 2, "4n.": 1.5, "4n": 1,
     "8n.": 0.75, "8n": 0.5, "16n.": 0.375, "16n": 0.25, "32n": 0.125,
 }
+# Fallback used only for timeline placement when a duration is unrecognized.
+# Unknown durations are separately penalized via the `valid_durations` score.
+FALLBACK_BEATS = 0.5
 
 NOTE_PC = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}
 
@@ -33,17 +36,23 @@ NOTE_PC = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}
 MIN_MIDI, MAX_MIDI = 60, 76
 # Largest sensible consecutive melodic leap before it's awkward (major 10th).
 MAX_LEAP = 16
+# Note-count window the prompt mandates.
+MIN_NOTES, MAX_NOTES = 12, 24
 
 
 def pitch_class(pitch: str):
-    """('C#4') -> (pitch_class 0..11, octave). None if unparseable/rest."""
+    """('C#4') -> (pitch_class 0..11, octave). None if unparseable/rest.
+
+    Accidentals that cross the C/B octave boundary shift the octave so that
+    `Cb4` reads as B3 and `B#4` reads as C5 (scientific pitch notation).
+    """
     m = re.match(r"^([A-G])(b{1,2}|#{1,2})?(\d)$", pitch)
     if not m:
         return None
-    pc = NOTE_PC[m.group(1)]
     acc = m.group(2) or ""
-    pc += acc.count("#") - acc.count("b")
-    return pc % 12, int(m.group(3))
+    pc_raw = NOTE_PC[m.group(1)] + acc.count("#") - acc.count("b")
+    octave = int(m.group(3)) + pc_raw // 12  # floor div handles both directions
+    return pc_raw % 12, octave
 
 
 def midi(pitch: str):
@@ -64,8 +73,10 @@ def chord_tones(symbol: str) -> set[int]:
         return set()
     root = NOTE_PC[rm.group(1)] + (1 if rm.group(2) == "#" else -1 if rm.group(2) == "b" else 0)
     root %= 12
-    q = m.group(2).lower()
-    if "maj7" in q or "ma7" in q or "M7" in m.group(2):
+    g2 = m.group(2)
+    q = g2.lower()
+    # Major-seventh family, including extensions (maj7, maj9, maj11, maj13, ma7, M7, Δ).
+    if re.search(r"(maj|ma)(7|9|11|13)", q) or re.search(r"M(7|9|11|13)", g2) or "Δ" in g2 or "∆" in g2:
         iv = [0, 4, 7, 11]
     elif "m7b5" in q or "ø" in q or "min7b5" in q:
         iv = [0, 3, 6, 10]
@@ -80,7 +91,7 @@ def chord_tones(symbol: str) -> set[int]:
     elif q.startswith(("m", "min", "-")):
         iv = [0, 3, 7]
     elif "maj" in q and "7" not in q:
-        iv = [0, 4, 7]
+        iv = [0, 4, 7]  # plain major triad (no 7th)
     elif "6" in q:
         iv = [0, 4, 7, 9]
     elif "7" in q:
@@ -103,7 +114,7 @@ def _active_chord_tones(chord_offsets, beat):
 def score_lick(lick: dict[str, Any], bars: int, beats_per_bar: int = 4) -> dict[str, Any]:
     """Score one lick. Returns sub-scores (0..1), a weighted `composite`, and
     `parse` (1 if scoreable, 0 if there were no notes)."""
-    notes = lick.get("notes", [])
+    notes = lick.get("notes") or []
     if not notes:
         return {"parse": 0, "composite": 0.0}
 
@@ -114,29 +125,39 @@ def score_lick(lick: dict[str, Any], bars: int, beats_per_bar: int = 4) -> dict[
     timeline = []
     for n in notes:
         timeline.append((t, n))
-        t += DUR_BEATS.get(n.get("duration"), 0.5)
+        t += DUR_BEATS.get(n.get("duration"), FALLBACK_BEATS)
     total = t
     target = bars * beats_per_bar
+
+    # 0. Valid durations: every note uses a recognized Tone.js value.
+    bad_dur = sum(1 for n in notes if n.get("duration") not in DUR_BEATS)
+    out["valid_durations"] = 1.0 if not bad_dur else max(0.0, 1 - bad_dur / len(notes))
 
     # 1. Duration fits the bar count exactly (broken rhythm = broken playback).
     out["duration_fits"] = 1.0 if abs(total - target) < 0.01 else max(0.0, 1 - abs(total - target) / target)
 
     chords = sorted(
-        lick.get("chords", []),
-        key=lambda c: ((c.get("bar", 1) - 1) * beats_per_bar + (c.get("beat", 1) - 1)),
+        lick.get("chords") or [],
+        key=lambda c: (((c.get("bar") or 1) - 1) * beats_per_bar + ((c.get("beat") or 1) - 1)),
     )
     chord_offsets = [
-        ((c.get("bar", 1) - 1) * beats_per_bar + (c.get("beat", 1) - 1), chord_tones(c.get("chord", "")))
+        (((c.get("bar") or 1) - 1) * beats_per_bar + ((c.get("beat") or 1) - 1), chord_tones(c.get("chord") or ""))
         for c in chords
     ]
 
     # 2. Strong-beat chord-tone targeting (beats 1 & 3 of each bar).
+    #    A rest or unparseable pitch on a strong beat counts as a miss: the
+    #    prompt mandates a chord tone there, so silence is non-compliant.
     hits = total_strong = 0
     for b in range(bars):
         for beat in (0, 2):
             gt = b * beats_per_bar + beat
             if gt >= total:
                 continue
+            ct = _active_chord_tones(chord_offsets, gt)
+            if not ct:
+                continue
+            total_strong += 1
             active = None
             for onset, n in timeline:
                 if onset <= gt + 1e-6:
@@ -144,19 +165,15 @@ def score_lick(lick: dict[str, Any], bars: int, beats_per_bar: int = 4) -> dict[
                 else:
                     break
             if not active or active.get("pitch") == "rest":
-                continue
-            ct = _active_chord_tones(chord_offsets, gt)
-            if not ct:
-                continue
-            pcm = pitch_class(active["pitch"])
+                continue  # rest on a strong beat = miss
+            pcm = pitch_class(active.get("pitch") or "")
             if pcm is None:
-                continue
-            total_strong += 1
+                continue  # unparseable pitch on a strong beat = miss
             if pcm[0] in ct:
                 hits += 1
     out["strong_beat_chordtones"] = hits / total_strong if total_strong else 0.0
 
-    pitched = [n for n in notes if n.get("pitch") != "rest"]
+    pitched = [n for n in notes if n.get("pitch") and n.get("pitch") != "rest"]
 
     # 3. Range: all pitched notes within C4..E5.
     pitched_midis = [m for m in (midi(n["pitch"]) for n in pitched) if m is not None]
@@ -172,16 +189,20 @@ def score_lick(lick: dict[str, Any], bars: int, beats_per_bar: int = 4) -> dict[
     want = max(1, bars // 2)
     out["rest_density"] = 1.0 if rests >= want else rests / want
 
-    # 6. Strong ending: last note a chord tone of the final chord, quarter+ long.
+    # 6. Strong ending: last note a chord tone of the final chord, quarter+
+    #    long, AND landing on strong beat 1 or 3 of the final bar.
     last = notes[-1]
+    last_onset = timeline[-1][0]
+    beat_in_bar = last_onset % beats_per_bar
+    on_strong = abs(beat_in_bar) < 1e-6 or abs(beat_in_bar - 2) < 1e-6
     ending = 0.0
     if DUR_BEATS.get(last.get("duration"), 0) >= 1:
         ct = chord_offsets[-1][1] if chord_offsets else set()
-        pcm = pitch_class(last.get("pitch", "")) if last.get("pitch") != "rest" else None
+        pcm = pitch_class(last.get("pitch") or "") if last.get("pitch") != "rest" else None
         if pcm and pcm[0] in ct:
-            ending = 1.0
+            ending = 1.0 if on_strong else 0.5
         elif pcm:
-            ending = 0.5
+            ending = 0.5 if on_strong else 0.25
     out["strong_ending"] = ending
 
     # 7. Enharmonic sanity: no double accidentals (e.g. Bbb, F##).
@@ -194,7 +215,16 @@ def score_lick(lick: dict[str, Any], bars: int, beats_per_bar: int = 4) -> dict[
     big = sum(1 for l in leaps if l > MAX_LEAP)
     out["playable_leaps"] = 1.0 if not leaps else max(0.0, 1 - big / len(leaps))
 
-    # 9. ABC structure: required headers present and enough barlines.
+    # 9. Note count within the mandated 12..24 window.
+    nc = len(notes)
+    if MIN_NOTES <= nc <= MAX_NOTES:
+        out["note_count"] = 1.0
+    elif nc < MIN_NOTES:
+        out["note_count"] = nc / MIN_NOTES
+    else:
+        out["note_count"] = max(0.0, 1 - (nc - MAX_NOTES) / MAX_NOTES)
+
+    # 10. ABC structure: required headers present and enough barlines.
     abc = lick.get("abc", "")
     has_hdr = all(h in abc for h in ["X:", "M:", "L:", "K:"])
     out["abc_valid"] = 1.0 if (has_hdr and abc.count("|") >= bars) else 0.5 if has_hdr else 0.0
@@ -202,8 +232,9 @@ def score_lick(lick: dict[str, Any], bars: int, beats_per_bar: int = 4) -> dict[
     # Composite: weight correctness that breaks playback/theory highest.
     weights = {
         "duration_fits": 3, "strong_beat_chordtones": 3, "strong_ending": 2,
-        "in_range": 1, "rhythmic_variety": 1, "rest_density": 1,
-        "enharmonic_sane": 1, "playable_leaps": 1, "abc_valid": 1,
+        "valid_durations": 2, "in_range": 1, "rhythmic_variety": 1,
+        "rest_density": 1, "enharmonic_sane": 1, "playable_leaps": 1,
+        "note_count": 1, "abc_valid": 1,
     }
     out["composite"] = round(sum(out[k] * w for k, w in weights.items()) / sum(weights.values()), 3)
     out["parse"] = 1

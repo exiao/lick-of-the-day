@@ -90,6 +90,59 @@ check("weak ending lowers strong_ending", ws["strong_ending"] < 1.0)
 # Empty lick.
 check("empty lick parse == 0", score_lick({"notes": []}, 4)["parse"] == 0)
 
+print("\nrobustness: malformed inputs don't crash:")
+# null chords field.
+check("null chords doesn't crash", score_lick({**GOOD, "chords": None}, 4)["parse"] == 1)
+# chord missing bar/beat.
+check("chord missing bar/beat", score_lick({**GOOD, "chords": [{"chord": "Dm7"}]}, 4)["parse"] == 1)
+# note missing pitch key entirely.
+nopitch = {**GOOD, "notes": [{"duration": "4n"}] + GOOD["notes"][1:]}
+check("note missing pitch key", score_lick(nopitch, 4)["parse"] == 1)
+# parsed-but-empty returns composite 0.0 (not None).
+check("empty lick composite == 0.0", score_lick({"notes": []}, 4)["composite"] == 0.0)
+
+print("\nextended-harmony chord tones:")
+check("Fmaj9 contains its maj7 (E)", chord_tones("Fmaj9") == chord_tones("Fmaj7"))
+check("Cmaj13 has maj 7th (B)", 11 in chord_tones("Cmaj13"))
+check("CM9 has maj 7th (B)", 11 in chord_tones("CM9"))
+
+print("\noctave-boundary accidentals:")
+check("Cb4 midi == B3 (59)", midi("Cb4") == 59)
+check("B#4 midi == C5 (72)", midi("B#4") == 72)
+
+print("\nunknown durations penalized:")
+baddur = {**GOOD, "notes": [{"pitch": "C4", "duration": "7x"}] + GOOD["notes"][1:]}
+check("unknown duration lowers valid_durations", score_lick(baddur, 4)["valid_durations"] < 1.0)
+check("clean lick valid_durations == 1.0", score_lick(GOOD, 4)["valid_durations"] == 1.0)
+
+print("\nstrong ending must land on beat 1 or 3:")
+# Shift the final resolution so it lands on beat 4 (weak) instead of a strong beat.
+# Replace bar-4 run with notes that push the long final note onto beat 4.
+late = {**GOOD, "notes": GOOD["notes"][:-5] + [
+    {"pitch": "G4", "duration": "4n"}, {"pitch": "E4", "duration": "4n"},
+    {"pitch": "D4", "duration": "4n"}, {"pitch": "C4", "duration": "4n"},
+]}
+# That fills the bar but ends on a quarter at beat 4 -> not a strong landing.
+le = score_lick(late, 4)
+check("late (beat-4) ending not full credit", le["strong_ending"] < 1.0)
+
+print("\nstrong beat: rest counts as a miss:")
+# Put a rest on beat 1 of bar 1 (Dm7), pushing the chord tone off the strong beat.
+restbeat = {**GOOD, "notes": [
+    {"pitch": "rest", "duration": "4n"}, {"pitch": "F4", "duration": "8n"},
+    {"pitch": "A4", "duration": "8n"}, {"pitch": "C5", "duration": "4n"},
+] + GOOD["notes"][4:]}
+clean_sbc = score_lick(GOOD, 4)["strong_beat_chordtones"]
+rest_sbc = score_lick(restbeat, 4)["strong_beat_chordtones"]
+check("rest on strong beat lowers strong_beat_chordtones", rest_sbc < clean_sbc)
+
+print("\nnote count window:")
+check("good lick note_count == 1.0", score_lick(GOOD, 4)["note_count"] == 1.0)
+toofew = {**GOOD, "notes": GOOD["notes"][:6]}
+check("too few notes lowers note_count", score_lick(toofew, 4)["note_count"] < 1.0)
+toomany = {**GOOD, "notes": GOOD["notes"] + GOOD["notes"]}  # 38 notes
+check("too many notes lowers note_count", score_lick(toomany, 4)["note_count"] < 1.0)
+
 print()
 if failures:
     print(f"{len(failures)} FAILED: {failures}")
