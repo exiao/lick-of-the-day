@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import Anthropic from "@anthropic-ai/sdk";
 import { buildLickPrompt } from "../src/utils/prompt";
 import type { Genre, Lick } from "../src/types/lick";
+import { LICK_MODEL, LICK_MAX_TOKENS } from "../src/utils/lick-config";
 
 const VALID_GENRES = new Set(["jazz", "blues", "funk", "rnb", "bossa"]);
 const VALID_BARS = new Set([2, 4, 6, 8]);
@@ -49,9 +50,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { system, user } = buildLickPrompt(genre as Genre, bars);
 
     const message = await client.messages.create({
-      model: "claude-sonnet-4-6-20250514",
-      max_tokens: 2048,
-      system,
+      model: LICK_MODEL,
+      max_tokens: LICK_MAX_TOKENS,
+      system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
       messages: [{ role: "user", content: user }],
     });
 
