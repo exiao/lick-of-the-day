@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import * as Tone from "tone";
+import { unlockAudio } from "../utils/audio-unlock";
 import type { Note, Articulation, Genre, Lick } from "../types/lick";
 
 // Articulation presets: velocity, attack, release, duration multiplier
@@ -104,7 +105,10 @@ export function usePlayback(
   }, []);
 
   const playNote = useCallback((pitch: string) => {
-    getSynth().triggerAttackRelease(pitch, "8n");
+    // Unlock on iOS before triggering (no await: keep the gesture synchronous-ish).
+    void unlockAudio().then(() => {
+      getSynth().triggerAttackRelease(pitch, "8n");
+    });
   }, [getSynth]);
 
   const stop = useCallback(() => {
@@ -118,7 +122,7 @@ export function usePlayback(
   }, []);
 
   const play = useCallback(async () => {
-    await Tone.start();
+    await unlockAudio();
     stop();
 
     const synth = getSynth();
