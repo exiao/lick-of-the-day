@@ -105,10 +105,15 @@ export function usePlayback(
   }, []);
 
   const playNote = useCallback((pitch: string) => {
-    // Unlock on iOS before triggering (no await: keep the gesture synchronous-ish).
-    void unlockAudio().then(() => {
+    // If audio is already running, trigger synchronously for zero latency.
+    // Otherwise unlock first (iOS), then play once the context is live.
+    if (Tone.getContext().state === "running") {
       getSynth().triggerAttackRelease(pitch, "8n");
-    });
+    } else {
+      void unlockAudio().then(() => {
+        getSynth().triggerAttackRelease(pitch, "8n");
+      });
+    }
   }, [getSynth]);
 
   const stop = useCallback(() => {
