@@ -42,13 +42,16 @@ function primeBuffer(): void {
 }
 
 /**
- * Play a silent HTMLMediaElement to promote the iOS audio session to "playback"
- * so the hardware mute switch no longer silences Web Audio. Only marks the media
- * unlock complete once play() actually resolves — if it's rejected, a later
- * gesture retries it. Must be called from inside a user gesture.
+ * Start playing a silent HTMLMediaElement to promote the iOS audio session to
+ * "playback" so the hardware mute switch no longer silences Web Audio. This must
+ * be called SYNCHRONOUSLY inside the user gesture, before any await — iOS treats
+ * the gesture as consumed after the first async hop and will reject play() that
+ * comes too late. Returns the play() promise so the caller can await resolution;
+ * mediaUnlocked is only set true once it actually resolves, so a rejected prime
+ * gets retried on the next gesture.
  */
-async function primeMedia(): Promise<void> {
-  if (mediaUnlocked) return;
+function startMediaPrime(): Promise<void> {
+  if (mediaUnlocked) return Promise.resolve();
   try {
     if (!silentEl) {
       silentEl = new Audio(SILENT_WAV);
@@ -61,13 +64,19 @@ async function primeMedia(): Promise<void> {
     }
     const p = silentEl.play();
     if (p && typeof p.then === "function") {
-      await p;
+      return p
+        .then(() => {
+          mediaUnlocked = true;
+        })
+        .catch(() => {
+          // Rejected — leave mediaUnlocked false so the next gesture retries.
+        });
     }
-    // Only reached if play() resolved (or returned no promise on old browsers).
+    // Old browsers: play() returns void, treat as success.
     mediaUnlocked = true;
+    return Promise.resolve();
   } catch {
-    // play() was rejected — leave mediaUnlocked false so the next real gesture
-    // retries the prime instead of permanently skipping it.
+    return Promise.resolve();
   }
 }
 
@@ -92,11 +101,16 @@ export async function unlockAudio(): Promise<void> {
     return;
   }
 
+  // Start the media prime FIRST, synchronously within the gesture, so iOS still
+  // treats silentEl.play() as user-activated (awaiting Tone.start() first would
+  // consume the gesture and Safari could reject the play).
+  const mediaPrime = startMediaPrime();
+
   // Resume the Tone/Web Audio context (required on all browsers).
   if (Tone.getContext().state !== "running") {
     await Tone.start();
   }
 
   primeBuffer();
-  await primeMedia();
+  await mediaPrime;
 }
