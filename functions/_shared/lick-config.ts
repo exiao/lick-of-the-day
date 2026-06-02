@@ -6,6 +6,7 @@
 // quality (and it follows rhythmic briefs like funk 16ths better in testing).
 export const LICK_MODEL = "claude-haiku-4-5";
 
-// A 4-bar lick generates ~1200 output tokens; 1536 leaves headroom for dense
-// funk/8-bar lines without holding a needlessly large budget open.
-export const LICK_MAX_TOKENS = 1536;
+// Keep generous headroom: an 8-bar dense funk lick can exceed 1500 output
+// tokens, and a smaller cap only risks truncating the JSON (latency tracks
+// the tokens actually generated, not the cap).
+export const LICK_MAX_TOKENS = 2048;
