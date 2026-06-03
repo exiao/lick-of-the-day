@@ -3,7 +3,7 @@ type Genre = "jazz" | "blues" | "funk" | "rnb" | "bossa";
 
 const GENRE_TECHNIQUES: Record<Genre, string> = {
   jazz: `Style: Jazz (Bebop)
-Techniques: Use enclosures (surround a chord tone from above and below, e.g. D-B-C to target C). Use 1-2-3-5 digital patterns. Apply the bebop scale (add natural 7 to Mixolydian on dominant chords). Land on guide tones (3rd or 7th) of each chord when outlining ii-V-I progressions. Swing feel required (swing: 0.33-0.67).`,
+Techniques: Use enclosures (surround a chord tone from above and below, e.g. D-B-C to target C). Flip enclosures so they move AGAINST the line's prevailing direction (if the line is descending, enclose from below moving up): this makes the line feel more alive. Use 1-2-3-5 digital patterns. Apply the bebop scale (add a chromatic passing tone so chord tones land on downbeats and the chromatic note falls on an upbeat). Land on guide tones (3rd or 7th) of each chord when outlining ii-V-I progressions. Avoid notes: keep the 4th (11th) off strong beats over major and dominant chords, and keep the natural 7 off strong beats over minor 7 chords. Use them only as quick passing tones on weak beats. Swing feel required (swing: 0.33-0.67).`,
 
   blues: `Style: Blues
 Techniques: Use the b3-to-natural-3 "blue note slide" (represent as a grace note 16n on b3 followed by the natural 3). Write call-and-response: a 2-bar question phrase followed by a 2-bar answering phrase. Emphasize b3, b5, and b7 (the blue notes). Mix major and minor pentatonic freely. Shuffle feel (swing: 0.33-0.5).`,
@@ -252,14 +252,18 @@ You must respond with ONLY valid JSON matching the exact schema provided. No mar
 === STRUCTURAL RULES (mandatory) ===
 1. CHORD TONE TARGETING: On beats 1 and 3 of every bar, the note MUST be a chord tone (root, 3rd, 5th, or 7th) of the active chord. Other beats can use passing tones, approach notes, or chromatic connectors.
 2. APPROACH NOTES: Use at least 2 approach notes (chromatic or diatonic) or enclosures per lick. An enclosure surrounds a target chord tone from above and below (e.g. D-B-C targets C).
-3. RESTS: Include at least one rest per 2 bars. Use { "pitch": "rest", "duration": "8n" } (or any duration). Not every beat needs a note. Space creates musicality.
-4. RHYTHMIC VARIETY: Use at least 3 different note durations. Do NOT write all 8th notes. Mix 16n, 8n, 4n, dotted values, etc.
-5. MOTIVIC DEVELOPMENT: Establish a short motif (2-4 notes) in bar 1, then repeat it with variation (transposed, inverted, or rhythmically altered) later in the lick.
-6. STRONG ENDING: The last note MUST be a chord tone (root, 3rd, or 5th) of the final chord, on a strong beat (1 or 3), with duration "4n" or longer.
-7. PICKUP NOTES: Start with 1-3 pickup notes on beat 4 or the "and" of beat 4 of an implied preceding bar. Do not always start squarely on beat 1.
-8. RANGE: Keep all pitched notes within C4 to E5 (middle C up to E above the staff).
-9. NOTE COUNT: For a ${bars}-bar lick, use 12-24 notes total. Quality over quantity.
-10. MELODIC CONTOUR: Shape the lick as an arch (rise then fall), cascade (descend then resolve up), or wave. No random jagged motion.
+3. APPROACH PLACEMENT: Put approach and chromatic notes on weak beats (the "e" and the "and" of a beat) and land the resolution chord tone on the FOLLOWING strong beat. Approach from a half-step below (C#->D), a step above (Eb->D), or both sides (enclosure). A chromatic note on a strong beat sounds like a wrong note; on a weak beat resolving to a strong beat it sounds intentional.
+4. DIRECTION CHANGES: Reverse the melodic direction on an upbeat (the "and" of a beat), NOT on beats 1 or 3. Turning the line around on a downbeat sounds stiff and heavy; turning it off the beat creates swing and forward motion. This is the single biggest difference between a stiff line and a flowing one.
+5. RESTS: Include at least one rest per 2 bars. Use { "pitch": "rest", "duration": "8n" } (or any duration). Not every beat needs a note. Space creates musicality.
+6. BREAK UP RUNS: Do not run more than ~4 consecutive notes of the same duration (especially straight 8ths or 16ths). Interrupt a run with a rest or a longer note. Nobody wants to hear a scale; a single omitted or held note gives the phrase character.
+7. RHYTHMIC VARIETY: Use at least 3 different note durations. Do NOT write all 8th notes. Mix 16n, 8n, 4n, dotted values, etc.
+8. PHRASE ACROSS THE BAR LINE: Do not resolve and reset neatly inside every bar. Let at least one phrase carry across a bar line and drive into beat 1 of the next bar. The musical idea, not the bar line, decides where a phrase ends.
+9. MOTIVIC DEVELOPMENT: Establish a short motif (2-4 notes) in bar 1, then repeat it with variation (transposed, inverted, or rhythmically altered) later in the lick.
+10. STRONG ENDING: The last note MUST be a chord tone (root, 3rd, or 5th) of the final chord, on a strong beat (1 or 3), with duration "4n" or longer.
+11. PICKUP NOTES: Start with 1-3 pickup notes on beat 4 or the "and" of beat 4 of an implied preceding bar. Do not always start squarely on beat 1.
+12. RANGE: Keep all pitched notes within C4 to E5 (middle C up to E above the staff).
+13. NOTE COUNT: For a ${bars}-bar lick, use 12-24 notes total. Quality over quantity.
+14. MELODIC CONTOUR: Shape the lick as an arch (rise then fall), cascade (descend then resolve up), or wave. No random jagged motion.
 
 Generate a ${bars}-bar lick. Respond with this exact JSON structure:
 
