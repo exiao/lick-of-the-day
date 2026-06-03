@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { buildLickPrompt } from "../src/utils/prompt";
 import type { Genre } from "../src/types/lick";
 import { LICK_MODEL, LICK_MAX_TOKENS } from "../src/utils/lick-config";
+import { extractJSON, validateNotes } from "../src/utils/parse";
 import { SSE_HEADERS, sseData, sseDone, sseError } from "../src/utils/sse";
 
 const VALID_GENRES = new Set(["jazz", "blues", "funk", "rnb", "bossa"]);
@@ -42,37 +43,71 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: "Invalid bars. Must be one of: 2, 4, 6, 8" });
   }
 
-  // From here we stream. Validation errors above already returned plain JSON.
-  res.writeHead(200, SSE_HEADERS);
+  const { system, user } = buildLickPrompt(genre as Genre, bars);
+  const client = new Anthropic();
+
+  const stream = client.messages.stream(
+    {
+      model: LICK_MODEL,
+      max_tokens: LICK_MAX_TOKENS,
+      system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
+      messages: [{ role: "user", content: user }],
+    },
+    { headers: { "anthropic-beta": "prompt-caching-2024-07-31" } },
+  );
+
+  // Abort the upstream generation if the client goes away, so we don't keep
+  // burning tokens writing to a dead socket.
+  let clientGone = false;
+  const onClose = () => {
+    clientGone = true;
+    stream.abort();
+  };
+  req.on("close", onClose);
+
+  // Defer the SSE 200 until the first delta. Until then, an Anthropic setup or
+  // auth failure can still surface as a real error status (parity with the
+  // Cloudflare handler, which returns 502 before streaming on upstream errors).
+  let headersSent = false;
+  const ensureHeaders = () => {
+    if (!headersSent) {
+      res.writeHead(200, SSE_HEADERS);
+      headersSent = true;
+    }
+  };
 
   try {
-    const client = new Anthropic();
-    const { system, user } = buildLickPrompt(genre as Genre, bars);
-
-    const stream = client.messages.stream(
-      {
-        model: LICK_MODEL,
-        max_tokens: LICK_MAX_TOKENS,
-        system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
-        messages: [{ role: "user", content: user }],
-      },
-      { headers: { "anthropic-beta": "prompt-caching-2024-07-31" } },
-    );
-
     stream.on("text", (delta) => {
+      if (clientGone) return;
+      ensureHeaders();
       res.write(sseData(delta));
     });
 
     const finalMessage = await stream.finalMessage();
-    const text = finalMessage.content[0].type === "text" ? finalMessage.content[0].text : "";
-    // Validate before declaring success; throws into the catch on bad JSON.
-    JSON.parse(text);
+    if (clientGone) {
+      res.end();
+      return;
+    }
+    const text = finalMessage.content[0]?.type === "text" ? finalMessage.content[0].text : "";
+    // Validate the assembled lick the same way Cloudflare does before success.
+    const parsed = JSON.parse(extractJSON(text));
+    validateNotes(parsed.notes, parsed.bars ?? bars);
+
+    ensureHeaders();
     const id = `${new Date().toISOString().split("T")[0]}-${Date.now()}`;
     res.write(sseDone(id));
     res.end();
   } catch (err) {
+    if (clientGone) return;
     console.error("Failed to generate random lick:", err);
+    if (!headersSent) {
+      // Nothing streamed yet — return a normal error status.
+      return res.status(502).json({ error: "Failed to generate lick" });
+    }
+    // Mid-stream failure — signal via the SSE error event.
     res.write(sseError("Failed to generate lick"));
     res.end();
+  } finally {
+    req.off("close", onClose);
   }
 }

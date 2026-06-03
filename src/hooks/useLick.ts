@@ -106,23 +106,23 @@ export function useLick(): UseLickReturn {
     setPhase("waiting");
     setNotesPending(true);
     const genre = randomGenre();
-    let base = FALLBACK_LICK;
+    // Snapshot the currently-displayed lick so a mid-stream failure can roll
+    // back instead of leaving sheet music paired with stale/partial notes.
+    let prevLick = FALLBACK_LICK;
+    setLick((cur) => { prevLick = cur; return cur; });
     try {
       const full = await streamLick(genre, DEFAULT_BARS, (partial) => {
-        setLick((prev) => {
-          base = overlay(prev, partial);
-          return base;
-        });
+        setLick((prev) => overlay(prev, partial));
         if (partial.abc !== undefined) setPhase((ph) => (ph === "waiting" ? "sheet" : ph));
-        if (Array.isArray(partial.notes) && partial.notes.length > 0) {
-          // notes still arriving; full completion handled below
-        }
       });
       setLick(full);
       setIsDaily(false);
       setPhase("notes");
       setNotesPending(false);
     } catch (err) {
+      // Roll back to the last complete lick so we never show a half-streamed
+      // sheet with mismatched notes or an enabled Play button.
+      setLick(prevLick);
       setError(err instanceof Error ? err.message : "Failed to generate lick");
       setPhase("idle");
       setNotesPending(false);

@@ -111,6 +111,22 @@ describe("extractClosedFields — adversarial", () => {
     expect(Array.isArray(got.notes) && got.notes.length).toBe(1);
   });
 
+  it("a key-shaped substring inside a string value is not mistaken for a field", () => {
+    // The title literally contains `"abc": "BAD"`; the real abc is "GOOD".
+    const obj = { title: 'fake "abc": "BAD"', abc: "GOOD", notes: [{ pitch: "C4", duration: "4n" }] };
+    const got = extractClosedFields(JSON.stringify(obj));
+    expect(got.title).toBe('fake "abc": "BAD"');
+    expect(got.abc).toBe("GOOD"); // not "BAD"
+  });
+
+  it("does not surface a nested-object key as a top-level field", () => {
+    // `bars` only appears inside a nested object, never at the top level.
+    const buf = '{"title":"T","meta":{"bars":99},"abc":"X:1\\nK:C\\nC4|"}';
+    const got = extractClosedFields(buf);
+    expect(got.bars).toBeUndefined();
+    expect(got.abc).toBe("X:1\nK:C\nC4|");
+  });
+
   it("returns empty object for buffers with no closed fields", () => {
     expect(extractClosedFields('{"genre": "ja')).toEqual({});
     expect(extractClosedFields("")).toEqual({});

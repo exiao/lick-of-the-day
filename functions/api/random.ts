@@ -49,26 +49,39 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return Response.json({ error: "Invalid bars. Must be one of: 2, 4, 6, 8" }, { status: 400 });
   }
 
-  // From here we stream. Validation errors above already returned plain JSON.
   const { system, user } = buildLickPrompt(genre as "jazz" | "blues" | "funk" | "rnb" | "bossa", bars);
 
-  const upstream = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": context.env.ANTHROPIC_API_KEY,
-      "anthropic-version": "2023-06-01",
-      "anthropic-beta": "prompt-caching-2024-07-31",
-    },
-    body: JSON.stringify({
-      model: LICK_MODEL,
-      max_tokens: LICK_MAX_TOKENS,
-      stream: true,
-      system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
-      messages: [{ role: "user", content: user }],
-    }),
-  });
+  // Abort the upstream request if the client disconnects.
+  const abort = new AbortController();
 
+  let upstream: Response;
+  try {
+    upstream = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      signal: abort.signal,
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": context.env.ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+        "anthropic-beta": "prompt-caching-2024-07-31",
+      },
+      body: JSON.stringify({
+        model: LICK_MODEL,
+        max_tokens: LICK_MAX_TOKENS,
+        stream: true,
+        system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
+        messages: [{ role: "user", content: user }],
+      }),
+    });
+  } catch (err) {
+    // Network failure before any streaming — return a real error status, the
+    // same shape the non-streaming handler used to. (Parity with Vercel, which
+    // also returns a 502 status when nothing has streamed yet.)
+    console.error("Anthropic fetch failed:", err);
+    return Response.json({ error: "Failed to generate lick" }, { status: 502 });
+  }
+
+  // Upstream errors before streaming also return a real status, not an SSE 200.
   if (!upstream.ok || !upstream.body) {
     const detail = upstream.body ? await upstream.text() : "no response body";
     console.error("Anthropic API error:", upstream.status, detail);
@@ -79,20 +92,23 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const decoder = new TextDecoder();
   const parser = new AnthropicSSEParser();
   let assembled = "";
+  const reader = upstream.body.getReader();
+  let closed = false;
 
   const stream = new ReadableStream({
     async start(controller) {
-      const reader = upstream.body!.getReader();
+      const safeEnqueue = (s: string) => {
+        if (!closed) controller.enqueue(encoder.encode(s));
+      };
       try {
         for (;;) {
           const { done, value } = await reader.read();
           if (done) break;
-          const dataLines = parser.push(decoder.decode(value, { stream: true }));
-          for (const line of dataLines) {
+          for (const line of parser.push(decoder.decode(value, { stream: true }))) {
             const delta = anthropicDeltaText(line);
             if (delta) {
               assembled += delta;
-              controller.enqueue(encoder.encode(sseData(delta)));
+              safeEnqueue(sseData(delta));
             }
           }
         }
@@ -100,13 +116,19 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         const parsed = JSON.parse(extractJSON(assembled));
         validateNotes(parsed.notes, parsed.bars ?? bars);
         const id = `${new Date().toISOString().split("T")[0]}-${Date.now()}`;
-        controller.enqueue(encoder.encode(sseDone(id)));
+        safeEnqueue(sseDone(id));
       } catch (err) {
         console.error("Stream failed:", err);
-        controller.enqueue(encoder.encode(sseError("Failed to generate lick")));
+        safeEnqueue(sseError("Failed to generate lick"));
       } finally {
-        controller.close();
+        if (!closed) controller.close();
       }
+    },
+    // Client disconnected: stop reading and abort the upstream generation.
+    cancel(reason) {
+      closed = true;
+      abort.abort(reason);
+      reader.cancel(reason).catch(() => { /* already closed */ });
     },
   });
 

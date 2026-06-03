@@ -59,10 +59,45 @@ function readString(s: string, from: number): { value: string; end: number } | n
 }
 
 function findKey(s: string, key: string): number {
-  // Returns the index just past the colon of `"key":`, or -1.
-  const m = s.match(new RegExp(`"${key}"\\s*:\\s*`));
-  if (!m || m.index === undefined) return -1;
-  return m.index + m[0].length;
+  // Return the index just past the colon of a TOP-LEVEL `"key":`, or -1.
+  // A naive regex search would also match key-shaped substrings inside string
+  // values or nested objects (e.g. a title of `fake "abc": "x"`), so we scan
+  // structurally and only accept a key sitting at object depth 1.
+  let depth = 0;
+  let inStr = false;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (inStr) {
+      if (c === "\\") { i++; continue; }
+      if (c === '"') inStr = false;
+      continue;
+    }
+    if (c === '"') {
+      // Potential key start at top level.
+      if (depth === 1) {
+        const r = readString(s, i);
+        if (r && r.value === key) {
+          // Expect optional whitespace then a colon.
+          let j = r.end + 1;
+          while (j < s.length && /\s/.test(s[j])) j++;
+          if (s[j] === ":") {
+            j++;
+            while (j < s.length && /\s/.test(s[j])) j++;
+            return j;
+          }
+        }
+        // Not our key (or unterminated): skip past this string so its contents
+        // are never scanned as structure.
+        if (r) { i = r.end; continue; }
+        return -1; // string not closed yet; nothing further is parseable
+      }
+      inStr = true;
+      continue;
+    }
+    if (c === "{" || c === "[") depth++;
+    else if (c === "}" || c === "]") depth--;
+  }
+  return -1;
 }
 
 function readScalar(s: string, from: number): number | boolean | null | undefined {
