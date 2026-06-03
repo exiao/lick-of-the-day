@@ -161,6 +161,30 @@ check("too few notes lowers note_count", score_lick(toofew, 4)["note_count"] < 1
 toomany = {**GOOD, "notes": GOOD["notes"] + GOOD["notes"]}  # 38 notes
 check("too many notes lowers note_count", score_lick(toomany, 4)["note_count"] < 1.0)
 
+print("\nchord quality coverage (mirrors src/utils/chords.ts):")
+check("Csus4 = C F G", chord_tones("Csus4") == {0, 5, 7})
+check("Csus2 = C D G", chord_tones("Csus2") == {0, 2, 7})
+check("Caug = C E G#", chord_tones("Caug") == {0, 4, 8})
+check("C+ = C E G#", chord_tones("C+") == {0, 4, 8})
+check("Cdim = C Eb Gb", chord_tones("Cdim") == {0, 3, 6})
+check("Cdim7 = C Eb Gb A", chord_tones("Cdim7") == {0, 3, 6, 9})
+check("Cm7b5 has b5 (Gb) and b7 (Bb)", chord_tones("Cm7b5") == {0, 3, 6, 10})
+check("bare G9 is a dominant (has F)", 5 in chord_tones("G9"))
+check("bare F13 is a dominant (has Eb)", 3 in chord_tones("F13"))
+check("CM (uppercase) is major, not minor", chord_tones("CM") == {0, 4, 7})
+
+print("\nschema-only durations for valid_durations:")
+# 16n. and 32n place on the timeline but violate the JSON schema.
+schema_bad = {**GOOD, "notes": [{**GOOD["notes"][0], "duration": "32n"}] + GOOD["notes"][1:]}
+check("32n (off-schema) lowers valid_durations", score_lick(schema_bad, 4)["valid_durations"] < 1.0)
+
+print("\ntruncated lick can't earn full ending credit:")
+# Same closing note/chord, but only the first 2 bars present: the final chord
+# never arrives, so ending credit is halved relative to the full lick.
+full_end = score_lick(GOOD, 4)["strong_ending"]
+trunc = {**GOOD, "notes": GOOD["notes"][:len(GOOD["notes"])//2]}
+check("truncated ending <= full ending", score_lick(trunc, 4)["strong_ending"] <= full_end)
+
 print()
 if failures:
     print(f"{len(failures)} FAILED: {failures}")

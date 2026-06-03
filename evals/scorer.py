@@ -30,6 +30,11 @@ DUR_BEATS = {
 # Unknown durations are separately penalized via the `valid_durations` score.
 FALLBACK_BEATS = 0.5
 
+# Durations the prompt's JSON schema actually permits. DUR_BEATS additionally
+# knows 16n. and 32n so the timeline can still place such notes, but emitting
+# them violates the schema, so valid_durations scores against this set.
+SCHEMA_DURATIONS = {"1n", "2n.", "2n", "4n.", "4n", "8n.", "8n", "16n"}
+
 NOTE_PC = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}
 
 # Playable one-hand range mandated by the prompt: C4..E5.
@@ -65,7 +70,9 @@ def midi(pitch: str):
 
 def _chord_intervals(symbol: str):
     """(root_pc, [intervals]) for a chord symbol, or None if unparseable.
-    Intervals are ordered 1-3-5-(7), so the first three are always the triad."""
+    Intervals are ordered 1-3-5-(7), so the first three are always the triad.
+    Quality handling mirrors src/utils/chords.ts so the scorer accepts exactly
+    the chords the app can voice (sus, aug, dim, dominant extensions, etc.)."""
     m = re.match(r"^([A-G][b#]?)(.*)$", symbol)
     if not m:
         return None
@@ -75,31 +82,46 @@ def _chord_intervals(symbol: str):
     root = NOTE_PC[rm.group(1)] + (1 if rm.group(2) == "#" else -1 if rm.group(2) == "b" else 0)
     root %= 12
     g2 = m.group(2)
-    q = g2.lower()
-    # Major-seventh family, including extensions (maj7/9/11/13, M7/9, Δ).
-    if re.search(r"(maj|ma)(7|9|11|13)", q) or re.search(r"M(7|9|11|13)", g2) or "Δ" in g2 or "∆" in g2:
-        iv = [0, 4, 7, 11]
-    elif "m7b5" in q or "ø" in q or "min7b5" in q:
-        iv = [0, 3, 6, 10]
-    elif "dim7" in q or "o7" in q:
+    # Half-diminished detection must run on the raw symbol: the alteration strip
+    # below would otherwise eat the "b5" and turn m7b5 into a plain m7.
+    g2l_raw = g2.lower()
+    if "ø" in g2 or g2l_raw in ("m7b5", "min7b5", "-7b5"):
+        return root, [0, 3, 6, 10]
+    # Major uses an uppercase "M"/"maj"/"Δ"; detect on original case before we
+    # lowercase (so "CM" major is not confused with "Cm" minor).
+    is_major_marker = bool(re.match(r"^(maj|Maj|M|Δ|∆)", g2)) and not g2.startswith(("min", "m7", "m9", "m6", "m1", "mi"))
+    # Strip alterations/extensions the app ignores (addX, b9/#11, (parenthetical)).
+    g2c = re.sub(r"add\d+", "", g2)
+    g2c = re.sub(r"[#b]\d+", "", g2c)
+    g2c = re.sub(r"\(.*?\)", "", g2c).strip()
+    q = g2c.lower()
+    if q in ("dim7", "o7"):
         iv = [0, 3, 6, 9]
-    elif "dim" in q:
+    elif q in ("dim", "o"):
         iv = [0, 3, 6]
-    # Minor seventh family, including minor extensions (m7/9/11/13, -9, min11).
-    elif re.search(r"(m|min|-)(7|9|11|13)", q):
-        iv = [0, 3, 7, 10]
-    elif "m6" in q or "min6" in q:
+    elif q in ("aug", "+"):
+        iv = [0, 4, 8]
+    elif q == "sus2":
+        iv = [0, 2, 7]
+    elif q in ("sus4", "sus"):
+        iv = [0, 5, 7]
+    # Major family (maj/maj7/maj9/M7/Δ). Has a 7th only if an extension digit is present.
+    elif is_major_marker:
+        has_seventh = any(c.isdigit() for c in g2c) or "Δ" in g2 or "∆" in g2
+        iv = [0, 4, 7, 11] if has_seventh else [0, 4, 7]
+    elif q in ("m6", "min6", "-6"):
         iv = [0, 3, 7, 9]
-    elif q.startswith(("m", "min", "-")):
+    elif re.match(r"^(m|min|-)(7|9|11|13)$", q):
+        iv = [0, 3, 7, 10]
+    elif q in ("m", "min", "-"):
         iv = [0, 3, 7]
-    elif "maj" in q and "7" not in q:
-        iv = [0, 4, 7]  # plain major triad (no 7th)
-    elif "6" in q:
+    # Dominant family: bare 7, plus bare extensions 9/11/13 (G9, F13 = dom shells).
+    elif q in ("7", "dom7", "9", "11", "13"):
+        iv = [0, 4, 7, 10]
+    elif q == "6":
         iv = [0, 4, 7, 9]
-    elif "7" in q:
-        iv = [0, 4, 7, 10]  # dominant
     else:
-        iv = [0, 4, 7]  # plain major triad
+        iv = [0, 4, 7]  # plain major triad ("", unknown)
     return root, iv
 
 
@@ -151,7 +173,7 @@ def score_lick(lick: dict[str, Any], bars: int, beats_per_bar: int = 4) -> dict[
     target = bars * beats_per_bar
 
     # 0. Valid durations: every note uses a recognized Tone.js value.
-    bad_dur = sum(1 for n in notes if n.get("duration") not in DUR_BEATS)
+    bad_dur = sum(1 for n in notes if n.get("duration") not in SCHEMA_DURATIONS)
     out["valid_durations"] = 1.0 if not bad_dur else max(0.0, 1 - bad_dur / len(notes))
 
     # 1. Duration fits the bar count exactly (broken rhythm = broken playback).
@@ -165,6 +187,11 @@ def score_lick(lick: dict[str, Any], bars: int, beats_per_bar: int = 4) -> dict[
         (((c.get("bar") or 1) - 1) * beats_per_bar + ((c.get("beat") or 1) - 1), chord_tones(c.get("chord") or ""))
         for c in chords
     ]
+    # Parallel list of (onset, raw symbol) for resolving the ending chord.
+    chord_symbols = [
+        (((c.get("bar") or 1) - 1) * beats_per_bar + ((c.get("beat") or 1) - 1), c.get("chord") or "")
+        for c in chords
+    ]
 
     # 2. Strong-beat chord-tone targeting (beats 1 & 3 of each bar).
     #    A rest, unparseable pitch, or a beat the lick never reaches counts as a
@@ -175,9 +202,11 @@ def score_lick(lick: dict[str, Any], bars: int, beats_per_bar: int = 4) -> dict[
         for beat in (0, 2):
             gt = b * beats_per_bar + beat
             ct = _active_chord_tones(chord_offsets, gt)
-            if not ct:
-                continue
+            if ct is None:
+                continue  # no chord active here yet = no requirement
             total_strong += 1
+            if not ct:
+                continue  # chord active but unparseable = miss (can't be a hit)
             if gt >= total:
                 continue  # lick ended before this strong beat = miss
             active = None
@@ -211,21 +240,36 @@ def score_lick(lick: dict[str, Any], bars: int, beats_per_bar: int = 4) -> dict[
     want = max(1, bars // 2)
     out["rest_density"] = 1.0 if rests >= want else rests / want
 
-    # 6. Strong ending: last note a root/3rd/5th of the final chord (prompt rule
-    #    6 excludes the 7th), quarter+ long, AND landing on strong beat 1 or 3.
+    # 6. Strong ending: last note a root/3rd/5th of the chord active at its onset
+    #    (prompt rule 6 excludes the 7th), quarter+ long, AND landing on strong
+    #    beat 1 or 3. A lick that stops before the FINAL chord even arrives has
+    #    not resolved the progression, so it cannot earn full ending credit even
+    #    if its early last note happens to be a triad tone of the closing chord.
     last = notes[-1]
     last_onset = timeline[-1][0]
     beat_in_bar = last_onset % beats_per_bar
     on_strong = abs(beat_in_bar) < 1e-6 or abs(beat_in_bar - 2) < 1e-6
+    final_chord_onset = chord_offsets[-1][0] if chord_offsets else 0.0
+    reached_final = last_onset >= final_chord_onset - 1e-6
     ending = 0.0
     if DUR_BEATS.get(last.get("duration"), 0) >= 1:
-        final_chord = chords[-1].get("chord") or "" if chords else ""
-        triad = chord_triad(final_chord)
+        # Resolve against the chord sounding at the last note's onset, not blindly
+        # the last symbol in the list.
+        active_sym = ""
+        for off, sym in chord_symbols:
+            if off <= last_onset + 1e-6:
+                active_sym = sym
+            else:
+                break
+        triad = chord_triad(active_sym)
         pcm = pitch_class(last.get("pitch") or "") if last.get("pitch") != "rest" else None
         if pcm and pcm[0] in triad:
             ending = 1.0 if on_strong else 0.5
         elif pcm:
             ending = 0.5 if on_strong else 0.25
+        # Halve credit if the lick never reached the final chord (truncated).
+        if not reached_final:
+            ending *= 0.5
     out["strong_ending"] = ending
 
     # 7. Enharmonic sanity: no double accidentals (e.g. Bbb, F##).

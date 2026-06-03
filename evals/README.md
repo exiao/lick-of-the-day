@@ -18,7 +18,9 @@ with a deterministic music-theory scorer, and reports aggregates with variance.
 
 ```bash
 # 1. Refresh prompts from the live source (run after any prompt change)
-npx tsx evals/dump_prompts.ts > evals/prompts.json
+#    tsx is declared as a devDependency, so install once then use the script:
+npm install            # first time only, makes tsx available
+npm run dump-prompts   # writes evals/prompts.json from the real buildLickPrompt
 
 # 2. Provide credentials (the gateway env already has these)
 export ANTHROPIC_TOKEN=... ANTHROPIC_BASE_URL=...   # for claude-* arms

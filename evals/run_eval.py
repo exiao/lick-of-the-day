@@ -7,7 +7,7 @@ reports per-arm aggregates (parse rate, composite mean/sd/min, latency,
 thinking tokens).
 
 Quick start:
-    npx tsx evals/dump_prompts.ts > evals/prompts.json   # refresh prompts
+    npm run dump-prompts   # refresh prompts (needs npm install once)
     python3 evals/run_eval.py                              # run the suite
 
 Environment:
@@ -91,13 +91,22 @@ def _parse(txt):
 
 def gen_anthropic(model, system, user, _opts):
     base = os.environ["ANTHROPIC_BASE_URL"].rstrip("/")
+    # Mirror the production path (api/daily.ts, api/random.ts): send the static
+    # system prompt as a cache_control text block with the prompt-caching beta
+    # header, so latency reflects real cached requests rather than paying full
+    # prompt cost on every sample.
     headers = {
         "Content-Type": "application/json",
         "x-api-key": os.environ["ANTHROPIC_TOKEN"],
         "anthropic-version": "2023-06-01",
+        "anthropic-beta": "prompt-caching-2024-07-31",
     }
-    body = {"model": model, "max_tokens": MAX_TOKENS, "system": system,
-            "messages": [{"role": "user", "content": user}]}
+    body = {
+        "model": model,
+        "max_tokens": MAX_TOKENS,
+        "system": [{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
+        "messages": [{"role": "user", "content": user}],
+    }
     data, ms = _post(f"{base}/v1/messages", headers, body)
     return data["content"][0]["text"], ms, data["usage"]["output_tokens"], 0
 
@@ -126,7 +135,7 @@ REQUIRED_ENV = {
 
 def main():
     if not PROMPTS_PATH.exists():
-        raise SystemExit(f"Missing {PROMPTS_PATH}. Run: npx tsx evals/dump_prompts.ts > evals/prompts.json")
+        raise SystemExit(f"Missing {PROMPTS_PATH}. Run: npm run dump-prompts")
     prompts = json.loads(PROMPTS_PATH.read_text())
 
     rows = []
