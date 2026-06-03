@@ -25,4 +25,10 @@ dist-ssr
 .env
 .env.local
 .superpowers
+
+# Eval generated artifacts
+evals/prompts.json
+evals/results.json
+__pycache__/
+*.pyc
 .pr-body.md
