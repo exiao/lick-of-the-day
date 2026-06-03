@@ -35,7 +35,7 @@ const GENRE_EXAMPLES: Record<Genre, string> = {
     {"chord": "Cmaj7", "bar": 3, "beat": 1},
     {"chord": "Cmaj7", "bar": 4, "beat": 1}
   ],
-  "abc": "X:1\\nM:4/4\\nL:1/8\\nK:C\\n\"Dm7\"A2 z F D2 z D|\"G7\"D2 z F B2 z2|\"Cmaj7\"E2 z G c2 z B|\"Cmaj7\"G2 z D E4|",
+  "abc": "X:1\\nM:4/4\\nL:1/8\\nK:C\\n\\"Dm7\\"A2 z F D2 z D|\\"G7\\"D2 z F B2 z2|\\"Cmaj7\\"E2 z G c2 z B|\\"Cmaj7\\"G2 z D E4|",
   "notes": [
     {"pitch": "A4", "duration": "4n", "velocity": 0.85, "articulation": "accent"},
     {"pitch": "rest", "duration": "8n", "velocity": 0.0, "articulation": "normal"},
@@ -77,7 +77,7 @@ const GENRE_EXAMPLES: Record<Genre, string> = {
     {"chord": "C7", "bar": 3, "beat": 1},
     {"chord": "G7", "bar": 4, "beat": 1}
   ],
-  "abc": "X:1\\nM:4/4\\nL:1/8\\nK:G\\n\"G7\"G2 z _B B2 z2|\"G7\"D2 z2 G z D2|\"C7\"G2 z _B c2 z2|\"G7\"D F z2 G4|",
+  "abc": "X:1\\nM:4/4\\nL:1/8\\nK:G\\n\\"G7\\"G2 z _B B2 z2|\\"G7\\"D2 z2 G z D2|\\"C7\\"G2 z _B c2 z2|\\"G7\\"D F z2 G4|",
   "notes": [
     {"pitch": "G4", "duration": "4n", "velocity": 0.9, "articulation": "accent"},
     {"pitch": "rest", "duration": "8n", "velocity": 0.0, "articulation": "normal"},
@@ -117,7 +117,7 @@ const GENRE_EXAMPLES: Record<Genre, string> = {
     {"chord": "Eb7", "bar": 3, "beat": 1},
     {"chord": "Bbm7", "bar": 4, "beat": 1}
   ],
-  "abc": "X:1\\nM:4/4\\nL:1/8\\nK:Bbm\\n\"Bbm7\"_B2 z2 _A z z _B|\"Bbm7\"_B2 z2 _A z F2|\"Eb7\"_e2 z2 _d z z _B|\"Bbm7\"_B2 z _A _B4|",
+  "abc": "X:1\\nM:4/4\\nL:1/8\\nK:Bbm\\n\\"Bbm7\\"_B2 z2 _A z z _B|\\"Bbm7\\"_B2 z2 _A z F2|\\"Eb7\\"_e2 z2 _d z z _B|\\"Bbm7\\"_B2 z _A _B4|",
   "notes": [
     {"pitch": "Bb4", "duration": "4n", "velocity": 0.9, "articulation": "accent"},
     {"pitch": "rest", "duration": "4n", "velocity": 0.0, "articulation": "normal"},
@@ -159,7 +159,7 @@ const GENRE_EXAMPLES: Record<Genre, string> = {
     {"chord": "Bbmaj7", "bar": 3, "beat": 1},
     {"chord": "Gm7", "bar": 4, "beat": 1}
   ],
-  "abc": "X:1\\nM:4/4\\nL:1/8\\nK:F\\n\"Fmaj9\"A2 z2 c z A2|\"Fmaj9\"c2 z A F2 z2|\"Bbmaj7\"d2 z2 f z d2|\"Gm7\"_B2 z A D4|",
+  "abc": "X:1\\nM:4/4\\nL:1/8\\nK:F\\n\\"Fmaj9\\"A2 z2 c z A2|\\"Fmaj9\\"c2 z A F2 z2|\\"Bbmaj7\\"d2 z2 f z d2|\\"Gm7\\"_B2 z A D4|",
   "notes": [
     {"pitch": "A4", "duration": "4n", "velocity": 0.85, "articulation": "accent"},
     {"pitch": "rest", "duration": "4n", "velocity": 0.0, "articulation": "normal"},
@@ -199,7 +199,7 @@ const GENRE_EXAMPLES: Record<Genre, string> = {
     {"chord": "Cmaj7", "bar": 3, "beat": 1},
     {"chord": "Cmaj7", "bar": 4, "beat": 1}
   ],
-  "abc": "X:1\\nM:4/4\\nL:1/8\\nK:C\\n\"Dm7\"F3 E D2 z2|\"G7\"D3 B, D2 z2|\"Cmaj7\"E3 D C2 z2|\"Cmaj7\"E3 D C4|",
+  "abc": "X:1\\nM:4/4\\nL:1/8\\nK:C\\n\\"Dm7\\"F3 E D2 z2|\\"G7\\"D3 B, D2 z2|\\"Cmaj7\\"E3 D C2 z2|\\"Cmaj7\\"E3 D C4|",
   "notes": [
     {"pitch": "F4", "duration": "4n.", "velocity": 0.8, "articulation": "accent"},
     {"pitch": "E4", "duration": "8n", "velocity": 0.7, "articulation": "normal"},
@@ -247,7 +247,7 @@ You must respond with ONLY valid JSON matching the exact schema provided. No mar
 11. STRONG ENDING: The last note MUST be a chord tone (root, 3rd, or 5th) of the final chord, on a strong beat (1 or 3), with duration "4n" or longer.
 12. PICKUP NOTES: Start with 1-3 pickup notes on beat 4 or the "and" of beat 4 of an implied preceding bar. Do not always start squarely on beat 1.
 13. RANGE: Keep all pitched notes within C4 to E5 (middle C up to E above the staff).
-14. NOTE COUNT: For a ${bars}-bar lick, use 12-18 notes total. Lean simple. Quality and rhythm over quantity.
+14. NOTE COUNT: Keep it lean. Aim for roughly 3 to 5 notes per bar, so a ${bars}-bar lick lands around ${bars * 3} to ${bars * 5} notes. A few extra is fine when the rhythm is strong, but never pad. Quality and rhythm over quantity.
 15. MELODIC CONTOUR: Shape the lick as an arch (rise then fall), cascade (descend then resolve up), or wave. No random jagged motion.
 
 Respond with this exact JSON structure (fill in the requested genre and bar count):
