@@ -20,7 +20,7 @@ Operate with a skeptical, evidence-driven mindset. Verify every claim against th
    - React state: practice-mode feedback comparing against the wrong expected note; missing cleanup of audio nodes (leak).
    - Pages/Worker function: Claude API key exposed client-side, or an unhandled API error returned as a valid lick.
 2. **Data integrity:** generated licks persist/cache correctly across Edge function invocations.
-3. **Security:** Claude API key must stay server-side (Edge/Worker), not bundled into the Vite client; injection on user input.
+3. **Security:** Claude API key must stay server-side (Pages/Worker), not bundled into the Vite client; injection on user input.
 
 **Evidence gates — satisfy each before flagging, or say you can't and lower confidence:**
 
