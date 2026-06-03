@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { buildLickPrompt } from "../src/utils/prompt";
 import type { Genre, Lick } from "../src/types/lick";
 import { FALLBACK_LICK } from "../src/utils/mock-lick";
+import { LICK_MODEL, LICK_MAX_TOKENS } from "../src/utils/lick-config";
 
 const GENRES: Genre[] = ["jazz", "blues", "funk", "rnb", "bossa"];
 
@@ -41,10 +42,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { system, user } = buildLickPrompt(genre, 4);
 
     const message = await client.messages.create({
-      model: "claude-sonnet-4-6-20250514",
-      max_tokens: 2048,
-      system,
+      model: LICK_MODEL,
+      max_tokens: LICK_MAX_TOKENS,
+      system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
       messages: [{ role: "user", content: user }],
+    }, {
+      headers: { "anthropic-beta": "prompt-caching-2024-07-31" },
     });
 
     const text = message.content[0].type === "text" ? message.content[0].text : "";
