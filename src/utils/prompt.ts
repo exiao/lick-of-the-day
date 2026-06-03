@@ -128,7 +128,7 @@ const GENRE_EXAMPLES: Record<Genre, string> = {
     {"pitch": "rest", "duration": "4n", "velocity": 0.0, "articulation": "normal"},
     {"pitch": "Ab4", "duration": "8n", "velocity": 0.7, "articulation": "staccato"},
     {"pitch": "rest", "duration": "8n", "velocity": 0.0, "articulation": "normal"},
-    {"pitch": "F4", "duration": "4n", "velocity": 0.75, "articulation": "normal"},
+    {"pitch": "F4", "duration": "4n", "velocity": 0.65, "articulation": "ghost"},
     {"pitch": "Eb5", "duration": "4n", "velocity": 0.9, "articulation": "accent"},
     {"pitch": "rest", "duration": "4n", "velocity": 0.0, "articulation": "normal"},
     {"pitch": "Db5", "duration": "8n", "velocity": 0.7, "articulation": "staccato"},
@@ -246,7 +246,7 @@ You must respond with ONLY valid JSON matching the exact schema provided. No mar
 11. STRONG ENDING: The last note MUST be a chord tone (root, 3rd, or 5th) of the final chord, on a strong beat (1 or 3), with duration "4n" or longer.
 12. PICKUP NOTES: Start with 1-3 pickup notes on beat 4 or the "and" of beat 4 of an implied preceding bar. Do not always start squarely on beat 1.
 13. RANGE: Keep all pitched notes within C4 to E5 (middle C up to E above the staff).
-14. NOTE COUNT: Keep it lean. Aim for roughly 3 to 5 notes per bar, so a ${bars}-bar lick lands around ${bars * 3} to ${bars * 5} notes. A few extra is fine when the rhythm is strong, but never pad. Quality and rhythm over quantity.
+14. NOTE COUNT: Keep it lean. Aim for roughly 3 to 5 notes per bar. A few extra is fine when the rhythm is strong, but never pad. Quality and rhythm over quantity.
 15. MELODIC CONTOUR: Shape the lick as an arch (rise then fall), cascade (descend then resolve up), or wave. No random jagged motion.
 
 Respond with this exact JSON structure (fill in the requested genre and bar count):
@@ -300,7 +300,7 @@ Important rules for the notes array:
   // USER: only the genre- and bars-specific content varies per request.
   const user = `${GENRE_TECHNIQUES[genre]}
 
-Generate a ${bars}-bar lick in the style above. Set "genre" to "${genre}" and "bars" to ${bars} in the JSON.
+Generate a ${bars}-bar lick in the style above (aim for about ${bars * 3} to ${bars * 5} notes total, lean and simple). Set "genre" to "${genre}" and "bars" to ${bars} in the JSON.
 
 === REFERENCE EXAMPLE ===
 Study this example carefully. Your output should match this level of musical quality, rhythmic variety, and structural integrity. Do NOT copy it — compose something original in the same style.
