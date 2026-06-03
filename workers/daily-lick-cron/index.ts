@@ -1,5 +1,6 @@
 import { buildLickPrompt } from "../../functions/_shared/prompt";
 import { extractJSON } from "../../functions/_shared/parse";
+import { LICK_MODEL, LICK_MAX_TOKENS } from "../../functions/_shared/lick-config";
 
 interface Env {
   ANTHROPIC_API_KEY: string;
@@ -30,11 +31,12 @@ async function generateLick(genre: Genre, apiKey: string): Promise<unknown> {
       "Content-Type": "application/json",
       "x-api-key": apiKey,
       "anthropic-version": "2023-06-01",
+      "anthropic-beta": "prompt-caching-2024-07-31",
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-6",
-      max_tokens: 2048,
-      system,
+      model: LICK_MODEL,
+      max_tokens: LICK_MAX_TOKENS,
+      system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
       messages: [{ role: "user", content: user }],
     }),
   });
