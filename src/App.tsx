@@ -1,5 +1,4 @@
-import { useState, useCallback } from "react";
-import type { Genre } from "./types/lick";
+import { useCallback } from "react";
 import { useLick } from "./hooks/useLick";
 import { usePlayback } from "./hooks/usePlayback";
 import { computePianoRange, parsePitch } from "./utils/music";
@@ -9,17 +8,15 @@ import { TransportControls } from "./components/TransportControls";
 import { Piano } from "./components/Piano";
 
 function App() {
-  const { lick, loading, error, fetchRandom, isDaily } = useLick();
-  const [genre, setGenre] = useState<Genre>("jazz");
-  const [bars, setBars] = useState(4);
+  const { lick, loading, error, newLick, isDaily } = useLick();
 
   const playback = usePlayback(lick.notes, lick.tempo, { swing: lick.swing, chords: lick.chords, timeSignature: lick.timeSignature, genre: lick.genre });
   const pianoRange = computePianoRange(lick.notes);
 
   const handleNewLick = useCallback(() => {
     playback.stop();
-    fetchRandom(genre, bars);
-  }, [genre, bars, fetchRandom, playback]);
+    newLick();
+  }, [newLick, playback]);
 
   const handleNotePlay = useCallback(
     (pitch: string) => {
@@ -37,10 +34,6 @@ function App() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
         <Header
-          genre={genre}
-          onGenreChange={setGenre}
-          bars={bars}
-          onBarsChange={setBars}
           onNewLick={handleNewLick}
           loading={loading}
           lickTitle={lick.title}

@@ -237,6 +237,8 @@ const GENRE_EXAMPLES: Record<Genre, string> = {
 };
 
 export function buildLickPrompt(genre: Genre, bars: number): { system: string; user: string } {
+  // SYSTEM: fully static across every request so prompt caching (cache_control
+  // on this block) produces real cache hits. No genre/bars interpolation here.
   const system = `You are a music theory expert and composer. You generate musical licks as structured JSON data. Your licks must be:
 - Musically valid and idiomatic to the requested genre
 - Playable on piano with one hand
@@ -244,9 +246,7 @@ export function buildLickPrompt(genre: Genre, bars: number): { system: string; u
 - Using correct ABC notation compatible with the abcjs library
 - Expressive: vary velocity and articulation like a real musician — not every note the same
 
-You must respond with ONLY valid JSON matching the exact schema provided. No markdown, no explanation, just JSON.`;
-
-  const user = `${GENRE_TECHNIQUES[genre]}
+You must respond with ONLY valid JSON matching the exact schema provided. No markdown, no explanation, just JSON.
 
 === STRUCTURAL RULES (mandatory) ===
 1. CHORD TONE TARGETING: On beats 1 and 3 of every bar, the note MUST be a chord tone (root, 3rd, 5th, or 7th) of the active chord. Other beats can use passing tones, approach notes, or chromatic connectors.
@@ -257,19 +257,19 @@ You must respond with ONLY valid JSON matching the exact schema provided. No mar
 6. STRONG ENDING: The last note MUST be a chord tone (root, 3rd, or 5th) of the final chord, on a strong beat (1 or 3), with duration "4n" or longer.
 7. PICKUP NOTES: Start with 1-3 pickup notes on beat 4 or the "and" of beat 4 of an implied preceding bar. Do not always start squarely on beat 1.
 8. RANGE: Keep all pitched notes within C4 to E5 (middle C up to E above the staff).
-9. NOTE COUNT: For a ${bars}-bar lick, use 12-24 notes total. Quality over quantity.
+9. NOTE COUNT: Use 12-24 notes total. Quality over quantity.
 10. MELODIC CONTOUR: Shape the lick as an arch (rise then fall), cascade (descend then resolve up), or wave. No random jagged motion.
 
-Generate a ${bars}-bar lick. Respond with this exact JSON structure:
+Respond with this exact JSON structure (fill in the requested genre and bar count):
 
 {
-  "genre": "${genre}",
+  "genre": "<genre>",
   "title": "<descriptive title>",
-  "bars": ${bars},
+  "bars": <number of bars>,
   "tempo": <appropriate tempo as integer>,
   "timeSignature": "4/4",
   "key": "<key signature, e.g. 'Bb', 'F', 'C'>",
-  "swing": <0.0 to 1.0 — see style instructions above>,
+  "swing": <0.0 to 1.0 — see style instructions>,
   "feel": "<short description, e.g. 'medium swing', 'straight with ghost notes', 'shuffle'>",
   "chords": [
     {"chord": "<chord symbol>", "bar": <bar number starting at 1>, "beat": <beat number starting at 1>}
@@ -305,8 +305,13 @@ Important rules for the notes array:
 - Duration uses Tone.js format: "16n"=sixteenth, "8n"=eighth, "4n"=quarter, "2n"=half, "1n"=whole. Add "." for dotted: "4n.", "8n."
 - Do NOT include "time" — timing is computed from the duration sequence at playback
 - Notes must be in sequential order
-- The total duration of notes must fit within ${bars} bars of the time signature
-- Rest notes use pitch "rest" with any valid duration. They produce silence but occupy rhythmic space.
+- The total duration of notes must fit within the requested number of bars of the time signature
+- Rest notes use pitch "rest" with any valid duration. They produce silence but occupy rhythmic space.`;
+
+  // USER: only the genre- and bars-specific content varies per request.
+  const user = `${GENRE_TECHNIQUES[genre]}
+
+Generate a ${bars}-bar lick in the style above. Set "genre" to "${genre}" and "bars" to ${bars} in the JSON.
 
 === REFERENCE EXAMPLE ===
 Study this example carefully. Your output should match this level of musical quality, rhythmic variety, and structural integrity. Do NOT copy it — compose something original in the same style.
