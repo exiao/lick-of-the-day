@@ -3,7 +3,7 @@ type Genre = "jazz" | "blues" | "funk" | "rnb" | "bossa";
 
 const GENRE_TECHNIQUES: Record<Genre, string> = {
   jazz: `Style: Jazz (Bebop)
-Techniques: Use enclosures (surround a chord tone from above and below, e.g. D-B-C to target C). Use 1-2-3-5 digital patterns. Apply the bebop scale (add natural 7 to Mixolydian on dominant chords). Land on guide tones (3rd or 7th) of each chord when outlining ii-V-I progressions. Swing feel required (swing: 0.33-0.67).`,
+Techniques: Use enclosures (surround a chord tone from above and below, e.g. D-B-C to target C). Flip enclosures so they move AGAINST the line's prevailing direction (if the line is descending, enclose from below moving up): this makes the line feel more alive. Use 1-2-3-5 digital patterns. Apply the bebop scale (add a chromatic passing tone so chord tones land on downbeats and the chromatic note falls on an upbeat). Land on guide tones (3rd or 7th) of each chord when outlining ii-V-I progressions. Avoid notes: keep the 4th (11th) off strong beats over major and dominant chords, and keep the natural 7 off strong beats over minor 7 chords. Use them only as quick passing tones on weak beats. Swing feel required (swing: 0.33-0.67).`,
 
   blues: `Style: Blues
 Techniques: Use the b3-to-natural-3 "blue note slide" (represent as a grace note 16n on b3 followed by the natural 3). Write call-and-response: a 2-bar question phrase followed by a 2-bar answering phrase. Emphasize b3, b5, and b7 (the blue notes). Mix major and minor pentatonic freely. Shuffle feel (swing: 0.33-0.5).`,
@@ -19,15 +19,15 @@ Techniques: Straight 8ths only (swing: 0.0). Use dotted-quarter rhythmic cells f
 };
 
 const GENRE_EXAMPLES: Record<Genre, string> = {
-  jazz: `Example jazz lick (ii-V-I in C, 4 bars, use as pattern reference):
+  jazz: `Example jazz lick (ii-V-I in C, 4 bars, riff-based. Note how SIMPLE it is: a short motif repeated with variation, syncopation (notes pushed off the beat), and space. A catchy line, NOT a continuous scale run):
 {
   "genre": "jazz",
-  "title": "Bebop Enclosure ii-V-I",
+  "title": "Simple Bebop Anticipation",
   "bars": 4,
   "tempo": 140,
   "timeSignature": "4/4",
   "key": "C",
-  "swing": 0.5,
+  "swing": 0.55,
   "feel": "medium swing",
   "chords": [
     {"chord": "Dm7", "bar": 1, "beat": 1},
@@ -35,43 +35,36 @@ const GENRE_EXAMPLES: Record<Genre, string> = {
     {"chord": "Cmaj7", "bar": 3, "beat": 1},
     {"chord": "Cmaj7", "bar": 4, "beat": 1}
   ],
-  "abc": "X:1\\nM:4/4\\nL:1/8\\nK:C\\n\\"Dm7\\" A,F AF \\"G7\\" _AB cB|\\n\\"G7\\" d_B GA \\"Cmaj7\\" GE CE|\\n\\"Cmaj7\\" z2 EG Bc ed|\\n\\"Cmaj7\\" cE GE C4|",
+  "abc": "X:1\\nM:4/4\\nL:1/8\\nK:C\\n\\"Dm7\\"A2 z F D2 z D|\\"G7\\"D2 z F B2 z2|\\"Cmaj7\\"E2 z G c2 z B|\\"Cmaj7\\"G2 z D E4|",
   "notes": [
-    {"pitch": "A3", "duration": "8n", "velocity": 0.6, "articulation": "normal"},
-    {"pitch": "F4", "duration": "8n", "velocity": 0.55, "articulation": "ghost"},
-    {"pitch": "A4", "duration": "8n", "velocity": 0.75, "articulation": "normal"},
-    {"pitch": "F4", "duration": "8n", "velocity": 0.65, "articulation": "normal"},
-    {"pitch": "Ab4", "duration": "8n", "velocity": 0.6, "articulation": "normal"},
-    {"pitch": "B4", "duration": "8n", "velocity": 0.7, "articulation": "normal"},
-    {"pitch": "C5", "duration": "8n", "velocity": 0.85, "articulation": "accent"},
-    {"pitch": "B4", "duration": "8n", "velocity": 0.65, "articulation": "normal"},
-    {"pitch": "D5", "duration": "8n", "velocity": 0.8, "articulation": "accent"},
-    {"pitch": "Bb4", "duration": "8n", "velocity": 0.55, "articulation": "ghost"},
-    {"pitch": "G4", "duration": "8n", "velocity": 0.7, "articulation": "normal"},
-    {"pitch": "A4", "duration": "8n", "velocity": 0.65, "articulation": "normal"},
-    {"pitch": "G4", "duration": "8n", "velocity": 0.75, "articulation": "accent"},
-    {"pitch": "E4", "duration": "8n", "velocity": 0.65, "articulation": "legato"},
-    {"pitch": "C4", "duration": "8n", "velocity": 0.6, "articulation": "normal"},
-    {"pitch": "E4", "duration": "8n", "velocity": 0.55, "articulation": "normal"},
+    {"pitch": "A4", "duration": "4n", "velocity": 0.85, "articulation": "accent"},
+    {"pitch": "rest", "duration": "8n", "velocity": 0.0, "articulation": "normal"},
+    {"pitch": "F4", "duration": "8n", "velocity": 0.7, "articulation": "normal"},
+    {"pitch": "D4", "duration": "4n", "velocity": 0.75, "articulation": "normal"},
+    {"pitch": "rest", "duration": "8n", "velocity": 0.0, "articulation": "normal"},
+    {"pitch": "D4", "duration": "8n", "velocity": 0.7, "articulation": "accent"},
+    {"pitch": "D4", "duration": "4n", "velocity": 0.8, "articulation": "accent"},
+    {"pitch": "rest", "duration": "8n", "velocity": 0.0, "articulation": "normal"},
+    {"pitch": "F4", "duration": "8n", "velocity": 0.65, "articulation": "ghost"},
+    {"pitch": "B4", "duration": "4n", "velocity": 0.85, "articulation": "normal"},
     {"pitch": "rest", "duration": "4n", "velocity": 0.0, "articulation": "normal"},
-    {"pitch": "E4", "duration": "8n", "velocity": 0.6, "articulation": "normal"},
-    {"pitch": "G4", "duration": "8n", "velocity": 0.65, "articulation": "normal"},
-    {"pitch": "B4", "duration": "8n", "velocity": 0.7, "articulation": "legato"},
-    {"pitch": "C5", "duration": "8n", "velocity": 0.75, "articulation": "normal"},
-    {"pitch": "E5", "duration": "8n", "velocity": 0.8, "articulation": "accent"},
-    {"pitch": "D5", "duration": "8n", "velocity": 0.65, "articulation": "normal"},
-    {"pitch": "C5", "duration": "8n", "velocity": 0.75, "articulation": "accent"},
-    {"pitch": "E4", "duration": "8n", "velocity": 0.55, "articulation": "normal"},
-    {"pitch": "G4", "duration": "8n", "velocity": 0.6, "articulation": "normal"},
-    {"pitch": "E4", "duration": "8n", "velocity": 0.65, "articulation": "normal"},
-    {"pitch": "C4", "duration": "2n", "velocity": 0.85, "articulation": "accent"}
+    {"pitch": "E4", "duration": "4n", "velocity": 0.85, "articulation": "accent"},
+    {"pitch": "rest", "duration": "8n", "velocity": 0.0, "articulation": "normal"},
+    {"pitch": "G4", "duration": "8n", "velocity": 0.7, "articulation": "normal"},
+    {"pitch": "C5", "duration": "4n", "velocity": 0.8, "articulation": "normal"},
+    {"pitch": "rest", "duration": "8n", "velocity": 0.0, "articulation": "normal"},
+    {"pitch": "B4", "duration": "8n", "velocity": 0.6, "articulation": "normal"},
+    {"pitch": "G4", "duration": "4n", "velocity": 0.8, "articulation": "normal"},
+    {"pitch": "rest", "duration": "8n", "velocity": 0.0, "articulation": "normal"},
+    {"pitch": "D4", "duration": "8n", "velocity": 0.6, "articulation": "ghost"},
+    {"pitch": "E4", "duration": "2n", "velocity": 0.9, "articulation": "accent"}
   ]
 }`,
 
-  blues: `Example blues lick (G blues, 4 bars, use as pattern reference):
+  blues: `Example blues lick (G blues, 4 bars, riff-based. Note how SIMPLE it is: a short motif repeated with variation, syncopation (notes pushed off the beat), and space. A catchy line, NOT a continuous scale run):
 {
   "genre": "blues",
-  "title": "Call and Response Blues",
+  "title": "Simple Blues Call & Answer",
   "bars": 4,
   "tempo": 80,
   "timeSignature": "4/4",
@@ -84,82 +77,76 @@ const GENRE_EXAMPLES: Record<Genre, string> = {
     {"chord": "C7", "bar": 3, "beat": 1},
     {"chord": "G7", "bar": 4, "beat": 1}
   ],
-  "abc": "X:1\\nM:4/4\\nL:1/8\\nK:G\\n\\"G7\\" B,2 _B,/B,/ D2 G2|\\"G7\\" _B2 A2 G2 z2|\\"C7\\" z2 _EG _Bc _BA|\\"G7\\" G2 D2 G4|",
+  "abc": "X:1\\nM:4/4\\nL:1/8\\nK:G\\n\\"G7\\"G2 z _B B2 z2|\\"G7\\"D2 z2 G z D2|\\"C7\\"G2 z _B c2 z2|\\"G7\\"D F z2 G4|",
   "notes": [
-    {"pitch": "B3", "duration": "4n", "velocity": 0.8, "articulation": "accent"},
-    {"pitch": "Bb3", "duration": "16n", "velocity": 0.5, "articulation": "ghost"},
-    {"pitch": "B3", "duration": "8n", "velocity": 0.75, "articulation": "normal"},
+    {"pitch": "G4", "duration": "4n", "velocity": 0.9, "articulation": "accent"},
+    {"pitch": "rest", "duration": "8n", "velocity": 0.0, "articulation": "normal"},
+    {"pitch": "Bb4", "duration": "8n", "velocity": 0.6, "articulation": "ghost"},
+    {"pitch": "B4", "duration": "4n", "velocity": 0.8, "articulation": "normal"},
+    {"pitch": "rest", "duration": "4n", "velocity": 0.0, "articulation": "normal"},
+    {"pitch": "D4", "duration": "4n", "velocity": 0.7, "articulation": "normal"},
+    {"pitch": "rest", "duration": "4n", "velocity": 0.0, "articulation": "normal"},
+    {"pitch": "G4", "duration": "8n", "velocity": 0.85, "articulation": "accent"},
+    {"pitch": "rest", "duration": "8n", "velocity": 0.0, "articulation": "normal"},
     {"pitch": "D4", "duration": "4n", "velocity": 0.7, "articulation": "normal"},
     {"pitch": "G4", "duration": "4n", "velocity": 0.85, "articulation": "accent"},
-    {"pitch": "Bb4", "duration": "4n", "velocity": 0.75, "articulation": "normal"},
-    {"pitch": "A4", "duration": "4n", "velocity": 0.7, "articulation": "normal"},
-    {"pitch": "G4", "duration": "4n", "velocity": 0.65, "articulation": "legato"},
+    {"pitch": "rest", "duration": "8n", "velocity": 0.0, "articulation": "normal"},
+    {"pitch": "Bb4", "duration": "8n", "velocity": 0.65, "articulation": "ghost"},
+    {"pitch": "C5", "duration": "4n", "velocity": 0.8, "articulation": "normal"},
     {"pitch": "rest", "duration": "4n", "velocity": 0.0, "articulation": "normal"},
+    {"pitch": "D4", "duration": "8n", "velocity": 0.6, "articulation": "ghost"},
+    {"pitch": "F4", "duration": "8n", "velocity": 0.6, "articulation": "normal"},
     {"pitch": "rest", "duration": "4n", "velocity": 0.0, "articulation": "normal"},
-    {"pitch": "Eb4", "duration": "8n", "velocity": 0.6, "articulation": "normal"},
-    {"pitch": "G4", "duration": "8n", "velocity": 0.7, "articulation": "normal"},
-    {"pitch": "Bb4", "duration": "8n", "velocity": 0.75, "articulation": "normal"},
-    {"pitch": "C5", "duration": "8n", "velocity": 0.8, "articulation": "accent"},
-    {"pitch": "Bb4", "duration": "8n", "velocity": 0.65, "articulation": "normal"},
-    {"pitch": "A4", "duration": "8n", "velocity": 0.6, "articulation": "normal"},
-    {"pitch": "G4", "duration": "4n", "velocity": 0.7, "articulation": "normal"},
-    {"pitch": "D4", "duration": "4n", "velocity": 0.65, "articulation": "normal"},
-    {"pitch": "G4", "duration": "2n", "velocity": 0.85, "articulation": "accent"}
+    {"pitch": "G4", "duration": "2n", "velocity": 0.9, "articulation": "accent"}
   ]
 }`,
 
-  funk: `Example funk lick (E minor, 4 bars, use as pattern reference):
+  funk: `Example funk lick (Bb minor, 4 bars, riff-based. Note how SIMPLE it is: a short motif repeated with variation, syncopation (notes pushed off the beat), and space. A catchy line, NOT a continuous scale run):
 {
   "genre": "funk",
-  "title": "Staccato 16th Groove",
+  "title": "Two-Note Funk Stab",
   "bars": 4,
-  "tempo": 100,
+  "tempo": 96,
   "timeSignature": "4/4",
-  "key": "Em",
+  "key": "Bbm",
   "swing": 0.0,
-  "feel": "straight with ghost notes",
+  "feel": "syncopated funk pocket",
   "chords": [
-    {"chord": "Em7", "bar": 1, "beat": 1},
-    {"chord": "Em7", "bar": 2, "beat": 1},
-    {"chord": "A7", "bar": 3, "beat": 1},
-    {"chord": "Em7", "bar": 4, "beat": 1}
+    {"chord": "Bbm7", "bar": 1, "beat": 1},
+    {"chord": "Bbm7", "bar": 2, "beat": 1},
+    {"chord": "Eb7", "bar": 3, "beat": 1},
+    {"chord": "Bbm7", "bar": 4, "beat": 1}
   ],
-  "abc": "X:1\\nM:4/4\\nL:1/16\\nK:Em\\n\\"Em7\\" E2z2 G2B,2 E2D2 E2z2|\\"Em7\\" B,2E2 D2E2 G4 z4|\\"A7\\" A2z2 G2E2 ^C2E2 A,2z2|\\"Em7\\" E2G2 B,2D2 E8|",
+  "abc": "X:1\\nM:4/4\\nL:1/8\\nK:Bbm\\n\\"Bbm7\\"_B2 z2 _A z z _B|\\"Bbm7\\"_B2 z2 _A z F2|\\"Eb7\\"_e2 z2 _d z z _B|\\"Bbm7\\"_B2 z _A _B4|",
   "notes": [
-    {"pitch": "E4", "duration": "8n", "velocity": 0.8, "articulation": "staccato"},
-    {"pitch": "rest", "duration": "8n", "velocity": 0.0, "articulation": "normal"},
-    {"pitch": "G4", "duration": "8n", "velocity": 0.7, "articulation": "staccato"},
-    {"pitch": "B3", "duration": "8n", "velocity": 0.35, "articulation": "ghost"},
-    {"pitch": "E4", "duration": "8n", "velocity": 0.75, "articulation": "staccato"},
-    {"pitch": "D4", "duration": "8n", "velocity": 0.4, "articulation": "ghost"},
-    {"pitch": "E4", "duration": "8n", "velocity": 0.7, "articulation": "staccato"},
-    {"pitch": "rest", "duration": "8n", "velocity": 0.0, "articulation": "normal"},
-    {"pitch": "B3", "duration": "8n", "velocity": 0.35, "articulation": "ghost"},
-    {"pitch": "E4", "duration": "8n", "velocity": 0.75, "articulation": "staccato"},
-    {"pitch": "D4", "duration": "8n", "velocity": 0.4, "articulation": "ghost"},
-    {"pitch": "E4", "duration": "8n", "velocity": 0.7, "articulation": "staccato"},
-    {"pitch": "G4", "duration": "4n", "velocity": 0.85, "articulation": "accent"},
+    {"pitch": "Bb4", "duration": "4n", "velocity": 0.9, "articulation": "accent"},
     {"pitch": "rest", "duration": "4n", "velocity": 0.0, "articulation": "normal"},
-    {"pitch": "A4", "duration": "8n", "velocity": 0.8, "articulation": "staccato"},
+    {"pitch": "Ab4", "duration": "8n", "velocity": 0.7, "articulation": "staccato"},
     {"pitch": "rest", "duration": "8n", "velocity": 0.0, "articulation": "normal"},
-    {"pitch": "G4", "duration": "8n", "velocity": 0.7, "articulation": "staccato"},
-    {"pitch": "E4", "duration": "8n", "velocity": 0.65, "articulation": "staccato"},
-    {"pitch": "C#4", "duration": "8n", "velocity": 0.6, "articulation": "normal"},
-    {"pitch": "E4", "duration": "8n", "velocity": 0.7, "articulation": "staccato"},
-    {"pitch": "A3", "duration": "8n", "velocity": 0.35, "articulation": "ghost"},
     {"pitch": "rest", "duration": "8n", "velocity": 0.0, "articulation": "normal"},
-    {"pitch": "E4", "duration": "8n", "velocity": 0.75, "articulation": "staccato"},
-    {"pitch": "G4", "duration": "8n", "velocity": 0.7, "articulation": "staccato"},
-    {"pitch": "B3", "duration": "8n", "velocity": 0.35, "articulation": "ghost"},
-    {"pitch": "D4", "duration": "8n", "velocity": 0.6, "articulation": "normal"},
-    {"pitch": "E4", "duration": "2n", "velocity": 0.85, "articulation": "accent"}
+    {"pitch": "Bb4", "duration": "8n", "velocity": 0.85, "articulation": "accent"},
+    {"pitch": "Bb4", "duration": "4n", "velocity": 0.85, "articulation": "accent"},
+    {"pitch": "rest", "duration": "4n", "velocity": 0.0, "articulation": "normal"},
+    {"pitch": "Ab4", "duration": "8n", "velocity": 0.7, "articulation": "staccato"},
+    {"pitch": "rest", "duration": "8n", "velocity": 0.0, "articulation": "normal"},
+    {"pitch": "F4", "duration": "4n", "velocity": 0.65, "articulation": "ghost"},
+    {"pitch": "Eb5", "duration": "4n", "velocity": 0.9, "articulation": "accent"},
+    {"pitch": "rest", "duration": "4n", "velocity": 0.0, "articulation": "normal"},
+    {"pitch": "Db5", "duration": "8n", "velocity": 0.7, "articulation": "staccato"},
+    {"pitch": "rest", "duration": "8n", "velocity": 0.0, "articulation": "normal"},
+    {"pitch": "rest", "duration": "8n", "velocity": 0.0, "articulation": "normal"},
+    {"pitch": "Bb4", "duration": "8n", "velocity": 0.8, "articulation": "accent"},
+    {"pitch": "Bb4", "duration": "4n", "velocity": 0.85, "articulation": "accent"},
+    {"pitch": "rest", "duration": "8n", "velocity": 0.0, "articulation": "normal"},
+    {"pitch": "Ab4", "duration": "8n", "velocity": 0.6, "articulation": "ghost"},
+    {"pitch": "Bb4", "duration": "2n", "velocity": 0.9, "articulation": "accent"}
   ]
 }`,
 
-  rnb: `Example R&B lick (Fmaj9 to Bbmaj7, 4 bars, use as pattern reference):
+  rnb: `Example R&B lick (Fmaj9 to Gm7, 4 bars, riff-based. Note how SIMPLE it is: a short motif repeated with variation, syncopation (notes pushed off the beat), and space. A catchy line, NOT a continuous scale run):
 {
   "genre": "rnb",
-  "title": "Pentatonic Cascade",
+  "title": "Neo-Soul Syncopated Stabs",
   "bars": 4,
   "tempo": 72,
   "timeSignature": "4/4",
@@ -172,38 +159,34 @@ const GENRE_EXAMPLES: Record<Genre, string> = {
     {"chord": "Bbmaj7", "bar": 3, "beat": 1},
     {"chord": "Gm7", "bar": 4, "beat": 1}
   ],
-  "abc": "X:1\\nM:4/4\\nL:1/8\\nK:F\\n\\"Fmaj9\\" z2 GA cA GF|\\"Fmaj9\\" E2 C2 z2 EF|\\"Bbmaj7\\" GA _Bc dc _BA|\\"Gm7\\" G2 _B2 G4|",
+  "abc": "X:1\\nM:4/4\\nL:1/8\\nK:F\\n\\"Fmaj9\\"A2 z2 c z A2|\\"Fmaj9\\"c2 z A F2 z2|\\"Bbmaj7\\"d2 z2 f z d2|\\"Gm7\\"_B2 z A D4|",
   "notes": [
+    {"pitch": "A4", "duration": "4n", "velocity": 0.85, "articulation": "accent"},
     {"pitch": "rest", "duration": "4n", "velocity": 0.0, "articulation": "normal"},
-    {"pitch": "G4", "duration": "16n", "velocity": 0.45, "articulation": "ghost"},
+    {"pitch": "C5", "duration": "8n", "velocity": 0.7, "articulation": "normal"},
+    {"pitch": "rest", "duration": "8n", "velocity": 0.0, "articulation": "normal"},
+    {"pitch": "A4", "duration": "4n", "velocity": 0.75, "articulation": "normal"},
+    {"pitch": "C5", "duration": "4n", "velocity": 0.8, "articulation": "accent"},
+    {"pitch": "rest", "duration": "8n", "velocity": 0.0, "articulation": "normal"},
     {"pitch": "A4", "duration": "8n", "velocity": 0.65, "articulation": "normal"},
-    {"pitch": "C5", "duration": "8n", "velocity": 0.75, "articulation": "accent"},
-    {"pitch": "A4", "duration": "8n", "velocity": 0.6, "articulation": "normal"},
-    {"pitch": "G4", "duration": "8n", "velocity": 0.6, "articulation": "legato"},
-    {"pitch": "F4", "duration": "8n", "velocity": 0.55, "articulation": "normal"},
-    {"pitch": "E4", "duration": "4n", "velocity": 0.7, "articulation": "normal"},
-    {"pitch": "C4", "duration": "4n", "velocity": 0.65, "articulation": "legato"},
+    {"pitch": "F4", "duration": "4n", "velocity": 0.75, "articulation": "normal"},
     {"pitch": "rest", "duration": "4n", "velocity": 0.0, "articulation": "normal"},
-    {"pitch": "E4", "duration": "8n", "velocity": 0.55, "articulation": "normal"},
-    {"pitch": "F4", "duration": "8n", "velocity": 0.6, "articulation": "normal"},
-    {"pitch": "G4", "duration": "8n", "velocity": 0.65, "articulation": "normal"},
-    {"pitch": "A4", "duration": "8n", "velocity": 0.7, "articulation": "normal"},
-    {"pitch": "Bb4", "duration": "8n", "velocity": 0.75, "articulation": "legato"},
-    {"pitch": "C5", "duration": "8n", "velocity": 0.8, "articulation": "accent"},
-    {"pitch": "D5", "duration": "8n", "velocity": 0.75, "articulation": "normal"},
-    {"pitch": "C5", "duration": "8n", "velocity": 0.65, "articulation": "normal"},
-    {"pitch": "Bb4", "duration": "8n", "velocity": 0.6, "articulation": "normal"},
-    {"pitch": "A4", "duration": "8n", "velocity": 0.55, "articulation": "normal"},
-    {"pitch": "G4", "duration": "4n", "velocity": 0.7, "articulation": "normal"},
-    {"pitch": "Bb4", "duration": "4n", "velocity": 0.75, "articulation": "legato"},
-    {"pitch": "G4", "duration": "2n", "velocity": 0.8, "articulation": "accent"}
+    {"pitch": "D5", "duration": "4n", "velocity": 0.85, "articulation": "accent"},
+    {"pitch": "rest", "duration": "4n", "velocity": 0.0, "articulation": "normal"},
+    {"pitch": "F5", "duration": "8n", "velocity": 0.7, "articulation": "normal"},
+    {"pitch": "rest", "duration": "8n", "velocity": 0.0, "articulation": "normal"},
+    {"pitch": "D5", "duration": "4n", "velocity": 0.75, "articulation": "normal"},
+    {"pitch": "Bb4", "duration": "4n", "velocity": 0.75, "articulation": "normal"},
+    {"pitch": "rest", "duration": "8n", "velocity": 0.0, "articulation": "normal"},
+    {"pitch": "A4", "duration": "8n", "velocity": 0.6, "articulation": "ghost"},
+    {"pitch": "D4", "duration": "2n", "velocity": 0.9, "articulation": "accent"}
   ]
 }`,
 
-  bossa: `Example bossa nova lick (Dm7-G7-Cmaj7, 4 bars, use as pattern reference):
+  bossa: `Example bossa nova lick (Dm7-G7-Cmaj7, 4 bars, riff-based. Note how SIMPLE it is: a short motif repeated with variation, syncopation (notes pushed off the beat), and space. A catchy line, NOT a continuous scale run):
 {
   "genre": "bossa",
-  "title": "Chromatic Guide Tone Walk",
+  "title": "Simple Ipanema Motif",
   "bars": 4,
   "tempo": 130,
   "timeSignature": "4/4",
@@ -214,27 +197,28 @@ const GENRE_EXAMPLES: Record<Genre, string> = {
     {"chord": "Dm7", "bar": 1, "beat": 1},
     {"chord": "G7", "bar": 2, "beat": 1},
     {"chord": "Cmaj7", "bar": 3, "beat": 1},
-    {"chord": "A7b9", "bar": 4, "beat": 1}
+    {"chord": "Cmaj7", "bar": 4, "beat": 1}
   ],
-  "abc": "X:1\\nM:4/4\\nL:1/8\\nK:C\\n\\"Dm7\\" D2 F2 A3 G|\\"G7\\" =F2 D2 B,2 z2|\\"Cmaj7\\" C2 E2 G3 A|\\"A7b9\\" G2 ^F2 E4|",
+  "abc": "X:1\\nM:4/4\\nL:1/8\\nK:C\\n\\"Dm7\\"F3 E D2 z2|\\"G7\\"D3 B, D2 z2|\\"Cmaj7\\"E3 D C2 z2|\\"Cmaj7\\"E3 D C4|",
   "notes": [
+    {"pitch": "F4", "duration": "4n.", "velocity": 0.8, "articulation": "accent"},
+    {"pitch": "E4", "duration": "8n", "velocity": 0.7, "articulation": "normal"},
     {"pitch": "D4", "duration": "4n", "velocity": 0.7, "articulation": "normal"},
-    {"pitch": "F4", "duration": "4n", "velocity": 0.65, "articulation": "legato"},
-    {"pitch": "A4", "duration": "4n.", "velocity": 0.75, "articulation": "accent"},
-    {"pitch": "G4", "duration": "8n", "velocity": 0.6, "articulation": "normal"},
-    {"pitch": "F4", "duration": "4n", "velocity": 0.7, "articulation": "normal"},
-    {"pitch": "D4", "duration": "4n", "velocity": 0.65, "articulation": "legato"},
-    {"pitch": "B3", "duration": "4n", "velocity": 0.6, "articulation": "normal"},
     {"pitch": "rest", "duration": "4n", "velocity": 0.0, "articulation": "normal"},
-    {"pitch": "C4", "duration": "4n", "velocity": 0.75, "articulation": "accent"},
-    {"pitch": "E4", "duration": "4n", "velocity": 0.65, "articulation": "legato"},
-    {"pitch": "G4", "duration": "4n.", "velocity": 0.7, "articulation": "normal"},
-    {"pitch": "A4", "duration": "8n", "velocity": 0.6, "articulation": "normal"},
-    {"pitch": "G4", "duration": "4n", "velocity": 0.7, "articulation": "normal"},
-    {"pitch": "F#4", "duration": "4n", "velocity": 0.65, "articulation": "normal"},
-    {"pitch": "E4", "duration": "2n", "velocity": 0.8, "articulation": "accent"}
+    {"pitch": "D4", "duration": "4n.", "velocity": 0.75, "articulation": "accent"},
+    {"pitch": "B3", "duration": "8n", "velocity": 0.7, "articulation": "normal"},
+    {"pitch": "D4", "duration": "4n", "velocity": 0.7, "articulation": "normal"},
+    {"pitch": "rest", "duration": "4n", "velocity": 0.0, "articulation": "normal"},
+    {"pitch": "E4", "duration": "4n.", "velocity": 0.8, "articulation": "accent"},
+    {"pitch": "D4", "duration": "8n", "velocity": 0.7, "articulation": "normal"},
+    {"pitch": "C4", "duration": "4n", "velocity": 0.7, "articulation": "normal"},
+    {"pitch": "rest", "duration": "4n", "velocity": 0.0, "articulation": "normal"},
+    {"pitch": "E4", "duration": "4n.", "velocity": 0.75, "articulation": "accent"},
+    {"pitch": "D4", "duration": "8n", "velocity": 0.7, "articulation": "normal"},
+    {"pitch": "C4", "duration": "2n", "velocity": 0.9, "articulation": "accent"}
   ]
 }`,
+
 };
 
 export function buildLickPrompt(genre: Genre, bars: number): { system: string; user: string } {
@@ -250,16 +234,21 @@ export function buildLickPrompt(genre: Genre, bars: number): { system: string; u
 You must respond with ONLY valid JSON matching the exact schema provided. No markdown, no explanation, just JSON.
 
 === STRUCTURAL RULES (mandatory) ===
-1. CHORD TONE TARGETING: On beats 1 and 3 of every bar, the note MUST be a chord tone (root, 3rd, 5th, or 7th) of the active chord. Other beats can use passing tones, approach notes, or chromatic connectors.
-2. APPROACH NOTES: Use at least 2 approach notes (chromatic or diatonic) or enclosures per lick. An enclosure surrounds a target chord tone from above and below (e.g. D-B-C targets C).
-3. RESTS: Include at least one rest per 2 bars. Use { "pitch": "rest", "duration": "8n" } (or any duration). Not every beat needs a note. Space creates musicality.
-4. RHYTHMIC VARIETY: Use at least 3 different note durations. Do NOT write all 8th notes. Mix 16n, 8n, 4n, dotted values, etc.
-5. MOTIVIC DEVELOPMENT: Establish a short motif (2-4 notes) in bar 1, then repeat it with variation (transposed, inverted, or rhythmically altered) later in the lick.
-6. STRONG ENDING: The last note MUST be a chord tone (root, 3rd, or 5th) of the final chord, on a strong beat (1 or 3), with duration "4n" or longer.
-7. PICKUP NOTES: Start with 1-3 pickup notes on beat 4 or the "and" of beat 4 of an implied preceding bar. Do not always start squarely on beat 1.
-8. RANGE: Keep all pitched notes within C4 to E5 (middle C up to E above the staff).
-9. NOTE COUNT: Use 12-24 notes total. Quality over quantity.
-10. MELODIC CONTOUR: Shape the lick as an arch (rise then fall), cascade (descend then resolve up), or wave. No random jagged motion.
+1. KEEP IT SIMPLE: A catchy line is simple. Build it from ONE short motif (2-4 notes) and repeat that motif with small variations. Most great hooks are just a few notes; if you can hum it three times in a row without strain, it is simple enough. Do not cram in notes. Fewer notes with a strong rhythm beats more notes every time.
+2. SYNCOPATION: Place accents OFF the beat, not squarely on every downbeat. Three idiomatic moves: (a) anticipation/"push" - strike a chord tone on the "and" of beat 4 and sustain it across the bar line so it rings into the next downbeat; (b) missed beat - leave a strong beat as a rest, then hit the following weak beat hard; (c) offbeat stabs - put short accented notes on the "and" of a beat. Syncopation is what makes a rhythm feel alive instead of robotic.
+3. CHORD TONE TARGETING: On beats 1 and 3 of every bar a chord tone (root, 3rd, 5th, or 7th of the active chord) should be SOUNDING, but it does not have to be struck exactly on the beat. A chord tone anticipated on the prior "and" and sustained across the beat counts. Other beats can use passing tones, approach notes, or chromatic connectors.
+4. APPROACH NOTES: Use at least 2 approach notes (chromatic or diatonic) or enclosures per lick. An enclosure surrounds a target chord tone from above and below (e.g. D-B-C targets C).
+5. APPROACH PLACEMENT: Put approach and chromatic notes on weak beats (the "e" and the "and" of a beat) and land the resolution chord tone on the FOLLOWING strong beat. Approach from a half-step below (C#->D), a step above (Eb->D), or both sides (enclosure). A chromatic note on a strong beat sounds like a wrong note; on a weak beat resolving to a strong beat it sounds intentional.
+6. DIRECTION CHANGES: Reverse the melodic direction on an upbeat (the "and" of a beat), NOT on beats 1 or 3. Turning the line around on a downbeat sounds stiff and heavy; turning it off the beat creates swing and forward motion.
+7. RESTS: Include at least one rest per 2 bars. Use { "pitch": "rest", "duration": "8n" } (or any duration). Not every beat needs a note. Space is part of the groove, not a gap to fill.
+8. BREAK UP RUNS: Do not run more than ~4 consecutive notes of the same duration (especially straight 8ths or 16ths). Interrupt a run with a rest or a longer note. Nobody wants to hear a scale.
+9. RHYTHMIC VARIETY: Use at least 3 different note durations. Do NOT write all 8th notes. Mix 16n, 8n, 4n, dotted values, etc.
+10. PHRASE ACROSS THE BAR LINE: Do not resolve and reset neatly inside every bar. Let at least one phrase carry across a bar line and drive into the next bar.
+11. STRONG ENDING: The last note MUST be a chord tone (root, 3rd, or 5th) of the final chord, on a strong beat (1 or 3), with duration "4n" or longer.
+12. PICKUP NOTES: Start with 1-3 pickup notes on beat 4 or the "and" of beat 4 of an implied preceding bar. Do not always start squarely on beat 1.
+13. RANGE: Keep all pitched notes within C4 to E5 (middle C up to E above the staff).
+14. NOTE COUNT: Keep it lean. Aim for roughly 3 to 5 notes per bar. A few extra is fine when the rhythm is strong, but never pad. Quality and rhythm over quantity.
+15. MELODIC CONTOUR: Shape the lick as an arch (rise then fall), cascade (descend then resolve up), or wave. No random jagged motion.
 
 Respond with this exact JSON structure (fill in the requested genre and bar count):
 
@@ -312,7 +301,7 @@ Important rules for the notes array:
   // USER: only the genre- and bars-specific content varies per request.
   const user = `${GENRE_TECHNIQUES[genre]}
 
-Generate a ${bars}-bar lick in the style above. Set "genre" to "${genre}" and "bars" to ${bars} in the JSON.
+Generate a ${bars}-bar lick in the style above (aim for about ${bars * 3} to ${bars * 5} notes total, lean and simple). Set "genre" to "${genre}" and "bars" to ${bars} in the JSON.
 
 === REFERENCE EXAMPLE ===
 Study this example carefully. Your output should match this level of musical quality, rhythmic variety, and structural integrity. Do NOT copy it — compose something original in the same style.
