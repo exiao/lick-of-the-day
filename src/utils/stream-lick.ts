@@ -1,5 +1,6 @@
 import type { Lick, Genre } from "../types/lick";
 import { extractClosedFields, type PartialLick } from "./partial-json";
+import { extractJSON } from "./parse";
 
 // Consume the SSE stream from /api/random and assemble a Lick. Calls
 // `onProgress` with the partially-parsed lick as fields arrive (title/key →
@@ -43,7 +44,7 @@ export async function streamLick(
   const handleEvent = (raw: string) => {
     let event = "message";
     let data = "";
-    for (const line of raw.split("\n")) {
+    for (const line of raw.split(/\r?\n/)) {
       if (line.startsWith("event:")) event = line.slice(6).trim();
       else if (line.startsWith("data:")) data += line.slice(5).trim();
     }
@@ -71,10 +72,13 @@ export async function streamLick(
     const { done: streamDone, value } = await reader.read();
     if (streamDone) break;
     sseBuf += decoder.decode(value, { stream: true });
-    let idx: number;
-    while ((idx = sseBuf.indexOf("\n\n")) !== -1) {
+    // Events are separated by a blank line. Match both \n\n and \r\n\r\n since
+    // CDNs/proxies may normalize line endings to CRLF.
+    let match: RegExpMatchArray | null;
+    while ((match = sseBuf.match(/\r?\n\r?\n/))) {
+      const idx = match.index!;
       const raw = sseBuf.slice(0, idx);
-      sseBuf = sseBuf.slice(idx + 2);
+      sseBuf = sseBuf.slice(idx + match[0].length);
       handleEvent(raw);
     }
   }
@@ -82,6 +86,10 @@ export async function streamLick(
   if (errored) throw new Error(errored);
   if (!done) throw new Error("Stream ended before completion");
 
-  const parsed = JSON.parse(assembled) as Omit<Lick, "id">;
+  // Parse the same extracted JSON the server validated. The model may wrap the
+  // lick in ```json fences, which the server strips via extractJSON before
+  // sending `done`; do the same here so a fenced-but-valid response doesn't
+  // fail client-side and roll back the UI.
+  const parsed = JSON.parse(extractJSON(assembled)) as Omit<Lick, "id">;
   return { id, ...parsed };
 }

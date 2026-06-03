@@ -25,6 +25,12 @@ describe("AnthropicSSEParser", () => {
     expect(collected.length).toBe(1);
     expect(anthropicDeltaText(collected[0])).toBe("abc");
   });
+
+  it("splits events when a proxy normalizes line endings to CRLF", () => {
+    const p = new AnthropicSSEParser();
+    const out = p.push("event: foo\r\ndata: {\"a\":1}\r\n\r\nevent: bar\r\ndata: {\"b\":2}\r\n\r\n");
+    expect(out).toEqual(['{"a":1}', '{"b":2}']);
+  });
 });
 
 describe("anthropicDeltaText", () => {

@@ -53,12 +53,14 @@ export class AnthropicSSEParser {
   push(chunk: string): string[] {
     this.buf += chunk;
     const out: string[] = [];
-    let idx: number;
-    // Events are separated by a blank line.
-    while ((idx = this.buf.indexOf("\n\n")) !== -1) {
+    // Events are separated by a blank line. Match both \n\n and \r\n\r\n since
+    // CDNs/proxies may normalize line endings to CRLF.
+    let match: RegExpMatchArray | null;
+    while ((match = this.buf.match(/\r?\n\r?\n/))) {
+      const idx = match.index!;
       const rawEvent = this.buf.slice(0, idx);
-      this.buf = this.buf.slice(idx + 2);
-      for (const line of rawEvent.split("\n")) {
+      this.buf = this.buf.slice(idx + match[0].length);
+      for (const line of rawEvent.split(/\r?\n/)) {
         if (line.startsWith("data:")) out.push(line.slice(5).trim());
       }
     }

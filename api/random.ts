@@ -57,13 +57,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   );
 
   // Abort the upstream generation if the client goes away, so we don't keep
-  // burning tokens writing to a dead socket.
+  // burning tokens writing to a dead socket. Listen on the response, not the
+  // request: on Node's IncomingMessage, `close` fires once the request body is
+  // fully read (normal for a POST), which would abort healthy requests. The
+  // response `close` fires when the underlying connection is actually torn down.
   let clientGone = false;
   const onClose = () => {
     clientGone = true;
     stream.abort();
   };
-  req.on("close", onClose);
+  res.on("close", onClose);
 
   // Defer the SSE 200 until the first delta. Until then, an Anthropic setup or
   // auth failure can still surface as a real error status (parity with the
@@ -91,6 +94,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const text = finalMessage.content[0]?.type === "text" ? finalMessage.content[0].text : "";
     // Validate the assembled lick the same way Cloudflare does before success.
     const parsed = JSON.parse(extractJSON(text));
+    if (!parsed || typeof parsed !== "object") {
+      throw new Error("Invalid JSON structure received from model");
+    }
     validateNotes(parsed.notes, parsed.bars ?? bars);
 
     ensureHeaders();
@@ -108,6 +114,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.write(sseError("Failed to generate lick"));
     res.end();
   } finally {
-    req.off("close", onClose);
+    res.off("close", onClose);
   }
 }

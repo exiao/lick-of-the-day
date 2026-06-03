@@ -114,6 +114,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         }
         // Validate the assembled JSON before declaring success.
         const parsed = JSON.parse(extractJSON(assembled));
+        if (!parsed || typeof parsed !== "object") {
+          throw new Error("Invalid JSON structure received from model");
+        }
         validateNotes(parsed.notes, parsed.bars ?? bars);
         const id = `${new Date().toISOString().split("T")[0]}-${Date.now()}`;
         safeEnqueue(sseDone(id));
