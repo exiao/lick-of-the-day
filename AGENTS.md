@@ -18,7 +18,7 @@ Operate with a skeptical, evidence-driven mindset. Verify every claim against th
    - Daily-lick caching: the "one shared lick per 24h" logic keyed on the wrong window or timezone, serving a stale/duplicate lick.
    - Tone.js playback: note scheduling off by an octave/beat, or audio context not resumed on user gesture (browser autoplay policy).
    - React state: practice-mode feedback comparing against the wrong expected note; missing cleanup of audio nodes (leak).
-   - Edge/Worker function: Claude API key exposed client-side, or an unhandled API error returned as a valid lick.
+   - Pages/Worker function: Claude API key exposed client-side, or an unhandled API error returned as a valid lick.
 2. **Data integrity:** generated licks persist/cache correctly across Edge function invocations.
 3. **Security:** Claude API key must stay server-side (Edge/Worker), not bundled into the Vite client; injection on user input.
 
