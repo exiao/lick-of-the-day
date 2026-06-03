@@ -1,6 +1,6 @@
 # Lick of the Day
 
-AI music-practice web app: a daily generated musical lick with interactive sheet music (abcjs) and a playable piano (Tone.js). React + TypeScript + Vite + Tailwind on the client; Vercel Edge Functions + Claude API (and Cloudflare Workers) for lick generation.
+AI music-practice web app: a daily generated musical lick with interactive sheet music (abcjs) and a playable piano (Tone.js). React + TypeScript + Vite + Tailwind on the client; Cloudflare Pages Functions + Claude API for lick generation.
 
 > This file is read by Codex GitHub code review (it loads `AGENTS.md` by name). The `CODEX-ONLY` block below carries review instructions for Codex. Keep this block within the first ~32 KiB of the file (Codex stops reading past `project_doc_max_bytes`, 32 KiB default). Do not replace this file with a symlink — Codex does not follow symlinks for AGENTS.md.
 
