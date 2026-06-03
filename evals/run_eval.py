@@ -51,6 +51,7 @@ GENRES = os.environ.get("EVAL_GENRES", "jazz,blues,funk").split(",")
 # options: anthropic -> {}, gemini -> {"thinking_budget": int}  (0=off, -1=dynamic)
 ARMS = {
     "haiku":          ("anthropic", "claude-haiku-4-5", {}),
+    "opus":           ("anthropic", "claude-opus-4-8", {}),
     "sonnet":         ("anthropic", "claude-sonnet-4-6", {}),
     "flash_think0":   ("gemini", "gemini-3.5-flash", {"thinking_budget": 0}),
     "flash_dynamic":  ("gemini", "gemini-3.5-flash", {"thinking_budget": -1}),
@@ -117,6 +118,10 @@ def gen_gemini(model, system, user, opts):
 
 
 PROVIDERS = {"anthropic": gen_anthropic, "gemini": gen_gemini}
+REQUIRED_ENV = {
+    "anthropic": ["ANTHROPIC_BASE_URL", "ANTHROPIC_TOKEN"],
+    "gemini": ["GEMINI_API_KEY"],
+}
 
 
 def main():
@@ -129,6 +134,11 @@ def main():
         if arm not in ARMS:
             print(f"!! unknown arm '{arm}', skipping"); continue
         provider, model, opts = ARMS[arm]
+        # Skip an arm whose credentials are missing instead of raising a
+        # KeyError on every sample and spamming the console.
+        missing = [v for v in REQUIRED_ENV.get(provider, []) if v not in os.environ]
+        if missing:
+            print(f"!! {arm}: missing {', '.join(missing)}, skipping arm"); continue
         gen = PROVIDERS[provider]
         for g in GENRES:
             sysp, usr = prompts[g]["system"], prompts[g]["user"]

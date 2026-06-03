@@ -93,6 +93,8 @@ check("empty lick parse == 0", score_lick({"notes": []}, 4)["parse"] == 0)
 print("\nrobustness: malformed inputs don't crash:")
 # null chords field.
 check("null chords doesn't crash", score_lick({**GOOD, "chords": None}, 4)["parse"] == 1)
+# null abc field doesn't crash.
+check("null abc doesn't crash", score_lick({**GOOD, "abc": None}, 4)["parse"] == 1)
 # chord missing bar/beat.
 check("chord missing bar/beat", score_lick({**GOOD, "chords": [{"chord": "Dm7"}]}, 4)["parse"] == 1)
 # note missing pitch key entirely.

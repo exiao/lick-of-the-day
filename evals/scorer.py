@@ -248,7 +248,7 @@ def score_lick(lick: dict[str, Any], bars: int, beats_per_bar: int = 4) -> dict[
         out["note_count"] = max(0.0, 1 - (nc - MAX_NOTES) / MAX_NOTES)
 
     # 10. ABC structure: required headers present and enough barlines.
-    abc = lick.get("abc", "")
+    abc = lick.get("abc") or ""
     has_hdr = all(h in abc for h in ["X:", "M:", "L:", "K:"])
     out["abc_valid"] = 1.0 if (has_hdr and abc.count("|") >= bars) else 0.5 if has_hdr else 0.0
 
