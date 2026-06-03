@@ -25,7 +25,7 @@ Operate with a skeptical, evidence-driven mindset. Verify every claim against th
 **Evidence gates — satisfy each before flagging, or say you can't and lower confidence:**
 
 1. **Trace the call path.** For "reads the wrong thing / never runs / breaks at runtime," cite the line that writes the value, registers the route, or defines the behavior. If it's not in the diff or nearby code, mark confidence LOW and label "Needs author confirmation" instead of asserting a bug.
-2. **Runtime-context check.** Lick generation runs in Vercel Edge Functions / Cloudflare Workers (server-side); the Claude key lives there. The Vite client is fully public. Before flagging a key, confirm whether it's in client or edge code.
+2. **Runtime-context check.** Lick generation runs in Cloudflare Pages Functions (server-side); the Claude key lives there. The Vite client is fully public. Before flagging a key, confirm whether it's in client or edge code.
 3. **No fabrication.** Never invent endpoints, schemas, secrets, versions, or test results. If a claim can't be proven from the provided context, say so explicitly.
 4. **No repeats.** If a prior review thread resolved or declined this exact issue, do not re-raise it.
 
