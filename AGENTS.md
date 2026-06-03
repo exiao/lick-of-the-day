@@ -7,7 +7,7 @@ AI music-practice web app: a daily generated musical lick with interactive sheet
 <!-- CODEX-ONLY:START -->
 ## Code Review Instructions (Codex)
 
-Review this PR for "Lick of the Day," a music-practice web app (React + TypeScript + Vite, Tailwind, abcjs sheet music, Tone.js audio, Vercel Edge Functions + Claude API for lick generation, Cloudflare Workers). Correctness of the lick generation/parsing and audio/notation rendering come first, then security.
+Review this PR for "Lick of the Day," a music-practice web app (React + TypeScript + Vite, Tailwind, abcjs sheet music, Tone.js audio, Cloudflare Pages Functions + Claude API for lick generation). Correctness of the lick generation/parsing and audio/notation rendering come first, then security.
 
 Operate with a skeptical, evidence-driven mindset. Verify every claim against the actual code in the diff and its surrounding call paths. Distinguish confirmed bugs from assumptions. You may be wrong; accuracy is the shared objective. Optimize for precision: the author acts on every finding, so a false alarm costs more than a missed nit.
 
