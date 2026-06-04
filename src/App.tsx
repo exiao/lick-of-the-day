@@ -8,7 +8,7 @@ import { TransportControls } from "./components/TransportControls";
 import { Piano } from "./components/Piano";
 
 function App() {
-  const { lick, loading, error, newLick, isDaily } = useLick();
+  const { lick, loading, error, newLick, isDaily, notesPending } = useLick();
 
   const playback = usePlayback(lick.notes, lick.tempo, { swing: lick.swing, chords: lick.chords, timeSignature: lick.timeSignature, genre: lick.genre });
   const pianoRange = computePianoRange(lick.notes);
@@ -62,6 +62,7 @@ function App() {
           onTempoChange={playback.setTempo}
           chordsEnabled={playback.chordsEnabled}
           onChordsToggle={playback.setChordsEnabled}
+          playDisabled={notesPending}
         />
 
         <Piano

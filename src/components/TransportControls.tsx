@@ -7,6 +7,8 @@ interface TransportControlsProps {
   onTempoChange: (bpm: number) => void;
   chordsEnabled: boolean;
   onChordsToggle: (enabled: boolean) => void;
+  /** Disable Play while notes are still streaming in. */
+  playDisabled?: boolean;
 }
 
 export function TransportControls({
@@ -18,15 +20,17 @@ export function TransportControls({
   onTempoChange,
   chordsEnabled,
   onChordsToggle,
+  playDisabled = false,
 }: TransportControlsProps) {
   return (
     <div className="flex items-center justify-center gap-4 py-3">
       {!isPlaying ? (
         <button
           onClick={onPlay}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          disabled={playDisabled}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          <span className="text-lg">&#9654;</span> Play
+          <span className="text-lg">&#9654;</span> {playDisabled ? "Finishing\u2026" : "Play"}
         </button>
       ) : (
         <button
