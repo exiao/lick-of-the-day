@@ -23,14 +23,19 @@ const RATE_LIMIT_WINDOW_SEC = 60 * 60; // per hour
 // which reset the count to zero on any cold start.
 export async function checkRateLimit(store: KVNamespace | undefined, ip: string): Promise<boolean> {
   if (!store) return true; // KV unbound (e.g. local dev) — fail open, don't block.
-  const window = Math.floor(Date.now() / 1000 / RATE_LIMIT_WINDOW_SEC);
-  const key = `rl:${ip}:${window}`;
-  const current = parseInt((await store.get(key)) ?? "0", 10) || 0;
-  if (current >= RATE_LIMIT_MAX) return false;
-  // TTL covers the rest of this window plus a full window of slack so the entry
-  // never expires mid-window and reset the count early.
-  await store.put(key, String(current + 1), { expirationTtl: RATE_LIMIT_WINDOW_SEC * 2 });
-  return true;
+  try {
+    const window = Math.floor(Date.now() / 1000 / RATE_LIMIT_WINDOW_SEC);
+    const key = `rl:${ip}:${window}`;
+    const current = parseInt((await store.get(key)) ?? "0", 10) || 0;
+    if (current >= RATE_LIMIT_MAX) return false;
+    // TTL covers the rest of this window plus a full window of slack so the entry
+    // never expires mid-window and reset the count early.
+    await store.put(key, String(current + 1), { expirationTtl: RATE_LIMIT_WINDOW_SEC * 2 });
+    return true;
+  } catch (err) {
+    console.error("Rate limiting check failed, failing open:", err);
+    return true;
+  }
 }
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {

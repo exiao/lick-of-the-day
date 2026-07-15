@@ -28,4 +28,13 @@ describe("checkRateLimit", () => {
 
     await expect(checkRateLimit(store, "203.0.113.9")).resolves.toBe(false);
   });
+
+  it("fails open when KV is temporarily unavailable", async () => {
+    const store = {
+      get: vi.fn().mockRejectedValue(new Error("KV unavailable")),
+      put: vi.fn(),
+    } as unknown as KVNamespace;
+
+    await expect(checkRateLimit(store, "203.0.113.9")).resolves.toBe(true);
+  });
 });

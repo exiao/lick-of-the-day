@@ -15,6 +15,7 @@ const GENRES: Genre[] = ["jazz", "blues", "funk", "rnb", "bossa"];
 // day key. Lets us serve a (possibly stale) lick instantly while today's is
 // regenerated in the background — stale-while-revalidate.
 const LATEST_KEY = "daily:latest";
+const REFRESH_LOCK_TTL_SEC = 60;
 
 function getDayOfYear(): number {
   const now = new Date();
@@ -75,6 +76,7 @@ async function generateDailyLick(env: Env): Promise<Record<string, unknown>> {
 // pointer. Errors are swallowed — this runs in the background (waitUntil) and a
 // failure just leaves the previous cached lick in place for the next request.
 async function refreshDailyLick(env: Env, kvKey: string): Promise<void> {
+  const lockKey = `${kvKey}:refresh-lock`;
   try {
     const lick = await generateDailyLick(env);
     const payload = JSON.stringify(lick);
@@ -82,6 +84,12 @@ async function refreshDailyLick(env: Env, kvKey: string): Promise<void> {
     await env.LICK_STORE.put(LATEST_KEY, payload, { expirationTtl: 90000 });
   } catch (err) {
     console.error("Background daily-lick refresh failed:", err);
+  } finally {
+    try {
+      await env.LICK_STORE.delete(lockKey);
+    } catch (err) {
+      console.error("Failed to release daily-lick refresh lock:", err);
+    }
   }
 }
 
@@ -104,7 +112,12 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     // the background. Classic stale-while-revalidate — no blocking cold path.
     const stale = await context.env.LICK_STORE.get(LATEST_KEY);
     if (stale) {
-      context.waitUntil(refreshDailyLick(context.env, kvKey));
+      const lockKey = `${kvKey}:refresh-lock`;
+      const locked = await context.env.LICK_STORE.get(lockKey);
+      if (!locked) {
+        await context.env.LICK_STORE.put(lockKey, "1", { expirationTtl: REFRESH_LOCK_TTL_SEC });
+        context.waitUntil(refreshDailyLick(context.env, kvKey));
+      }
       return jsonResponse(
         JSON.parse(stale),
         "public, max-age=60, stale-while-revalidate=86400",
