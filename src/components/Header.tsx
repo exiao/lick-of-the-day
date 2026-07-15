@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 interface HeaderProps {
   onNewLick: () => void;
   loading: boolean;
@@ -7,7 +9,10 @@ interface HeaderProps {
   isDaily: boolean;
 }
 
-export function Header({
+// Memoized: none of its props change while a lick plays, so it should not
+// re-commit on every currentNoteIndex tick (measured 16 wasted commits over a
+// 15-note sweep before this).
+export const Header = memo(function Header({
   onNewLick,
   loading,
   lickTitle,
@@ -46,4 +51,4 @@ export function Header({
       <p className="text-lg font-medium text-gray-800">{lickTitle}</p>
     </div>
   );
-}
+});

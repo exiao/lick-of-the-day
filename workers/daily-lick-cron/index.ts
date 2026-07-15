@@ -10,6 +10,10 @@ interface Env {
 type Genre = "jazz" | "blues" | "funk" | "rnb" | "bossa";
 const GENRES: Genre[] = ["jazz", "blues", "funk", "rnb", "bossa"];
 
+// Pointer to the most-recent lick, kept in sync with the day key so the Pages
+// function can serve it stale-while-revalidate on a same-day cache miss.
+const LATEST_KEY = "daily:latest";
+
 function getTodayKey(): string {
   return new Date().toISOString().split("T")[0];
 }
@@ -59,10 +63,12 @@ export default {
 
     const lick = await generateLick(genre, env.ANTHROPIC_API_KEY);
     const key = `daily:${getTodayKey()}`;
+    const payload = JSON.stringify(lick);
 
-    await env.LICK_STORE.put(key, JSON.stringify(lick), {
+    await env.LICK_STORE.put(key, payload, {
       expirationTtl: 90000, // ~25 hours, auto-expires after tomorrow
     });
+    await env.LICK_STORE.put(LATEST_KEY, payload, { expirationTtl: 90000 });
 
     console.log(`Daily lick stored: key=${key}`);
   },
@@ -74,7 +80,9 @@ export default {
       const genre = pickGenre();
       const lick = await generateLick(genre, env.ANTHROPIC_API_KEY);
       const key = `daily:${getTodayKey()}`;
-      await env.LICK_STORE.put(key, JSON.stringify(lick), { expirationTtl: 90000 });
+      const payload = JSON.stringify(lick);
+      await env.LICK_STORE.put(key, payload, { expirationTtl: 90000 });
+      await env.LICK_STORE.put(LATEST_KEY, payload, { expirationTtl: 90000 });
       return Response.json({ ok: true, key, genre });
     }
     return new Response("Lick of the Day cron worker", { status: 200 });

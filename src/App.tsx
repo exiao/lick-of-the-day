@@ -1,6 +1,7 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useLick } from "./hooks/useLick";
 import { usePlayback } from "./hooks/usePlayback";
+import { loadTone } from "./utils/tone-loader";
 import { computePianoRange, parsePitch } from "./utils/music";
 import { Header } from "./components/Header";
 import { SheetMusic } from "./components/SheetMusic";
@@ -10,19 +11,35 @@ import { Piano } from "./components/Piano";
 function App() {
   const { lick, loading, error, newLick, isDaily, notesPending } = useLick();
 
+  // Warm the Tone.js chunk on the user's first interaction anywhere on the
+  // page, so it's cached by the time they hit Play / a piano key. Kept out of
+  // the initial bundle (dynamic import) but hidden behind the first gesture's
+  // network idle rather than paid for on Play.
+  useEffect(() => {
+    const preload = () => { void loadTone(); };
+    window.addEventListener("pointerdown", preload, { once: true });
+    return () => window.removeEventListener("pointerdown", preload);
+  }, []);
+
   const playback = usePlayback(lick.notes, lick.tempo, { swing: lick.swing, chords: lick.chords, timeSignature: lick.timeSignature, genre: lick.genre });
   const pianoRange = computePianoRange(lick.notes);
 
+  // Destructure the stable (useCallback) fns so these wrappers keep a stable
+  // identity across a playback sweep — otherwise depending on the whole
+  // `playback` object (recreated each render) rebuilds them every note tick and
+  // defeats the memo on Header/Piano.
+  const { stop: stopPlayback, playNote } = playback;
+
   const handleNewLick = useCallback(() => {
-    playback.stop();
+    stopPlayback();
     newLick();
-  }, [newLick, playback]);
+  }, [newLick, stopPlayback]);
 
   const handleNotePlay = useCallback(
     (pitch: string) => {
-      playback.playNote(pitch);
+      playNote(pitch);
     },
-    [playback],
+    [playNote],
   );
 
   const highlightedMidi =

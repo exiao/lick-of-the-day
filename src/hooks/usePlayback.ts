@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import * as Tone from "tone";
+import type * as Tone from "tone";
+import { getTone, toneLoaded } from "../utils/tone-loader";
 import { unlockAudio, audioFullyUnlocked } from "../utils/audio-unlock";
 import type { Note, Articulation, Genre, Lick } from "../types/lick";
 
@@ -85,7 +86,8 @@ export function usePlayback(
 
   const getSynth = useCallback(() => {
     if (!synthRef.current) {
-      synthRef.current = new Tone.PolySynth(Tone.Synth, {
+      const T = getTone();
+      synthRef.current = new T.PolySynth(T.Synth, {
         oscillator: { type: "triangle" },
         envelope: { attack: 0.005, decay: 0.3, sustain: 0.2, release: 0.8 },
       }).toDestination();
@@ -95,7 +97,8 @@ export function usePlayback(
 
   const getChordSynth = useCallback(() => {
     if (!chordSynthRef.current) {
-      chordSynthRef.current = new Tone.PolySynth(Tone.Synth, {
+      const T = getTone();
+      chordSynthRef.current = new T.PolySynth(T.Synth, {
         oscillator: { type: "sine" },
         envelope: { attack: 0.02, decay: 0.3, sustain: 0.6, release: 0.3 },
       }).toDestination();
@@ -120,7 +123,13 @@ export function usePlayback(
   }, [getSynth]);
 
   const stop = useCallback(() => {
-    const transport = Tone.getTransport();
+    // Nothing to tear down if the audio engine was never loaded.
+    if (!toneLoaded()) {
+      setIsPlaying(false);
+      setCurrentNoteIndex(-1);
+      return;
+    }
+    const transport = getTone().getTransport();
     transport.stop();
     transport.cancel();
     if (partRef.current) { partRef.current.dispose(); partRef.current = null; }
@@ -133,6 +142,7 @@ export function usePlayback(
     await unlockAudio();
     stop();
 
+    const Tone = getTone();
     const synth = getSynth();
     const transport = Tone.getTransport();
     const beatsPerBar = lick?.timeSignature
@@ -259,18 +269,19 @@ export function usePlayback(
   }, [notes, tempo, originalTempo, lick, chordsEnabled, getSynth, getChordSynth, stop]);
 
   const pause = useCallback(() => {
+    if (!toneLoaded()) return;
     if (isPlaying) {
-      Tone.getTransport().pause();
+      getTone().getTransport().pause();
       setIsPlaying(false);
     } else {
-      Tone.getTransport().start();
+      getTone().getTransport().start();
       setIsPlaying(true);
     }
   }, [isPlaying]);
 
   const setTempo = useCallback((bpm: number) => {
     setTempoState(bpm);
-    Tone.getTransport().bpm.value = bpm;
+    if (toneLoaded()) getTone().getTransport().bpm.value = bpm;
   }, []);
 
   useEffect(() => {
