@@ -15,6 +15,8 @@ interface CoordinatorTransaction {
 
 interface CoordinatorStorage {
   transaction<T>(closure: (txn: CoordinatorTransaction) => Promise<T>): Promise<T>;
+  setAlarm(scheduledTime: number): Promise<void>;
+  deleteAll(): Promise<void>;
 }
 
 interface DurableObjectStateLike {
@@ -30,6 +32,11 @@ const LATEST_KEY = "daily:latest";
 const REFRESH_LOCK_TTL_MS = 60_000;
 const RATE_LIMIT_MAX = 10;
 
+interface RefreshLease {
+  token: string;
+  expiresAt: number;
+}
+
 // Pages Functions bind this class as an external Durable Object. A distinct
 // object ID per daily key / IP-window makes the transactions below the single,
 // strongly consistent admission point for cache refreshes and rate limits.
@@ -40,17 +47,22 @@ export class LickCoordinator {
     const path = new URL(request.url).pathname;
 
     if (path === "/refresh/acquire") {
-      const acquired = await this.state.storage.transaction(async (txn) => {
-        const expiresAt = await txn.get<number>("refresh-expires-at");
-        if (expiresAt && expiresAt > Date.now()) return false;
-        await txn.put("refresh-expires-at", Date.now() + REFRESH_LOCK_TTL_MS);
-        return true;
+      const lease = await this.state.storage.transaction(async (txn) => {
+        const current = await txn.get<RefreshLease>("refresh-lease");
+        if (current && current.expiresAt > Date.now()) return undefined;
+        const next = { token: crypto.randomUUID(), expiresAt: Date.now() + REFRESH_LOCK_TTL_MS };
+        await txn.put("refresh-lease", next);
+        return next;
       });
-      return new Response(null, { status: acquired ? 204 : 409 });
+      return lease ? Response.json(lease) : new Response(null, { status: 409 });
     }
 
     if (path === "/refresh/release") {
-      await this.state.storage.transaction((txn) => txn.delete("refresh-expires-at"));
+      const token = request.headers.get("X-Lick-Lease-Token");
+      await this.state.storage.transaction(async (txn) => {
+        const current = await txn.get<RefreshLease>("refresh-lease");
+        if (current?.token === token) await txn.delete("refresh-lease");
+      });
       return new Response(null, { status: 204 });
     }
 
@@ -61,10 +73,15 @@ export class LickCoordinator {
         await txn.put("count", current + 1);
         return true;
       });
+      if (admitted) await this.state.storage.setAlarm(Date.now() + 2 * 60 * 60 * 1000);
       return new Response(null, { status: admitted ? 204 : 429 });
     }
 
     return new Response("Not found", { status: 404 });
+  }
+
+  async alarm(): Promise<void> {
+    await this.state.storage.deleteAll();
   }
 }
 

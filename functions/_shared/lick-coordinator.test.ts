@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { LickCoordinator } from "../../workers/daily-lick-cron/index";
 
 class SerializedStorage {
@@ -17,6 +17,12 @@ class SerializedStorage {
     }));
     this.tail = operation.then(() => undefined);
     return operation;
+  }
+
+  async setAlarm(_scheduledTime: number): Promise<void> {}
+
+  async deleteAll(): Promise<void> {
+    this.values.clear();
   }
 }
 
@@ -40,8 +46,31 @@ describe("LickCoordinator", () => {
       coordinator.fetch(new Request("https://coordinator/refresh/acquire", { method: "POST" })),
     ]);
 
-    expect([first.status, second.status].sort()).toEqual([204, 409]);
-    await coordinator.fetch(new Request("https://coordinator/refresh/release", { method: "POST" }));
-    await expect(coordinator.fetch(new Request("https://coordinator/refresh/acquire", { method: "POST" }))).resolves.toMatchObject({ status: 204 });
+    expect([first.status, second.status].sort()).toEqual([200, 409]);
+    const winner = first.status === 200 ? first : second;
+    const { token } = await winner.json() as { token: string };
+    await coordinator.fetch(new Request("https://coordinator/refresh/release", {
+      method: "POST",
+      headers: { "X-Lick-Lease-Token": token },
+    }));
+    await expect(coordinator.fetch(new Request("https://coordinator/refresh/acquire", { method: "POST" }))).resolves.toMatchObject({ status: 200 });
+  });
+
+  it("does not let an expired lease holder release its replacement", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-15T12:00:00.000Z"));
+    const coordinator = new LickCoordinator({ storage: new SerializedStorage() });
+    const first = await coordinator.fetch(new Request("https://coordinator/refresh/acquire", { method: "POST" }));
+    const { token } = await first.json() as { token: string };
+
+    vi.advanceTimersByTime(60_001);
+    await coordinator.fetch(new Request("https://coordinator/refresh/acquire", { method: "POST" }));
+    await coordinator.fetch(new Request("https://coordinator/refresh/release", {
+      method: "POST",
+      headers: { "X-Lick-Lease-Token": token },
+    }));
+
+    await expect(coordinator.fetch(new Request("https://coordinator/refresh/acquire", { method: "POST" }))).resolves.toMatchObject({ status: 409 });
+    vi.useRealTimers();
   });
 });

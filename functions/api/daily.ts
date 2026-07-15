@@ -76,27 +76,28 @@ async function generateDailyLick(env: Env): Promise<Record<string, unknown>> {
 // Regenerate today's lick and persist it to both the day key and the latest
 // pointer. Errors are swallowed — this runs in the background (waitUntil) and a
 // failure just leaves the previous cached lick in place for the next request.
-async function requestCoordinator(env: Env, key: string, path: string): Promise<Response | undefined> {
+async function requestCoordinator(env: Env, key: string, path: string, init?: RequestInit): Promise<Response | undefined> {
   if (!env.LICK_COORDINATOR) return undefined;
   try {
     const stub = env.LICK_COORDINATOR.get(env.LICK_COORDINATOR.idFromName(key));
-    return await stub.fetch(`https://lick-coordinator${path}`, { method: "POST" });
+    return await stub.fetch(`https://lick-coordinator${path}`, { method: "POST", ...init });
   } catch (err) {
     console.error("Daily-lick coordinator request failed:", err);
     return undefined;
   }
 }
 
-async function acquireRefresh(env: Env, kvKey: string): Promise<boolean> {
+async function acquireRefresh(env: Env, kvKey: string): Promise<string | undefined> {
   const response = await requestCoordinator(env, `refresh:${kvKey}`, "/refresh/acquire");
-  return response?.ok ?? false;
+  if (!response?.ok) return undefined;
+  return (await response.json() as { token: string }).token;
 }
 
-async function releaseRefresh(env: Env, kvKey: string): Promise<void> {
-  await requestCoordinator(env, `refresh:${kvKey}`, "/refresh/release");
+async function releaseRefresh(env: Env, kvKey: string, token: string): Promise<void> {
+  await requestCoordinator(env, `refresh:${kvKey}`, "/refresh/release", { headers: { "X-Lick-Lease-Token": token } });
 }
 
-async function refreshDailyLick(env: Env, kvKey: string): Promise<void> {
+async function refreshDailyLick(env: Env, kvKey: string, token: string): Promise<void> {
   try {
     const lick = await generateDailyLick(env);
     const payload = JSON.stringify(lick);
@@ -105,7 +106,7 @@ async function refreshDailyLick(env: Env, kvKey: string): Promise<void> {
   } catch (err) {
     console.error("Background daily-lick refresh failed:", err);
   } finally {
-    await releaseRefresh(env, kvKey);
+    await releaseRefresh(env, kvKey, token);
   }
 }
 
@@ -128,8 +129,9 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     // the background. Classic stale-while-revalidate — no blocking cold path.
     const stale = await context.env.LICK_STORE.get(LATEST_KEY);
     if (stale) {
-      if (await acquireRefresh(context.env, kvKey)) {
-        context.waitUntil(refreshDailyLick(context.env, kvKey));
+      const token = await acquireRefresh(context.env, kvKey);
+      if (token) {
+        context.waitUntil(refreshDailyLick(context.env, kvKey, token));
       }
       return jsonResponse(
         JSON.parse(stale),

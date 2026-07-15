@@ -21,6 +21,7 @@ class MemoryKV {
 
 class RefreshCoordinator implements CoordinatorNamespace {
   private acquired = false;
+  private readonly token = "test-refresh-token";
   private tail: Promise<void> = Promise.resolve();
 
   idFromName(name: string): string {
@@ -30,14 +31,15 @@ class RefreshCoordinator implements CoordinatorNamespace {
   get(id: unknown) {
     void id;
     return {
-      fetch: (input: RequestInfo | URL) => {
+      fetch: (input: RequestInfo | URL, init?: RequestInit) => {
         const path = new URL(String(input)).pathname;
         const operation = this.tail.then(() => {
           if (path === "/refresh/acquire") {
             if (this.acquired) return new Response(null, { status: 409 });
             this.acquired = true;
+            return Response.json({ token: this.token });
           } else if (path === "/refresh/release") {
-            this.acquired = false;
+            if (new Headers(init?.headers).get("X-Lick-Lease-Token") === this.token) this.acquired = false;
           }
           return new Response(null, { status: 204 });
         });
