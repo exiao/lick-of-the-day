@@ -25,6 +25,7 @@ npm run dump-prompts   # writes evals/prompts.json from the real buildLickPrompt
 # 2. Provide credentials (the gateway env already has these)
 export ANTHROPIC_TOKEN=... ANTHROPIC_BASE_URL=...   # for claude-* arms
 export GEMINI_API_KEY=...                            # for gemini-* arms
+export OPENROUTER_API_KEY=...                        # for openrouter arms (grok45)
 
 # 3. Run (defaults: arms haiku + flash_think0, genres jazz/blues/funk, N=5)
 python3 evals/run_eval.py
@@ -46,7 +47,11 @@ python3 evals/test_scorer.py
 | `EVAL_BARS` | 4 | Bar count (must match the value passed to `dump_prompts.ts`) |
 
 Arms are defined in `run_eval.py`'s `ARMS` registry: `haiku`, `sonnet`,
-`flash_think0`, `flash_dynamic`. Add your own `(provider, model, options)` there.
+`sonnet5`, `grok45`, `flash_think0`, `flash_dynamic`. Add your own
+`(provider, model, options)` there. `sonnet5` currently points at
+`claude-sonnet-4-6` (the newest released Sonnet; Sonnet 5 is not yet on the
+gateway). `grok45` is Grok 4.5 via OpenRouter (OpenAI-compatible) with reasoning
+disabled.
 
 ## The musicality scorer
 

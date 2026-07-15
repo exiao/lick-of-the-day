@@ -13,6 +13,7 @@ Quick start:
 Environment:
     ANTHROPIC_TOKEN, ANTHROPIC_BASE_URL   for claude-* arms
     GEMINI_API_KEY                        for gemini-* arms
+    OPENROUTER_API_KEY                    for openrouter (OpenAI-compatible) arms
     EVAL_N        samples per cell (default 5)
     EVAL_GENRES   comma list (default jazz,blues,funk)
     EVAL_ARMS     comma list of arm names (default: all defined below)
@@ -47,12 +48,25 @@ BARS = int(os.environ.get("EVAL_BARS", "4"))
 GENRES = os.environ.get("EVAL_GENRES", "jazz,blues,funk").split(",")
 
 # --- Arm registry -----------------------------------------------------------
-# provider: "anthropic" | "gemini"
+# provider: "anthropic" | "gemini" | "openrouter"
 # options: anthropic -> {}, gemini -> {"thinking_budget": int}  (0=off, -1=dynamic)
+#          openrouter -> {"reasoning": {...}}  (OpenAI-compatible; see gen_openrouter)
 ARMS = {
     "haiku":          ("anthropic", "claude-haiku-4-5", {}),
     "opus":           ("anthropic", "claude-opus-4-8", {}),
     "sonnet":         ("anthropic", "claude-sonnet-4-6", {}),
+    # "sonnet 5" per the task brief. claude-sonnet-5-0 is not yet released on the
+    # gateway (404); claude-sonnet-4-6 is the newest available Sonnet, so this
+    # arm evaluates that. Bump the model id here when Sonnet 5 ships.
+    # merge_system: the gateway only provisions haiku for requests with a system
+    # field; any other Claude model 500s ("No OAuth token"). Folding system into
+    # the user turn is the only way to evaluate non-haiku Claude here.
+    "sonnet5":        ("anthropic", "claude-sonnet-4-6", {"merge_system": True}),
+    # Grok 4.5 via OpenRouter (OpenAI-compatible chat/completions). Grok 4.5 is a
+    # mandatory-reasoning model: OpenRouter rejects reasoning.enabled=false (400),
+    # so we can't turn it off. In practice one call emits ~28k reasoning tokens
+    # and takes ~4 min — see the eval findings. Long per-sample timeout needed.
+    "grok45":         ("openrouter", "x-ai/grok-4.5", {"timeout": 300}),
     "flash_think0":   ("gemini", "gemini-3.5-flash", {"thinking_budget": 0}),
     "flash_dynamic":  ("gemini", "gemini-3.5-flash", {"thinking_budget": -1}),
 }
@@ -89,24 +103,38 @@ def _parse(txt):
     return None
 
 
-def gen_anthropic(model, system, user, _opts):
+def gen_anthropic(model, system, user, opts):
     base = os.environ["ANTHROPIC_BASE_URL"].rstrip("/")
     # Mirror the production path (api/daily.ts, api/random.ts): send the static
     # system prompt as a cache_control text block with the prompt-caching beta
     # header, so latency reflects real cached requests rather than paying full
     # prompt cost on every sample.
+    #
+    # opts["no_cache"]=True falls back to a plain string system prompt with no
+    # beta header. opts["merge_system"]=True instead folds the system text into
+    # the user turn and sends NO system field. Both exist because this gateway
+    # only provisions haiku for system-prompt requests: any other Claude model
+    # 500s ("No OAuth token: promptpm") the moment a `system` field is present
+    # (with OR without cache_control). merge_system is the only way to evaluate
+    # non-haiku Claude here; the model sees identical instructions, just in the
+    # user message. Latency then won't reflect prod prompt-caching.
+    no_cache = opts.get("no_cache", False)
+    merge_system = opts.get("merge_system", False)
     headers = {
         "Content-Type": "application/json",
         "x-api-key": os.environ["ANTHROPIC_TOKEN"],
         "anthropic-version": "2023-06-01",
-        "anthropic-beta": "prompt-caching-2024-07-31",
     }
-    body = {
-        "model": model,
-        "max_tokens": MAX_TOKENS,
-        "system": [{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
-        "messages": [{"role": "user", "content": user}],
-    }
+    body = {"model": model, "max_tokens": MAX_TOKENS}
+    if merge_system:
+        body["messages"] = [{"role": "user", "content": f"{system}\n\n{user}"}]
+    else:
+        if no_cache:
+            body["system"] = system
+        else:
+            headers["anthropic-beta"] = "prompt-caching-2024-07-31"
+            body["system"] = [{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}]
+        body["messages"] = [{"role": "user", "content": user}]
     data, ms = _post(f"{base}/v1/messages", headers, body)
     return data["content"][0]["text"], ms, data["usage"]["output_tokens"], 0
 
@@ -126,10 +154,36 @@ def gen_gemini(model, system, user, opts):
     return txt, ms, um.get("candidatesTokenCount", 0), um.get("thoughtsTokenCount", 0)
 
 
-PROVIDERS = {"anthropic": gen_anthropic, "gemini": gen_gemini}
+def gen_openrouter(model, system, user, opts):
+    """OpenAI-compatible chat/completions via OpenRouter. Grok 4.5 lives here.
+    Sends system+user as messages. Grok 4.5 mandates reasoning (OpenRouter 400s
+    on reasoning.enabled=false), so we can't suppress it; pass opts["reasoning"]
+    only for models that accept it. Reports completion_tokens as output and
+    reasoning_tokens as the 'thinking' column. opts["timeout"] widens the HTTP
+    timeout for slow reasoning models."""
+    key = os.environ["OPENROUTER_API_KEY"]
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {key}"}
+    body = {
+        "model": model,
+        "max_tokens": MAX_TOKENS,
+        "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
+    }
+    if "reasoning" in opts:
+        body["reasoning"] = opts["reasoning"]
+    data, ms = _post("https://openrouter.ai/api/v1/chat/completions", headers, body,
+                     timeout=opts.get("timeout", 120))
+    txt = data["choices"][0]["message"].get("content") or ""
+    um = data.get("usage", {}) or {}
+    out_tok = um.get("completion_tokens", 0)
+    think_tok = (um.get("completion_tokens_details") or {}).get("reasoning_tokens", 0)
+    return txt, ms, out_tok, think_tok
+
+
+PROVIDERS = {"anthropic": gen_anthropic, "gemini": gen_gemini, "openrouter": gen_openrouter}
 REQUIRED_ENV = {
     "anthropic": ["ANTHROPIC_BASE_URL", "ANTHROPIC_TOKEN"],
     "gemini": ["GEMINI_API_KEY"],
+    "openrouter": ["OPENROUTER_API_KEY"],
 }
 
 
