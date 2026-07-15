@@ -1,6 +1,12 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import * as Tone from "tone";
 import { unlockAudio, audioFullyUnlocked } from "../utils/audio-unlock";
+import {
+  getMasterChain,
+  getPianoSampler,
+  isSamplerReady,
+  preloadPianoSampler,
+} from "../utils/piano-sampler";
 import type { Note, Articulation, Genre, Lick } from "../types/lick";
 
 // Articulation presets: velocity, attack, release, duration multiplier
@@ -88,7 +94,7 @@ export function usePlayback(
       synthRef.current = new Tone.PolySynth(Tone.Synth, {
         oscillator: { type: "triangle" },
         envelope: { attack: 0.005, decay: 0.3, sustain: 0.2, release: 0.8 },
-      }).toDestination();
+      }).connect(getMasterChain());
     }
     return synthRef.current;
   }, []);
@@ -98,11 +104,32 @@ export function usePlayback(
       chordSynthRef.current = new Tone.PolySynth(Tone.Synth, {
         oscillator: { type: "sine" },
         envelope: { attack: 0.02, decay: 0.3, sustain: 0.6, release: 0.3 },
-      }).toDestination();
+      }).connect(getMasterChain());
       chordSynthRef.current.volume.value = -8;
     }
     return chordSynthRef.current;
   }, []);
+
+  // Kick off the sample download as soon as the hook mounts so the sampler is
+  // usually ready by the time the user hits play. Never blocks: playback falls
+  // back to the synth until isSamplerReady() flips true.
+  useEffect(() => {
+    preloadPianoSampler();
+  }, []);
+
+  // Trigger one melody/practice note through the piano sampler when its samples
+  // have loaded, otherwise through the triangle synth fallback. Same signature
+  // as instrument.triggerAttackRelease so the swap is seamless mid-session.
+  const triggerMelody = useCallback(
+    (pitch: string, duration: Tone.Unit.Time, time?: number, velocity?: number) => {
+      if (isSamplerReady()) {
+        getPianoSampler().triggerAttackRelease(pitch, duration, time, velocity);
+      } else {
+        getSynth().triggerAttackRelease(pitch, duration, time, velocity);
+      }
+    },
+    [getSynth],
+  );
 
   const playNote = useCallback((pitch: string) => {
     // Fast path: only when audio is FULLY unlocked (context running AND the iOS
@@ -111,13 +138,13 @@ export function usePlayback(
     // prime keeps getting retried on each key tap (otherwise iPad piano
     // previews stay stuck in the mute-silenced ambient session).
     if (audioFullyUnlocked()) {
-      getSynth().triggerAttackRelease(pitch, "8n");
+      triggerMelody(pitch, "8n");
     } else {
       void unlockAudio().then(() => {
-        getSynth().triggerAttackRelease(pitch, "8n");
+        triggerMelody(pitch, "8n");
       });
     }
-  }, [getSynth]);
+  }, [triggerMelody]);
 
   const stop = useCallback(() => {
     const transport = Tone.getTransport();
@@ -133,7 +160,6 @@ export function usePlayback(
     await unlockAudio();
     stop();
 
-    const synth = getSynth();
     const transport = Tone.getTransport();
     const beatsPerBar = lick?.timeSignature
       ? parseInt(lick.timeSignature.split("/")[0])
@@ -174,7 +200,7 @@ export function usePlayback(
       const slotSeconds = (60 / tempo) * durationBeats;
       const soundDuration = Math.min(slotSeconds, slotSeconds * genreMod * preset.durationMod);
 
-      synth.triggerAttackRelease(note.pitch, soundDuration, time, velocity);
+      triggerMelody(note.pitch, soundDuration, time, velocity);
       Tone.getDraw().schedule(() => { setCurrentNoteIndex(index); }, time);
     }, partEvents.map(e => ({ time: e.transportTime, note: e.note, index: e.index, durationBeats: e.durationBeats })));
 
@@ -256,7 +282,7 @@ export function usePlayback(
 
     transport.start();
     setIsPlaying(true);
-  }, [notes, tempo, originalTempo, lick, chordsEnabled, getSynth, getChordSynth, stop]);
+  }, [notes, tempo, originalTempo, lick, chordsEnabled, triggerMelody, getChordSynth, stop]);
 
   const pause = useCallback(() => {
     if (isPlaying) {
