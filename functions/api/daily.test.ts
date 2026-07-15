@@ -25,6 +25,19 @@ afterEach(() => {
 });
 
 describe("GET /api/daily", () => {
+  it("expires a fresh daily lick at the next UTC midnight", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-15T23:59:30.000Z"));
+    const store = new MemoryKV();
+    await store.put("daily:2026-07-15", JSON.stringify(FALLBACK_LICK));
+
+    const response = await onRequestGet({
+      env: { ANTHROPIC_API_KEY: "test", LICK_STORE: store },
+    } as Parameters<typeof onRequestGet>[0]);
+
+    expect(response.headers.get("Cache-Control")).toBe("public, max-age=30, stale-while-revalidate=86400");
+  });
+
   it("serves the latest cached lick while it refreshes a missing daily key", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-07-15T12:00:00.000Z"));

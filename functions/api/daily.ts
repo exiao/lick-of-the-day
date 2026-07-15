@@ -32,7 +32,7 @@ function getTodayKey(): string {
 function secondsUntilMidnightUTC(): number {
   const now = new Date();
   const midnight = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1);
-  return Math.max(60, Math.floor((midnight - now.getTime()) / 1000));
+  return Math.max(1, Math.floor((midnight - now.getTime()) / 1000));
 }
 
 function jsonResponse(body: unknown, cacheControl: string, extra?: Record<string, string>): Response {
