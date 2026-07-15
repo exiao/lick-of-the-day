@@ -19,7 +19,9 @@ class SerializedStorage {
     return operation;
   }
 
-  async setAlarm(_scheduledTime: number): Promise<void> {}
+  async setAlarm(scheduledTime: number): Promise<void> {
+    void scheduledTime;
+  }
 
   async deleteAll(): Promise<void> {
     this.values.clear();
