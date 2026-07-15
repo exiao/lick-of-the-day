@@ -178,7 +178,11 @@ def gen_openrouter(model, system, user, opts):
     choices = data.get("choices")
     if not choices:
         raise RuntimeError("OpenRouter response missing 'choices'")
-    txt = choices[0]["message"].get("content") or ""
+    choice = choices[0]
+    message = choice.get("message") if isinstance(choice, dict) else None
+    if not isinstance(message, dict):
+        raise RuntimeError("OpenRouter response missing valid message")
+    txt = message.get("content") or ""
     um = data.get("usage", {}) or {}
     out_tok = um.get("completion_tokens", 0)
     think_tok = (um.get("completion_tokens_details") or {}).get("reasoning_tokens", 0)

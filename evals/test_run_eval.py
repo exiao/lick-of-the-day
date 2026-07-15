@@ -34,6 +34,13 @@ class OpenRouterResponseTest(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "OpenRouter response missing 'choices'"):
                 run_eval.gen_openrouter("x-ai/grok-4.5", "system", "user", {})
 
+    def test_choice_without_message_reports_invalid_message(self):
+        with patch.dict(os.environ, {"OPENROUTER_API_KEY": "test-key"}), patch.object(
+            run_eval, "_post", return_value=({"choices": [{"message": None}]}, 12)
+        ):
+            with self.assertRaisesRegex(RuntimeError, "OpenRouter response missing valid message"):
+                run_eval.gen_openrouter("x-ai/grok-4.5", "system", "user", {})
+
 
 if __name__ == "__main__":
     unittest.main()
