@@ -48,9 +48,10 @@ python3 evals/test_scorer.py
 
 Arms are defined in `run_eval.py`'s `ARMS` registry: `haiku`, `sonnet`,
 `sonnet5`, `grok45`, `flash_think0`, `flash_dynamic`. Add your own
-`(provider, model, options)` there. `sonnet5` currently points at
-`claude-sonnet-5`. `grok45` is Grok 4.5 via OpenRouter (OpenAI-compatible) with
-reasoning enabled because the provider requires it.
+`(provider, model, options)` there. `sonnet5` uses Anthropic's current
+`claude-sonnet-5` API ID with adaptive thinking disabled for a speed-comparable
+lick-generation run. `grok45` is Grok 4.5 via OpenRouter (OpenAI-compatible); it requires
+reasoning, so the harness records its reasoning-token use and allows a longer timeout.
 
 ## The musicality scorer
 

@@ -55,11 +55,13 @@ ARMS = {
     "haiku":          ("anthropic", "claude-haiku-4-5", {}),
     "opus":           ("anthropic", "claude-opus-4-8", {}),
     "sonnet":         ("anthropic", "claude-sonnet-4-6", {}),
-    # Sonnet 5 uses its documented Claude API model ID.
+    # Sonnet 5's current Anthropic API ID is claude-sonnet-5. Disable its
+    # adaptive thinking so its latency and output budget are comparable to the
+    # no-thinking production Haiku arm.
     # merge_system: the gateway only provisions haiku for requests with a system
     # field; any other Claude model 500s ("No OAuth token"). Folding system into
     # the user turn is the only way to evaluate non-haiku Claude here.
-    "sonnet5":        ("anthropic", "claude-sonnet-5", {"merge_system": True}),
+    "sonnet5":        ("anthropic", "claude-sonnet-5", {"merge_system": True, "thinking": {"type": "disabled"}}),
     # Grok 4.5 via OpenRouter (OpenAI-compatible chat/completions). Grok 4.5 is a
     # mandatory-reasoning model: OpenRouter rejects reasoning.enabled=false (400),
     # so we can't turn it off. In practice one call emits ~28k reasoning tokens
@@ -101,6 +103,14 @@ def _parse(txt):
     return None
 
 
+def retained_rows(results_path, selected_arms):
+    """Keep completed arms when resuming only the missing arm(s)."""
+    if not results_path.exists():
+        return []
+    existing = json.loads(results_path.read_text())
+    return [row for row in existing if row.get("arm") not in selected_arms]
+
+
 def gen_anthropic(model, system, user, opts):
     base = os.environ["ANTHROPIC_BASE_URL"].rstrip("/")
     # Mirror the production path (api/daily.ts, api/random.ts): send the static
@@ -124,6 +134,8 @@ def gen_anthropic(model, system, user, opts):
         "anthropic-version": "2023-06-01",
     }
     body = {"model": model, "max_tokens": MAX_TOKENS}
+    if "thinking" in opts:
+        body["thinking"] = opts["thinking"]
     if merge_system:
         body["messages"] = [{"role": "user", "content": f"{system}\n\n{user}"}]
     else:
@@ -202,7 +214,7 @@ def main():
         raise SystemExit(f"Missing {PROMPTS_PATH}. Run: npm run dump-prompts")
     prompts = json.loads(PROMPTS_PATH.read_text())
 
-    rows = []
+    rows = retained_rows(RESULTS_PATH, SELECTED)
     for arm in SELECTED:
         if arm not in ARMS:
             print(f"!! unknown arm '{arm}', skipping"); continue
