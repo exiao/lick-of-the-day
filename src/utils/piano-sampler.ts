@@ -27,6 +27,7 @@ const SAMPLE_URLS: Record<string, string> = {
 let masterInput: Tone.Reverb | null = null;
 let sampler: Tone.Sampler | null = null;
 let samplerLoaded = false;
+let samplerConnected = false;
 
 /**
  * The master chain input node. Instruments connect here; signal flows
@@ -57,7 +58,15 @@ export function getPianoSampler(): Tone.Sampler {
       release: 1.2,
       onload: () => { samplerLoaded = true; },
     });
+  }
+  // Defer building the master chain (which creates a Tone.Reverb that renders
+  // its impulse response through an OfflineAudioContext) until the AudioContext
+  // is actually running. Doing this on mount, before a user gesture, can hang
+  // or fail on iOS/Safari. Playback paths call unlockAudio() first, so by the
+  // time a note is triggered the context is running and this connect fires.
+  if (!samplerConnected && Tone.getContext().state === "running") {
     sampler.connect(getMasterChain());
+    samplerConnected = true;
   }
   return sampler;
 }

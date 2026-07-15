@@ -95,6 +95,9 @@ export function usePlayback(
         oscillator: { type: "triangle" },
         envelope: { attack: 0.005, decay: 0.3, sustain: 0.2, release: 0.8 },
       }).connect(getMasterChain());
+      // The triangle synth is louder than the sampled piano; trim it so the
+      // fallback->sampler switch mid-session isn't a jarring volume drop.
+      synthRef.current.volume.value = -12;
     }
     return synthRef.current;
   }, []);
