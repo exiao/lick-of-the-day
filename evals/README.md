@@ -49,9 +49,8 @@ python3 evals/test_scorer.py
 Arms are defined in `run_eval.py`'s `ARMS` registry: `haiku`, `sonnet`,
 `sonnet5`, `grok45`, `flash_think0`, `flash_dynamic`. Add your own
 `(provider, model, options)` there. `sonnet5` currently points at
-`claude-sonnet-4-6` (the newest released Sonnet; Sonnet 5 is not yet on the
-gateway). `grok45` is Grok 4.5 via OpenRouter (OpenAI-compatible) with reasoning
-enabled because the provider requires it.
+`claude-sonnet-5`. `grok45` is Grok 4.5 via OpenRouter (OpenAI-compatible) with
+reasoning enabled because the provider requires it.
 
 ## The musicality scorer
 

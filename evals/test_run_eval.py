@@ -14,6 +14,12 @@ SPEC.loader.exec_module(run_eval)
 
 
 class OpenRouterResponseTest(unittest.TestCase):
+    def test_sonnet5_arm_uses_sonnet5_api_id(self):
+        provider, model, _opts = run_eval.ARMS["sonnet5"]
+
+        self.assertEqual(provider, "anthropic")
+        self.assertEqual(model, "claude-sonnet-5")
+
     def test_error_payload_reports_provider_error(self):
         with patch.dict(os.environ, {"OPENROUTER_API_KEY": "test-key"}), patch.object(
             run_eval, "_post", return_value=({"error": {"message": "provider unavailable"}}, 12)

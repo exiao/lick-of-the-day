@@ -55,13 +55,11 @@ ARMS = {
     "haiku":          ("anthropic", "claude-haiku-4-5", {}),
     "opus":           ("anthropic", "claude-opus-4-8", {}),
     "sonnet":         ("anthropic", "claude-sonnet-4-6", {}),
-    # "sonnet 5" per the task brief. claude-sonnet-5-0 is not yet released on the
-    # gateway (404); claude-sonnet-4-6 is the newest available Sonnet, so this
-    # arm evaluates that. Bump the model id here when Sonnet 5 ships.
+    # Sonnet 5 uses its documented Claude API model ID.
     # merge_system: the gateway only provisions haiku for requests with a system
     # field; any other Claude model 500s ("No OAuth token"). Folding system into
     # the user turn is the only way to evaluate non-haiku Claude here.
-    "sonnet5":        ("anthropic", "claude-sonnet-4-6", {"merge_system": True}),
+    "sonnet5":        ("anthropic", "claude-sonnet-5", {"merge_system": True}),
     # Grok 4.5 via OpenRouter (OpenAI-compatible chat/completions). Grok 4.5 is a
     # mandatory-reasoning model: OpenRouter rejects reasoning.enabled=false (400),
     # so we can't turn it off. In practice one call emits ~28k reasoning tokens
