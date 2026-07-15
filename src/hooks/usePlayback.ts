@@ -139,8 +139,8 @@ export function usePlayback(
     if (audioFullyUnlocked()) {
       triggerMelody(pitch, "8n");
     } else {
-      void unlockAudio().then(() => {
-        triggerMelody(pitch, "8n");
+      void unlockAudio().then((unlocked) => {
+        if (unlocked) triggerMelody(pitch, "8n");
       });
     }
   }, [triggerMelody]);
@@ -162,7 +162,7 @@ export function usePlayback(
   }, []);
 
   const play = useCallback(async () => {
-    await unlockAudio();
+    if (!(await unlockAudio())) return;
     stop();
 
     const Tone = getTone();

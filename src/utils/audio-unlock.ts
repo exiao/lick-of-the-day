@@ -98,12 +98,14 @@ export function audioFullyUnlocked(): boolean {
  * Unlock audio for iOS/iPadOS. Must be called synchronously from inside a user
  * gesture handler (click/touch). Safe to call repeatedly; it skips work that's
  * already done but keeps retrying the media prime until it actually succeeds.
- * Returns a promise that resolves once the AudioContext is running.
+ * Returns whether the AudioContext was resumed during this gesture. When Tone
+ * has not finished its first dynamic import, it starts loading and asks the
+ * caller to wait for the next real gesture instead of scheduling silent audio.
  */
-export async function unlockAudio(): Promise<void> {
+export async function unlockAudio(): Promise<boolean> {
   // Fast path: fully unlocked and context running — no async work needed.
   if (audioFullyUnlocked()) {
-    return;
+    return true;
   }
 
   // Start the media prime FIRST, synchronously within the gesture, so iOS still
@@ -111,12 +113,22 @@ export async function unlockAudio(): Promise<void> {
   // first would consume the gesture and Safari could reject the play).
   const mediaPrime = startMediaPrime();
 
-  // Lazy-load Tone.js on first audio use, then resume the Web Audio context.
-  const Tone = await loadTone();
+  // A dynamic import crosses an async boundary, which loses Safari's user
+  // activation. Warm the module now, then require the next gesture to resume.
+  if (!toneLoaded()) {
+    void loadTone();
+    await mediaPrime;
+    return false;
+  }
+
+  // Tone is already loaded, so invoke start synchronously while this gesture is
+  // still active. Await only its completion.
+  const Tone = getTone();
   if (Tone.getContext().state !== "running") {
     await Tone.start();
   }
 
   primeBuffer();
   await mediaPrime;
+  return true;
 }
