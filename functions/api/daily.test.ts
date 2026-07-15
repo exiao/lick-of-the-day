@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { FALLBACK_LICK } from "../_shared/fallback";
+import type { CoordinatorNamespace } from "../_shared/coordinator";
 import { onRequestGet } from "./daily";
 
 class MemoryKV {
@@ -15,6 +16,35 @@ class MemoryKV {
 
   async delete(key: string): Promise<void> {
     this.entries.delete(key);
+  }
+}
+
+class RefreshCoordinator implements CoordinatorNamespace {
+  private acquired = false;
+  private tail: Promise<void> = Promise.resolve();
+
+  idFromName(name: string): string {
+    return name;
+  }
+
+  get(id: unknown) {
+    void id;
+    return {
+      fetch: (input: RequestInfo | URL) => {
+        const path = new URL(String(input)).pathname;
+        const operation = this.tail.then(() => {
+          if (path === "/refresh/acquire") {
+            if (this.acquired) return new Response(null, { status: 409 });
+            this.acquired = true;
+          } else if (path === "/refresh/release") {
+            this.acquired = false;
+          }
+          return new Response(null, { status: 204 });
+        });
+        this.tail = operation.then(() => undefined);
+        return operation;
+      },
+    };
   }
 }
 
@@ -50,7 +80,7 @@ describe("GET /api/daily", () => {
 
     const pending: Promise<unknown>[] = [];
     const response = await onRequestGet({
-      env: { ANTHROPIC_API_KEY: "test", LICK_STORE: store },
+      env: { ANTHROPIC_API_KEY: "test", LICK_STORE: store, LICK_COORDINATOR: new RefreshCoordinator() },
       waitUntil: (promise: Promise<unknown>) => pending.push(promise),
     } as Parameters<typeof onRequestGet>[0]);
 
@@ -75,16 +105,17 @@ describe("GET /api/daily", () => {
 
     const pending: Promise<unknown>[] = [];
     const context = {
-      env: { ANTHROPIC_API_KEY: "test", LICK_STORE: store },
+      env: { ANTHROPIC_API_KEY: "test", LICK_STORE: store, LICK_COORDINATOR: new RefreshCoordinator() },
       waitUntil: (promise: Promise<unknown>) => pending.push(promise),
     } as Parameters<typeof onRequestGet>[0];
 
-    await onRequestGet(context);
-    await onRequestGet(context);
+    await Promise.all([
+      onRequestGet(context),
+      onRequestGet(context),
+    ]);
 
     expect(pending).toHaveLength(1);
     await Promise.all(pending);
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    await expect(store.get("daily:2026-07-15:refresh-lock")).resolves.toBeNull();
   });
 });

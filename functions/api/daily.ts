@@ -2,10 +2,12 @@ import { buildLickPrompt } from "../_shared/prompt";
 import { FALLBACK_LICK } from "../_shared/fallback";
 import { extractJSON, validateNotes } from "../_shared/parse";
 import { LICK_MODEL, LICK_MAX_TOKENS } from "../_shared/lick-config";
+import type { CoordinatorNamespace } from "../_shared/coordinator";
 
 interface Env {
   ANTHROPIC_API_KEY: string;
   LICK_STORE: KVNamespace;
+  LICK_COORDINATOR?: CoordinatorNamespace;
 }
 
 type Genre = "jazz" | "blues" | "funk" | "rnb" | "bossa";
@@ -15,7 +17,6 @@ const GENRES: Genre[] = ["jazz", "blues", "funk", "rnb", "bossa"];
 // day key. Lets us serve a (possibly stale) lick instantly while today's is
 // regenerated in the background — stale-while-revalidate.
 const LATEST_KEY = "daily:latest";
-const REFRESH_LOCK_TTL_SEC = 60;
 
 function getDayOfYear(): number {
   const now = new Date();
@@ -75,8 +76,27 @@ async function generateDailyLick(env: Env): Promise<Record<string, unknown>> {
 // Regenerate today's lick and persist it to both the day key and the latest
 // pointer. Errors are swallowed — this runs in the background (waitUntil) and a
 // failure just leaves the previous cached lick in place for the next request.
+async function requestCoordinator(env: Env, key: string, path: string): Promise<Response | undefined> {
+  if (!env.LICK_COORDINATOR) return undefined;
+  try {
+    const stub = env.LICK_COORDINATOR.get(env.LICK_COORDINATOR.idFromName(key));
+    return await stub.fetch(`https://lick-coordinator${path}`, { method: "POST" });
+  } catch (err) {
+    console.error("Daily-lick coordinator request failed:", err);
+    return undefined;
+  }
+}
+
+async function acquireRefresh(env: Env, kvKey: string): Promise<boolean> {
+  const response = await requestCoordinator(env, `refresh:${kvKey}`, "/refresh/acquire");
+  return response?.ok ?? false;
+}
+
+async function releaseRefresh(env: Env, kvKey: string): Promise<void> {
+  await requestCoordinator(env, `refresh:${kvKey}`, "/refresh/release");
+}
+
 async function refreshDailyLick(env: Env, kvKey: string): Promise<void> {
-  const lockKey = `${kvKey}:refresh-lock`;
   try {
     const lick = await generateDailyLick(env);
     const payload = JSON.stringify(lick);
@@ -85,11 +105,7 @@ async function refreshDailyLick(env: Env, kvKey: string): Promise<void> {
   } catch (err) {
     console.error("Background daily-lick refresh failed:", err);
   } finally {
-    try {
-      await env.LICK_STORE.delete(lockKey);
-    } catch (err) {
-      console.error("Failed to release daily-lick refresh lock:", err);
-    }
+    await releaseRefresh(env, kvKey);
   }
 }
 
@@ -112,10 +128,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     // the background. Classic stale-while-revalidate — no blocking cold path.
     const stale = await context.env.LICK_STORE.get(LATEST_KEY);
     if (stale) {
-      const lockKey = `${kvKey}:refresh-lock`;
-      const locked = await context.env.LICK_STORE.get(lockKey);
-      if (!locked) {
-        await context.env.LICK_STORE.put(lockKey, "1", { expirationTtl: REFRESH_LOCK_TTL_SEC });
+      if (await acquireRefresh(context.env, kvKey)) {
         context.waitUntil(refreshDailyLick(context.env, kvKey));
       }
       return jsonResponse(

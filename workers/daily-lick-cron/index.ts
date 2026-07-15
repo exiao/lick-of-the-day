@@ -7,12 +7,66 @@ interface Env {
   LICK_STORE: KVNamespace;
 }
 
+interface CoordinatorTransaction {
+  get<T>(key: string): Promise<T | undefined>;
+  put<T>(key: string, value: T): Promise<void>;
+  delete(key: string): Promise<boolean>;
+}
+
+interface CoordinatorStorage {
+  transaction<T>(closure: (txn: CoordinatorTransaction) => Promise<T>): Promise<T>;
+}
+
+interface DurableObjectStateLike {
+  storage: CoordinatorStorage;
+}
+
 type Genre = "jazz" | "blues" | "funk" | "rnb" | "bossa";
 const GENRES: Genre[] = ["jazz", "blues", "funk", "rnb", "bossa"];
 
 // Pointer to the most-recent lick, kept in sync with the day key so the Pages
 // function can serve it stale-while-revalidate on a same-day cache miss.
 const LATEST_KEY = "daily:latest";
+const REFRESH_LOCK_TTL_MS = 60_000;
+const RATE_LIMIT_MAX = 10;
+
+// Pages Functions bind this class as an external Durable Object. A distinct
+// object ID per daily key / IP-window makes the transactions below the single,
+// strongly consistent admission point for cache refreshes and rate limits.
+export class LickCoordinator {
+  constructor(private readonly state: DurableObjectStateLike) {}
+
+  async fetch(request: Request): Promise<Response> {
+    const path = new URL(request.url).pathname;
+
+    if (path === "/refresh/acquire") {
+      const acquired = await this.state.storage.transaction(async (txn) => {
+        const expiresAt = await txn.get<number>("refresh-expires-at");
+        if (expiresAt && expiresAt > Date.now()) return false;
+        await txn.put("refresh-expires-at", Date.now() + REFRESH_LOCK_TTL_MS);
+        return true;
+      });
+      return new Response(null, { status: acquired ? 204 : 409 });
+    }
+
+    if (path === "/refresh/release") {
+      await this.state.storage.transaction((txn) => txn.delete("refresh-expires-at"));
+      return new Response(null, { status: 204 });
+    }
+
+    if (path === "/rate-limit/admit") {
+      const admitted = await this.state.storage.transaction(async (txn) => {
+        const current = (await txn.get<number>("count")) ?? 0;
+        if (current >= RATE_LIMIT_MAX) return false;
+        await txn.put("count", current + 1);
+        return true;
+      });
+      return new Response(null, { status: admitted ? 204 : 429 });
+    }
+
+    return new Response("Not found", { status: 404 });
+  }
+}
 
 function getTodayKey(): string {
   return new Date().toISOString().split("T")[0];
