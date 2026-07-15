@@ -51,7 +51,7 @@ Arms are defined in `run_eval.py`'s `ARMS` registry: `haiku`, `sonnet`,
 `(provider, model, options)` there. `sonnet5` currently points at
 `claude-sonnet-4-6` (the newest released Sonnet; Sonnet 5 is not yet on the
 gateway). `grok45` is Grok 4.5 via OpenRouter (OpenAI-compatible) with reasoning
-disabled.
+enabled because the provider requires it.
 
 ## The musicality scorer
 

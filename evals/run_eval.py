@@ -172,7 +172,15 @@ def gen_openrouter(model, system, user, opts):
         body["reasoning"] = opts["reasoning"]
     data, ms = _post("https://openrouter.ai/api/v1/chat/completions", headers, body,
                      timeout=opts.get("timeout", 120))
-    txt = data["choices"][0]["message"].get("content") or ""
+    if "error" in data:
+        error = data["error"]
+        if isinstance(error, dict):
+            error = error.get("message", error)
+        raise RuntimeError(f"OpenRouter error: {error}")
+    choices = data.get("choices")
+    if not choices:
+        raise RuntimeError("OpenRouter response missing 'choices'")
+    txt = choices[0]["message"].get("content") or ""
     um = data.get("usage", {}) or {}
     out_tok = um.get("completion_tokens", 0)
     think_tok = (um.get("completion_tokens_details") or {}).get("reasoning_tokens", 0)
