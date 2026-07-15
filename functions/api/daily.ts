@@ -135,7 +135,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       }
       return jsonResponse(
         JSON.parse(stale),
-        "public, max-age=60, stale-while-revalidate=86400",
+        "no-store",
         { "X-Lick-Cache": "stale-revalidating" },
       );
     }

@@ -87,7 +87,7 @@ describe("GET /api/daily", () => {
     } as Parameters<typeof onRequestGet>[0]);
 
     expect(response.headers.get("X-Lick-Cache")).toBe("stale-revalidating");
-    expect(response.headers.get("Cache-Control")).toBe("public, max-age=60, stale-while-revalidate=86400");
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
     await expect(response.json()).resolves.toEqual(stale);
     expect(pending).toHaveLength(1);
 
