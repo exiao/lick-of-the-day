@@ -53,6 +53,18 @@ Arms are defined in `run_eval.py`'s `ARMS` registry: `haiku`, `sonnet`,
 lick-generation run. `grok45` is Grok 4.5 via OpenRouter (OpenAI-compatible); it requires
 reasoning, so the harness records its reasoning-token use and allows a longer timeout.
 
+### Comparable runs and Sonnet caveat
+
+`results.json` stores a fingerprint of the dumped prompts, scorer, bars, genres,
+sample count, and arm definitions. A resumed run keeps prior arms only when that
+fingerprint matches; otherwise it stops rather than mixing incomparable rows.
+
+The gateway currently rejects non-Haiku Claude requests that carry a `system`
+field, so the `sonnet5` arm folds the same instructions into its user message.
+Treat its output as a quality-only signal, not a production-latency or model-switch
+decision: it lacks the production cached-system request shape. A model replacement
+requires a production-shaped validation run in addition to this harness.
+
 ## The musicality scorer
 
 Every sub-score is 0..1 and verifies a constraint the generation prompt

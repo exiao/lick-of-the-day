@@ -30,6 +30,7 @@ Findings baked into the defaults (see evals/README.md):
 import os
 import re
 import json
+import hashlib
 import time
 import statistics as st
 import urllib.request
@@ -103,12 +104,36 @@ def _parse(txt):
     return None
 
 
-def retained_rows(results_path, selected_arms):
-    """Keep completed arms when resuming only the missing arm(s)."""
+def eval_metadata(prompts):
+    """Fingerprint the prompt, scorer, and runner settings used for a result set."""
+    return {
+        "prompts_sha256": hashlib.sha256(json.dumps(prompts, sort_keys=True).encode()).hexdigest(),
+        "scorer_sha256": hashlib.sha256((HERE / "scorer.py").read_bytes()).hexdigest(),
+        "bars": BARS,
+        "genres": GENRES,
+        "samples_per_cell": N,
+        "max_tokens": MAX_TOKENS,
+        "arms": {arm: list(ARMS[arm]) for arm in sorted(ARMS)},
+    }
+
+
+def retained_rows(results_path, selected_arms, expected_metadata=None):
+    """Keep completed arms only when they match the current eval configuration."""
     if not results_path.exists():
         return []
     existing = json.loads(results_path.read_text())
-    return [row for row in existing if row.get("arm") not in selected_arms]
+    if isinstance(existing, list):
+        if expected_metadata is not None:
+            raise ValueError("results are incompatible: missing eval metadata")
+        rows = existing
+    else:
+        metadata = existing.get("metadata") if isinstance(existing, dict) else None
+        rows = existing.get("rows") if isinstance(existing, dict) else None
+        if metadata != expected_metadata:
+            raise ValueError("results are incompatible with the current eval metadata")
+        if not isinstance(rows, list):
+            raise ValueError("results are incompatible: rows must be a list")
+    return [row for row in rows if row.get("arm") not in selected_arms]
 
 
 def gen_anthropic(model, system, user, opts):
@@ -209,12 +234,40 @@ REQUIRED_ENV = {
 }
 
 
+def print_report(rows, genres):
+    """Print all retained and freshly generated arms in one comparison table."""
+    report_arms = sorted({row.get("arm") for row in rows if row.get("arm")})
+    print("\n" + "=" * 80)
+    print(f"{'arm':15}{'n':>3}{'parse%':>8}{'comp_mean':>11}{'comp_sd':>9}{'comp_min':>10}{'ms_med':>9}{'think_med':>11}")
+    for arm in report_arms:
+        arm_rows = [row for row in rows if row["arm"] == arm]
+        ok = [row for row in arm_rows if row.get("comp") is not None]
+        comps = [row["comp"] for row in ok]
+        mss = [row["ms"] for row in arm_rows if row.get("ms")]
+        thinks = [row["think"] for row in arm_rows if row.get("think") is not None]
+        mean = round(st.mean(comps), 3) if comps else 0
+        sd = round(st.pstdev(comps), 3) if len(comps) > 1 else 0
+        cmin = round(min(comps), 3) if comps else 0
+        msmed = round(st.median(mss)) if mss else 0
+        thmed = round(st.median(thinks)) if thinks else 0
+        print(f"{arm:15}{len(arm_rows):>3}{100*len(ok)/len(arm_rows):>7.0f}%{mean:>11}{sd:>9}{cmin:>10}{msmed:>9}{thmed:>11}")
+
+    print("\nPer-genre composite mean:")
+    for arm in report_arms:
+        line = f"  {arm:14}"
+        for genre in genres:
+            comps = [row["comp"] for row in rows if row["arm"] == arm and row["genre"] == genre and row.get("comp") is not None]
+            line += f"{genre}={st.mean(comps):.3f} " if comps else f"{genre}=NA "
+        print(line)
+
+
 def main():
     if not PROMPTS_PATH.exists():
         raise SystemExit(f"Missing {PROMPTS_PATH}. Run: npm run dump-prompts")
     prompts = json.loads(PROMPTS_PATH.read_text())
 
-    rows = retained_rows(RESULTS_PATH, SELECTED)
+    metadata = eval_metadata(prompts)
+    rows = retained_rows(RESULTS_PATH, SELECTED, metadata)
     for arm in SELECTED:
         if arm not in ARMS:
             print(f"!! unknown arm '{arm}', skipping"); continue
@@ -250,34 +303,8 @@ def main():
                     rows.append({"arm": arm, "genre": g, "ms": None, "comp": None, "fail": str(e)[:80]})
                     print(f"  {arm:14}{g:6} #{i} ERR {str(e)[:90]}")
 
-    RESULTS_PATH.write_text(json.dumps(rows, indent=2))
-
-    print("\n" + "=" * 80)
-    print(f"{'arm':15}{'n':>3}{'parse%':>8}{'comp_mean':>11}{'comp_sd':>9}{'comp_min':>10}{'ms_med':>9}{'think_med':>11}")
-    for arm in SELECTED:
-        a = [r for r in rows if r["arm"] == arm]
-        if not a:
-            continue
-        ok = [r for r in a if r.get("comp") is not None]
-        comps = [r["comp"] for r in ok]
-        mss = [r["ms"] for r in a if r.get("ms")]
-        thinks = [r["think"] for r in a if r.get("think") is not None]
-        mean = round(st.mean(comps), 3) if comps else 0
-        sd = round(st.pstdev(comps), 3) if len(comps) > 1 else 0
-        cmin = round(min(comps), 3) if comps else 0
-        msmed = round(st.median(mss)) if mss else 0
-        thmed = round(st.median(thinks)) if thinks else 0
-        print(f"{arm:15}{len(a):>3}{100*len(ok)/len(a):>7.0f}%{mean:>11}{sd:>9}{cmin:>10}{msmed:>9}{thmed:>11}")
-
-    print("\nPer-genre composite mean:")
-    for arm in SELECTED:
-        if not any(r["arm"] == arm for r in rows):
-            continue
-        line = f"  {arm:14}"
-        for g in GENRES:
-            c = [r["comp"] for r in rows if r["arm"] == arm and r["genre"] == g and r.get("comp") is not None]
-            line += f"{g}={st.mean(c):.3f} " if c else f"{g}=NA "
-        print(line)
+    RESULTS_PATH.write_text(json.dumps({"metadata": metadata, "rows": rows}, indent=2))
+    print_report(rows, GENRES)
     print(f"\nsaved {RESULTS_PATH}")
 
 
