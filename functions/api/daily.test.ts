@@ -67,7 +67,7 @@ describe("GET /api/daily", () => {
       env: { ANTHROPIC_API_KEY: "test", LICK_STORE: store },
     } as Parameters<typeof onRequestGet>[0]);
 
-    expect(response.headers.get("Cache-Control")).toBe("public, max-age=30, stale-while-revalidate=86400");
+    expect(response.headers.get("Cache-Control")).toBe("public, max-age=30, must-revalidate");
   });
 
   it("serves the latest cached lick while it refreshes a missing daily key", async () => {

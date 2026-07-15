@@ -11,6 +11,7 @@
 // so Tone.js output survives the silent switch.
 
 import { loadTone, getTone, toneLoaded } from "./tone-loader";
+import { preloadPianoSampler } from "./piano-sampler";
 
 // Tracked separately: the context can resume while the HTMLMediaElement prime
 // fails (e.g. a media-policy rejection). We must keep retrying the media prime on
@@ -116,7 +117,7 @@ export async function unlockAudio(): Promise<boolean> {
   // A dynamic import crosses an async boundary, which loses Safari's user
   // activation. Warm the module now, then require the next gesture to resume.
   if (!toneLoaded()) {
-    void loadTone();
+    void loadTone().then(preloadPianoSampler);
     await mediaPrime;
     return false;
   }

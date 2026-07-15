@@ -120,7 +120,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     if (cached) {
       return jsonResponse(
         JSON.parse(cached),
-        `public, max-age=${secondsUntilMidnightUTC()}, stale-while-revalidate=86400`,
+        `public, max-age=${secondsUntilMidnightUTC()}, must-revalidate`,
       );
     }
 
@@ -152,7 +152,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     }
     return jsonResponse(
       lick,
-      `public, max-age=${secondsUntilMidnightUTC()}, stale-while-revalidate=86400`,
+      `public, max-age=${secondsUntilMidnightUTC()}, must-revalidate`,
     );
   } catch (err) {
     console.error("Failed to generate daily lick:", err);
