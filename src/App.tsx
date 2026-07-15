@@ -2,6 +2,7 @@ import { useCallback, useEffect } from "react";
 import { useLick } from "./hooks/useLick";
 import { usePlayback } from "./hooks/usePlayback";
 import { loadTone } from "./utils/tone-loader";
+import { preloadPianoSampler } from "./utils/piano-sampler";
 import { computePianoRange, parsePitch } from "./utils/music";
 import { Header } from "./components/Header";
 import { SheetMusic } from "./components/SheetMusic";
@@ -16,7 +17,9 @@ function App() {
   // the initial bundle (dynamic import) but hidden behind the first gesture's
   // network idle rather than paid for on Play.
   useEffect(() => {
-    const preload = () => { void loadTone(); };
+    const preload = () => {
+      void loadTone().then(preloadPianoSampler);
+    };
     window.addEventListener("pointerdown", preload, { once: true });
     return () => window.removeEventListener("pointerdown", preload);
   }, []);

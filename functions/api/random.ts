@@ -21,7 +21,7 @@ const RATE_LIMIT_WINDOW_SEC = 60 * 60; // per hour
 // under a burst from many colocated edge locations a client may slip a few extra
 // requests through — acceptable for abuse-throttling, unlike the per-isolate Map
 // which reset the count to zero on any cold start.
-async function checkRateLimit(store: KVNamespace | undefined, ip: string): Promise<boolean> {
+export async function checkRateLimit(store: KVNamespace | undefined, ip: string): Promise<boolean> {
   if (!store) return true; // KV unbound (e.g. local dev) — fail open, don't block.
   const window = Math.floor(Date.now() / 1000 / RATE_LIMIT_WINDOW_SEC);
   const key = `rl:${ip}:${window}`;

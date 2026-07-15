@@ -1,9 +1,21 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type PluginOption } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    process.env.ANALYZE === 'true'
+      ? visualizer({
+          filename: 'bundle-stats.html',
+          template: 'treemap',
+          gzipSize: true,
+          brotliSize: true,
+        }) as PluginOption
+      : undefined,
+  ],
   build: {
     rollupOptions: {
       output: {

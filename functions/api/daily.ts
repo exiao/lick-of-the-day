@@ -68,7 +68,7 @@ async function generateDailyLick(env: Env): Promise<Record<string, unknown>> {
   const rawText = data.content[0]?.type === "text" ? data.content[0].text : "";
   const parsed = JSON.parse(extractJSON(rawText));
   validateNotes(parsed.notes, parsed.bars ?? 4);
-  return { id: getTodayKey(), ...parsed };
+  return { ...parsed, id: getTodayKey() };
 }
 
 // Regenerate today's lick and persist it to both the day key and the latest

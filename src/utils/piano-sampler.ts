@@ -8,7 +8,8 @@
 // they are shared infrastructure and re-creating the sampler would re-download
 // ~1.9 MB of samples.
 
-import * as Tone from "tone";
+import type * as Tone from "tone";
+import { getTone } from "./tone-loader";
 
 // Salamander subset: one sample every 3 semitones (C, D#, F#, A) across the
 // piano range. Tone.Sampler pitch-shifts the nearest sample to fill the gaps.
@@ -36,6 +37,7 @@ let samplerConnected = false;
  */
 export function getMasterChain(): Tone.Reverb {
   if (!masterInput) {
+    const Tone = getTone();
     const limiter = new Tone.Limiter(-1).toDestination();
     const reverb = new Tone.Reverb({ decay: 1.3, preDelay: 0.01, wet: 0.14 });
     reverb.connect(limiter);
@@ -52,6 +54,7 @@ export function getMasterChain(): Tone.Reverb {
  */
 export function getPianoSampler(): Tone.Sampler {
   if (!sampler) {
+    const Tone = getTone();
     sampler = new Tone.Sampler({
       urls: SAMPLE_URLS,
       baseUrl: SAMPLE_BASE_URL,
@@ -64,7 +67,7 @@ export function getPianoSampler(): Tone.Sampler {
   // is actually running. Doing this on mount, before a user gesture, can hang
   // or fail on iOS/Safari. Playback paths call unlockAudio() first, so by the
   // time a note is triggered the context is running and this connect fires.
-  if (!samplerConnected && Tone.getContext().state === "running") {
+  if (!samplerConnected && getTone().getContext().state === "running") {
     sampler.connect(getMasterChain());
     samplerConnected = true;
   }
@@ -77,8 +80,8 @@ export function isSamplerReady(): boolean {
 }
 
 /**
- * Begin loading the piano samples ahead of first playback (idempotent). Safe to
- * call before the AudioContext is running — it only constructs the node graph.
+ * Begin loading the piano samples ahead of first playback (idempotent). Call
+ * after Tone.js has loaded; it does not create the master chain until audio runs.
  */
 export function preloadPianoSampler(): void {
   getPianoSampler();

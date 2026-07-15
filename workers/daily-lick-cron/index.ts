@@ -52,7 +52,7 @@ async function generateLick(genre: Genre, apiKey: string): Promise<unknown> {
   const data = (await res.json()) as { content: { type: string; text: string }[] };
   const rawText = data.content[0]?.type === "text" ? data.content[0].text : "";
   const todayKey = getTodayKey();
-  return { id: todayKey, ...JSON.parse(extractJSON(rawText)) };
+  return { ...JSON.parse(extractJSON(rawText)), id: todayKey };
 }
 
 export default {

@@ -6,7 +6,6 @@ import {
   getMasterChain,
   getPianoSampler,
   isSamplerReady,
-  preloadPianoSampler,
 } from "../utils/piano-sampler";
 import type { Note, Articulation, Genre, Lick } from "../types/lick";
 
@@ -116,12 +115,6 @@ export function usePlayback(
     return chordSynthRef.current;
   }, []);
 
-  // Kick off the sample download as soon as the hook mounts so the sampler is
-  // usually ready by the time the user hits play. Never blocks: playback falls
-  // back to the synth until isSamplerReady() flips true.
-  useEffect(() => {
-    preloadPianoSampler();
-  }, []);
 
   // Trigger one melody/practice note through the piano sampler when its samples
   // have loaded, otherwise through the triangle synth fallback. Same signature
