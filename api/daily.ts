@@ -51,7 +51,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     const text = message.content[0].type === "text" ? message.content[0].text : "";
-    const lick: Lick = { id: getTodayKey(), ...JSON.parse(text) };
+    const lick: Lick = { ...JSON.parse(text), id: getTodayKey() };
 
     // Cache for 24 hours
     cache.set(todayKey, { lick, expires: Date.now() + 24 * 60 * 60 * 1000 });

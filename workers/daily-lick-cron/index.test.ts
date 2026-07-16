@@ -22,7 +22,9 @@ describe("daily lick cron worker", () => {
     } as never);
 
     expect(response.status).toBe(200);
-    expect(put).toHaveBeenCalledOnce();
+    // Two writes: the daily:<date> key and the daily:latest pointer (added when
+    // the cron worker adopted main's stale-while-revalidate pointer scheme).
+    expect(put).toHaveBeenCalledTimes(2);
     expect(error).toHaveBeenCalledWith(expect.stringContaining("xAI API returned empty content"));
   });
 

@@ -48,7 +48,8 @@ npm run build     # typecheck + vite build
 
 Connect the repo to Cloudflare Pages with build output `dist` (see `wrangler.toml`). Bind the `LICK_STORE` KV namespace and set `ANTHROPIC_API_KEY` as an environment variable. The daily-lick cron worker (`workers/daily-lick-cron`) additionally uses `XAI_API_KEY` to generate the daily lick with Grok 4.5 (best musical quality; its ~145s latency is invisible in the midnight cron), falling back to Haiku if the key is unset or the call fails.
 
-Deploy the daily cron worker separately:
+Deploy or redeploy the daily cron worker before deploying Pages. It owns the
+strongly consistent coordinator used by stale-refresh and rate-limit admission:
 
 ```bash
 cd workers/daily-lick-cron
