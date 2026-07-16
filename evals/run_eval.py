@@ -267,16 +267,25 @@ def main():
     prompts = json.loads(PROMPTS_PATH.read_text())
 
     metadata = eval_metadata(prompts)
-    rows = retained_rows(RESULTS_PATH, SELECTED, metadata)
+
+    # Determine which selected arms will actually regenerate BEFORE purging any
+    # rows. An arm that is unknown or missing credentials is skipped, so its
+    # existing rows must be preserved — purging them here would delete completed
+    # eval data on a no-op rerun (e.g. `EVAL_ARMS=grok45` without its API key).
+    runnable = []
     for arm in SELECTED:
         if arm not in ARMS:
             print(f"!! unknown arm '{arm}', skipping"); continue
-        provider, model, opts = ARMS[arm]
-        # Skip an arm whose credentials are missing instead of raising a
-        # KeyError on every sample and spamming the console.
+        provider = ARMS[arm][0]
         missing = [v for v in REQUIRED_ENV.get(provider, []) if v not in os.environ]
         if missing:
             print(f"!! {arm}: missing {', '.join(missing)}, skipping arm"); continue
+        runnable.append(arm)
+
+    # Only purge rows for arms we're about to regenerate; keep everything else.
+    rows = retained_rows(RESULTS_PATH, runnable, metadata)
+    for arm in runnable:
+        provider, model, opts = ARMS[arm]
         gen = PROVIDERS[provider]
         for g in GENRES:
             sysp, usr = prompts[g]["system"], prompts[g]["user"]

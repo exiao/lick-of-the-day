@@ -122,5 +122,33 @@ class EvalHarnessTest(unittest.TestCase):
                 run_eval.gen_openrouter("x-ai/grok-4.5", "system", "user", {})
 
 
+    def test_main_preserves_rows_for_skipped_selected_arm(self):
+        # Reruns of a SELECTED arm that ends up skipped (missing credentials)
+        # must not purge its existing rows. Regression for the ordering bug
+        # where retained_rows(SELECTED) ran before the credential check.
+        prompts = {"jazz": {"system": "system", "user": "user"}}
+        with tempfile.TemporaryDirectory() as tmpdir:
+            results_path = Path(tmpdir) / "results.json"
+            prompts_path = Path(tmpdir) / "prompts.json"
+            prompts_path.write_text(json.dumps(prompts))
+
+            env = {k: v for k, v in os.environ.items() if k != "OPENROUTER_API_KEY"}
+            with patch.object(run_eval, "PROMPTS_PATH", prompts_path), \
+                 patch.object(run_eval, "RESULTS_PATH", results_path), \
+                 patch.object(run_eval, "SELECTED", ["grok45"]), \
+                 patch.object(run_eval, "GENRES", ["jazz"]), \
+                 patch.dict(os.environ, env, clear=True), \
+                 contextlib.redirect_stdout(io.StringIO()):
+                metadata = run_eval.eval_metadata(prompts)
+                results_path.write_text(json.dumps({
+                    "metadata": metadata,
+                    "rows": [{"arm": "grok45", "genre": "jazz", "comp": 0.9}],
+                }))
+                run_eval.main()
+
+            saved = json.loads(results_path.read_text())
+            self.assertEqual(saved["rows"], [{"arm": "grok45", "genre": "jazz", "comp": 0.9}])
+
+
 if __name__ == "__main__":
     unittest.main()
