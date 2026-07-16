@@ -15,6 +15,9 @@ interface Env {
 
 type Genre = "jazz" | "blues" | "funk" | "rnb" | "bossa";
 const GENRES: Genre[] = ["jazz", "blues", "funk", "rnb", "bossa"];
+// Grok normally takes about 145s; cap a stalled request well below the cron's
+// 15-minute wall-time so generateDailyLick can still fall back to Haiku.
+const GROK_TIMEOUT_MS = 5 * 60 * 1000;
 
 function getTodayKey(): string {
   return new Date().toISOString().split("T")[0];
@@ -66,6 +69,7 @@ async function generateWithGrok(genre: Genre, apiKey: string): Promise<unknown> 
 
   const res = await fetch("https://api.x.ai/v1/chat/completions", {
     method: "POST",
+    signal: AbortSignal.timeout(GROK_TIMEOUT_MS),
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
@@ -86,7 +90,11 @@ async function generateWithGrok(genre: Genre, apiKey: string): Promise<unknown> 
 
   const data = (await res.json()) as { choices: { message: { content: string } }[] };
   const rawText = data.choices[0]?.message?.content ?? "";
-  return { id: getTodayKey(), ...JSON.parse(extractJSON(rawText)) };
+  const jsonString = extractJSON(rawText);
+  if (!jsonString) {
+    throw new Error("xAI API returned empty content that cannot be parsed as JSON.");
+  }
+  return { id: getTodayKey(), ...JSON.parse(jsonString) };
 }
 
 // Generate the daily lick: prefer grok for quality, fall back to haiku if grok
