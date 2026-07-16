@@ -31,4 +31,4 @@ haiku           25    100%      0.835    0.095     0.645     8711          0
 Per-genre composite mean:
   haiku         jazz=0.901 blues=0.746 funk=0.774 rnb=0.831 bossa=0.923
 
-saved /Users/testuser/projects/lick-of-the-day/.worktrees/t_93ef0480/evals/results.json
+saved evals/results.json
