@@ -1,0 +1,34 @@
+  haiku         jazz   #0 comp=0.875 ms=8296 out=946 think=0
+  haiku         jazz   #1 comp=0.945 ms=8704 out=920 think=0
+  haiku         jazz   #2 comp=0.845 ms=8711 out=976 think=0
+  haiku         jazz   #3 comp=0.884 ms=8416 out=1005 think=0
+  haiku         jazz   #4 comp=0.956 ms=7908 out=955 think=0
+  haiku         blues  #0 comp=0.663 ms=9321 out=978 think=0
+  haiku         blues  #1 comp=0.825 ms=8776 out=1041 think=0
+  haiku         blues  #2 comp=0.728 ms=8169 out=945 think=0
+  haiku         blues  #3 comp=0.729 ms=10431 out=1205 think=0
+  haiku         blues  #4 comp=0.784 ms=11874 out=1097 think=0
+  haiku         funk   #0 comp=0.770 ms=16249 out=2036 think=0
+  haiku         funk   #1 comp=0.688 ms=14917 out=1525 think=0
+  haiku         funk   #2 comp=0.756 ms=9780 out=1099 think=0
+  haiku         funk   #3 comp=0.857 ms=9829 out=1163 think=0
+  haiku         funk   #4 comp=0.800 ms=14961 out=1786 think=0
+  haiku         rnb    #0 comp=0.934 ms=10311 out=1057 think=0
+  haiku         rnb    #1 comp=0.858 ms=7708 out=874 think=0
+  haiku         rnb    #2 comp=0.912 ms=8525 out=960 think=0
+  haiku         rnb    #3 comp=0.804 ms=8348 out=958 think=0
+  haiku         rnb    #4 comp=0.645 ms=6865 out=789 think=0
+  haiku         bossa  #0 comp=0.912 ms=9221 out=762 think=0
+  haiku         bossa  #1 comp=0.978 ms=6545 out=771 think=0
+  haiku         bossa  #2 comp=0.956 ms=9508 out=763 think=0
+  haiku         bossa  #3 comp=0.934 ms=6152 out=764 think=0
+  haiku         bossa  #4 comp=0.836 ms=8616 out=769 think=0
+
+================================================================================
+arm              n  parse%  comp_mean  comp_sd  comp_min   ms_med  think_med
+haiku           25    100%      0.835    0.095     0.645     8711          0
+
+Per-genre composite mean:
+  haiku         jazz=0.901 blues=0.746 funk=0.774 rnb=0.831 bossa=0.923
+
+saved /Users/testuser/projects/lick-of-the-day/.worktrees/t_93ef0480/evals/results.json
