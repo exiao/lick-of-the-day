@@ -13,11 +13,86 @@ interface Env {
   LICK_STORE: KVNamespace;
 }
 
+interface CoordinatorTransaction {
+  get<T>(key: string): Promise<T | undefined>;
+  put<T>(key: string, value: T): Promise<void>;
+  delete(key: string): Promise<boolean>;
+}
+
+interface CoordinatorStorage {
+  transaction<T>(closure: (txn: CoordinatorTransaction) => Promise<T>): Promise<T>;
+  setAlarm(scheduledTime: number): Promise<void>;
+  deleteAll(): Promise<void>;
+}
+
+interface DurableObjectStateLike {
+  storage: CoordinatorStorage;
+}
+
 type Genre = "jazz" | "blues" | "funk" | "rnb" | "bossa";
 const GENRES: Genre[] = ["jazz", "blues", "funk", "rnb", "bossa"];
 // Grok normally takes about 145s; cap a stalled request well below the cron's
 // 15-minute wall-time so generateDailyLick can still fall back to Haiku.
 const GROK_TIMEOUT_MS = 5 * 60 * 1000;
+
+// Pointer to the most-recent lick, kept in sync with the day key so the Pages
+// function can serve it stale-while-revalidate on a same-day cache miss.
+const LATEST_KEY = "daily:latest";
+const REFRESH_LOCK_TTL_MS = 60_000;
+const RATE_LIMIT_MAX = 10;
+
+interface RefreshLease {
+  token: string;
+  expiresAt: number;
+}
+
+// Pages Functions bind this class as an external Durable Object. A distinct
+// object ID per daily key / IP-window makes the transactions below the single,
+// strongly consistent admission point for cache refreshes and rate limits.
+export class LickCoordinator {
+  constructor(private readonly state: DurableObjectStateLike) {}
+
+  async fetch(request: Request): Promise<Response> {
+    const path = new URL(request.url).pathname;
+
+    if (path === "/refresh/acquire") {
+      const lease = await this.state.storage.transaction(async (txn) => {
+        const current = await txn.get<RefreshLease>("refresh-lease");
+        if (current && current.expiresAt > Date.now()) return undefined;
+        const next = { token: crypto.randomUUID(), expiresAt: Date.now() + REFRESH_LOCK_TTL_MS };
+        await txn.put("refresh-lease", next);
+        return next;
+      });
+      return lease ? Response.json(lease) : new Response(null, { status: 409 });
+    }
+
+    if (path === "/refresh/release") {
+      const token = request.headers.get("X-Lick-Lease-Token");
+      await this.state.storage.transaction(async (txn) => {
+        const current = await txn.get<RefreshLease>("refresh-lease");
+        if (current?.token === token) await txn.delete("refresh-lease");
+      });
+      return new Response(null, { status: 204 });
+    }
+
+    if (path === "/rate-limit/admit") {
+      const admitted = await this.state.storage.transaction(async (txn) => {
+        const current = (await txn.get<number>("count")) ?? 0;
+        if (current >= RATE_LIMIT_MAX) return false;
+        await txn.put("count", current + 1);
+        return true;
+      });
+      if (admitted) await this.state.storage.setAlarm(Date.now() + 2 * 60 * 60 * 1000);
+      return new Response(null, { status: admitted ? 204 : 429 });
+    }
+
+    return new Response("Not found", { status: 404 });
+  }
+
+  async alarm(): Promise<void> {
+    await this.state.storage.deleteAll();
+  }
+}
 
 function getTodayKey(): string {
   return new Date().toISOString().split("T")[0];
@@ -121,10 +196,12 @@ export default {
 
     const lick = await generateDailyLick(genre, env);
     const key = `daily:${getTodayKey()}`;
+    const payload = JSON.stringify(lick);
 
-    await env.LICK_STORE.put(key, JSON.stringify(lick), {
+    await env.LICK_STORE.put(key, payload, {
       expirationTtl: 90000, // ~25 hours, auto-expires after tomorrow
     });
+    await env.LICK_STORE.put(LATEST_KEY, payload, { expirationTtl: 90000 });
 
     console.log(`Daily lick stored: key=${key}`);
   },
@@ -136,7 +213,9 @@ export default {
       const genre = pickGenre();
       const lick = await generateDailyLick(genre, env);
       const key = `daily:${getTodayKey()}`;
-      await env.LICK_STORE.put(key, JSON.stringify(lick), { expirationTtl: 90000 });
+      const payload = JSON.stringify(lick);
+      await env.LICK_STORE.put(key, payload, { expirationTtl: 90000 });
+      await env.LICK_STORE.put(LATEST_KEY, payload, { expirationTtl: 90000 });
       return Response.json({ ok: true, key, genre });
     }
     return new Response("Lick of the Day cron worker", { status: 200 });

@@ -15,3 +15,11 @@ crons = ["0 0 * * *"]  # midnight UTC daily
 binding = "LICK_STORE"
 id = "eb4b44c53c974515bfd6153b12da3751"
 preview_id = "85b392ff625044c79b163a44d73d4fdf"
+
+[[durable_objects.bindings]]
+name = "LICK_COORDINATOR"
+class_name = "LickCoordinator"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["LickCoordinator"]

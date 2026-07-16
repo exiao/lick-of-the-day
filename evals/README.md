@@ -25,6 +25,7 @@ npm run dump-prompts   # writes evals/prompts.json from the real buildLickPrompt
 # 2. Provide credentials (the gateway env already has these)
 export ANTHROPIC_TOKEN=... ANTHROPIC_BASE_URL=...   # for claude-* arms
 export GEMINI_API_KEY=...                            # for gemini-* arms
+export OPENROUTER_API_KEY=...                        # for openrouter arms (grok45)
 
 # 3. Run (defaults: arms haiku + flash_think0, genres jazz/blues/funk, N=5)
 python3 evals/run_eval.py
@@ -46,7 +47,23 @@ python3 evals/test_scorer.py
 | `EVAL_BARS` | 4 | Bar count (must match the value passed to `dump_prompts.ts`) |
 
 Arms are defined in `run_eval.py`'s `ARMS` registry: `haiku`, `sonnet`,
-`flash_think0`, `flash_dynamic`. Add your own `(provider, model, options)` there.
+`sonnet5`, `grok45`, `flash_think0`, `flash_dynamic`. Add your own
+`(provider, model, options)` there. `sonnet5` uses Anthropic's current
+`claude-sonnet-5` API ID with adaptive thinking disabled for a speed-comparable
+lick-generation run. `grok45` is Grok 4.5 via OpenRouter (OpenAI-compatible); it requires
+reasoning, so the harness records its reasoning-token use and allows a longer timeout.
+
+### Comparable runs and Sonnet caveat
+
+`results.json` stores a fingerprint of the dumped prompts, scorer, bars, genres,
+sample count, and arm definitions. A resumed run keeps prior arms only when that
+fingerprint matches; otherwise it stops rather than mixing incomparable rows.
+
+The gateway currently rejects non-Haiku Claude requests that carry a `system`
+field, so the `sonnet5` arm folds the same instructions into its user message.
+Treat its output as a quality-only signal, not a production-latency or model-switch
+decision: it lacks the production cached-system request shape. A model replacement
+requires a production-shaped validation run in addition to this harness.
 
 ## The musicality scorer
 

@@ -2,33 +2,37 @@ import { buildLickPrompt } from "../_shared/prompt";
 import { extractJSON, validateNotes } from "../_shared/parse";
 import { LICK_MODEL, LICK_MAX_TOKENS } from "../_shared/lick-config";
 import { SSE_HEADERS, sseData, sseDone, sseError, AnthropicSSEParser, anthropicDeltaText } from "../_shared/sse";
+import type { CoordinatorNamespace } from "../_shared/coordinator";
 
 interface Env {
   ANTHROPIC_API_KEY: string;
+  LICK_STORE: KVNamespace;
+  LICK_COORDINATOR?: CoordinatorNamespace;
 }
 
 const VALID_GENRES = new Set(["jazz", "blues", "funk", "rnb", "bossa"]);
 const VALID_BARS = new Set([2, 4, 6, 8]);
 
-// Simple rate limiting per IP (in-memory, resets on isolate restart).
-// TODO: Move to KV or D1 for cross-isolate persistence.
-const rateLimit = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_WINDOW_SEC = 60 * 60; // per hour
 
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const entry = rateLimit.get(ip);
-  if (!entry || entry.resetAt < now) {
-    rateLimit.set(ip, { count: 1, resetAt: now + 60 * 60 * 1000 });
+// Each fixed-window key maps to one Durable Object, whose storage transaction
+// makes admission atomic across Pages isolates and edge locations.
+export async function checkRateLimit(coordinator: CoordinatorNamespace | undefined, ip: string): Promise<boolean> {
+  if (!coordinator) return true; // Binding absent (e.g. local dev) — fail open, don't block.
+  try {
+    const window = Math.floor(Date.now() / 1000 / RATE_LIMIT_WINDOW_SEC);
+    const stub = coordinator.get(coordinator.idFromName(`rate-limit:${ip}:${window}`));
+    const response = await stub.fetch("https://lick-coordinator/rate-limit/admit", { method: "POST" });
+    return response.status !== 429;
+  } catch (err) {
+    console.error("Rate limiting check failed, failing open:", err);
     return true;
   }
-  if (entry.count >= 10) return false;
-  entry.count++;
-  return true;
 }
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   const ip = context.request.headers.get("cf-connecting-ip") || "unknown";
-  if (!checkRateLimit(ip)) {
+  if (!(await checkRateLimit(context.env.LICK_COORDINATOR, ip))) {
     return Response.json({ error: "Rate limit exceeded. Max 10 requests per hour." }, { status: 429 });
   }
 

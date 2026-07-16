@@ -10,7 +10,8 @@
 // module primes a silent <audio> element and an empty buffer on the first gesture
 // so Tone.js output survives the silent switch.
 
-import * as Tone from "tone";
+import { loadTone, getTone, toneLoaded } from "./tone-loader";
+import { preloadPianoSampler } from "./piano-sampler";
 
 // Tracked separately: the context can resume while the HTMLMediaElement prime
 // fails (e.g. a media-policy rejection). We must keep retrying the media prime on
@@ -29,7 +30,7 @@ const SILENT_WAV =
 function primeBuffer(): void {
   if (bufferPrimed) return;
   try {
-    const ctx = Tone.getContext().rawContext as AudioContext;
+    const ctx = getTone().getContext().rawContext as AudioContext;
     const buffer = ctx.createBuffer(1, 1, 22050);
     const source = ctx.createBufferSource();
     source.buffer = buffer;
@@ -86,31 +87,49 @@ function startMediaPrime(): Promise<void> {
  * route through unlockAudio() again so a failed media prime gets retried.
  */
 export function audioFullyUnlocked(): boolean {
-  return mediaUnlocked && bufferPrimed && Tone.getContext().state === "running";
+  return (
+    toneLoaded() &&
+    mediaUnlocked &&
+    bufferPrimed &&
+    getTone().getContext().state === "running"
+  );
 }
 
 /**
  * Unlock audio for iOS/iPadOS. Must be called synchronously from inside a user
  * gesture handler (click/touch). Safe to call repeatedly; it skips work that's
  * already done but keeps retrying the media prime until it actually succeeds.
- * Returns a promise that resolves once the AudioContext is running.
+ * Returns whether the AudioContext was resumed during this gesture. When Tone
+ * has not finished its first dynamic import, it starts loading and asks the
+ * caller to wait for the next real gesture instead of scheduling silent audio.
  */
-export async function unlockAudio(): Promise<void> {
+export async function unlockAudio(): Promise<boolean> {
   // Fast path: fully unlocked and context running — no async work needed.
-  if (mediaUnlocked && bufferPrimed && Tone.getContext().state === "running") {
-    return;
+  if (audioFullyUnlocked()) {
+    return true;
   }
 
   // Start the media prime FIRST, synchronously within the gesture, so iOS still
-  // treats silentEl.play() as user-activated (awaiting Tone.start() first would
-  // consume the gesture and Safari could reject the play).
+  // treats silentEl.play() as user-activated (awaiting the Tone import/start
+  // first would consume the gesture and Safari could reject the play).
   const mediaPrime = startMediaPrime();
 
-  // Resume the Tone/Web Audio context (required on all browsers).
+  // A dynamic import crosses an async boundary, which loses Safari's user
+  // activation. Warm the module now, then require the next gesture to resume.
+  if (!toneLoaded()) {
+    void loadTone().then(preloadPianoSampler);
+    await mediaPrime;
+    return false;
+  }
+
+  // Tone is already loaded, so invoke start synchronously while this gesture is
+  // still active. Await only its completion.
+  const Tone = getTone();
   if (Tone.getContext().state !== "running") {
     await Tone.start();
   }
 
   primeBuffer();
   await mediaPrime;
+  return true;
 }

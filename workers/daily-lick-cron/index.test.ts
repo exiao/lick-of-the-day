@@ -22,7 +22,7 @@ describe("daily lick cron worker", () => {
     } as never);
 
     expect(response.status).toBe(200);
-    expect(put).toHaveBeenCalledOnce();
+    expect(put).toHaveBeenCalledTimes(2);
     expect(error).toHaveBeenCalledWith(expect.stringContaining("xAI API returned empty content"));
   });
 
