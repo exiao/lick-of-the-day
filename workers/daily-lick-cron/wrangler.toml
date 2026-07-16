@@ -2,8 +2,14 @@ name = "lick-of-the-day-cron"
 main = "index.ts"
 compatibility_date = "2024-12-01"
 
+# Secrets (set via `wrangler secret put <NAME>`, do not commit):
+#   ANTHROPIC_API_KEY  haiku fallback + user-facing paths
+#   XAI_API_KEY        grok 4.5 for the daily lick (best quality; ~145s/call,
+#                      fine here since the cron runs before midnight with no user
+#                      waiting). If unset, the cron falls back to haiku.
+
 [triggers]
-crons = ["0 0 * * *"]  # midnight UTC daily
+crons = ["45 23 * * *"]  # 15 minutes before midnight UTC, for tomorrow's lick
 
 [[kv_namespaces]]
 binding = "LICK_STORE"
