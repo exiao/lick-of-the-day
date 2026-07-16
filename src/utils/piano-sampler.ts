@@ -57,6 +57,13 @@ export function getPianoSampler(): Tone.Sampler {
       baseUrl: SAMPLE_BASE_URL,
       release: 1.2,
       onload: () => { samplerLoaded = true; },
+      // If any sample fails to fetch (bad deploy, 404, offline), Tone's internal
+      // load promise rejects and onload never fires — playback silently stays on
+      // the synth fallback forever. Surface it so a broken samples deploy is
+      // diagnosable instead of an invisible "why does it still sound synthy".
+      onerror: (err: Error) => {
+        console.warn("[piano-sampler] sample load failed; staying on synth fallback:", err);
+      },
     });
   }
   // Defer building the master chain (which creates a Tone.Reverb that renders
