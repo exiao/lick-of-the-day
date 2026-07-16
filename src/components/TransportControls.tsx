@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 interface TransportControlsProps {
   isPlaying: boolean;
   onPlay: () => void;
@@ -11,7 +13,10 @@ interface TransportControlsProps {
   playDisabled?: boolean;
 }
 
-export function TransportControls({
+// Memoized: its props are stable across a playback sweep (isPlaying/tempo only
+// change on explicit transport actions), so it should not re-commit on every
+// currentNoteIndex tick.
+export const TransportControls = memo(function TransportControls({
   isPlaying,
   onPlay,
   onPause,
@@ -74,4 +79,4 @@ export function TransportControls({
       </button>
     </div>
   );
-}
+});

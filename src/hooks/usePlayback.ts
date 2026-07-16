@@ -1,11 +1,11 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import * as Tone from "tone";
+import type * as Tone from "tone";
+import { getTone, toneLoaded } from "../utils/tone-loader";
 import { unlockAudio, audioFullyUnlocked } from "../utils/audio-unlock";
 import {
   getMasterChain,
   getPianoSampler,
   isSamplerReady,
-  preloadPianoSampler,
 } from "../utils/piano-sampler";
 import type { Note, Articulation, Genre, Lick } from "../types/lick";
 
@@ -91,7 +91,8 @@ export function usePlayback(
 
   const getSynth = useCallback(() => {
     if (!synthRef.current) {
-      synthRef.current = new Tone.PolySynth(Tone.Synth, {
+      const T = getTone();
+      synthRef.current = new T.PolySynth(T.Synth, {
         oscillator: { type: "triangle" },
         envelope: { attack: 0.005, decay: 0.3, sustain: 0.2, release: 0.8 },
       }).connect(getMasterChain());
@@ -104,7 +105,8 @@ export function usePlayback(
 
   const getChordSynth = useCallback(() => {
     if (!chordSynthRef.current) {
-      chordSynthRef.current = new Tone.PolySynth(Tone.Synth, {
+      const T = getTone();
+      chordSynthRef.current = new T.PolySynth(T.Synth, {
         oscillator: { type: "sine" },
         envelope: { attack: 0.02, decay: 0.3, sustain: 0.6, release: 0.3 },
       }).connect(getMasterChain());
@@ -113,12 +115,6 @@ export function usePlayback(
     return chordSynthRef.current;
   }, []);
 
-  // Kick off the sample download as soon as the hook mounts so the sampler is
-  // usually ready by the time the user hits play. Never blocks: playback falls
-  // back to the synth until isSamplerReady() flips true.
-  useEffect(() => {
-    preloadPianoSampler();
-  }, []);
 
   // Trigger one melody/practice note through the piano sampler when its samples
   // have loaded, otherwise through the triangle synth fallback. Same signature
@@ -143,14 +139,20 @@ export function usePlayback(
     if (audioFullyUnlocked()) {
       triggerMelody(pitch, "8n");
     } else {
-      void unlockAudio().then(() => {
-        triggerMelody(pitch, "8n");
+      void unlockAudio().then((unlocked) => {
+        if (unlocked) triggerMelody(pitch, "8n");
       });
     }
   }, [triggerMelody]);
 
   const stop = useCallback(() => {
-    const transport = Tone.getTransport();
+    // Nothing to tear down if the audio engine was never loaded.
+    if (!toneLoaded()) {
+      setIsPlaying(false);
+      setCurrentNoteIndex(-1);
+      return;
+    }
+    const transport = getTone().getTransport();
     transport.stop();
     transport.cancel();
     if (partRef.current) { partRef.current.dispose(); partRef.current = null; }
@@ -160,9 +162,10 @@ export function usePlayback(
   }, []);
 
   const play = useCallback(async () => {
-    await unlockAudio();
+    if (!(await unlockAudio())) return;
     stop();
 
+    const Tone = getTone();
     const transport = Tone.getTransport();
     const beatsPerBar = lick?.timeSignature
       ? parseInt(lick.timeSignature.split("/")[0])
@@ -288,18 +291,19 @@ export function usePlayback(
   }, [notes, tempo, originalTempo, lick, chordsEnabled, triggerMelody, getChordSynth, stop]);
 
   const pause = useCallback(() => {
+    if (!toneLoaded()) return;
     if (isPlaying) {
-      Tone.getTransport().pause();
+      getTone().getTransport().pause();
       setIsPlaying(false);
     } else {
-      Tone.getTransport().start();
+      getTone().getTransport().start();
       setIsPlaying(true);
     }
   }, [isPlaying]);
 
   const setTempo = useCallback((bpm: number) => {
     setTempoState(bpm);
-    Tone.getTransport().bpm.value = bpm;
+    if (toneLoaded()) getTone().getTransport().bpm.value = bpm;
   }, []);
 
   useEffect(() => {

@@ -5,6 +5,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 // lightweight stand-ins and, crucially, capture the Sampler options object so
 // we can drive the onload / onerror callbacks by hand and assert the singleton
 // state machine (loaded flag, deferred master-chain connect) behaves.
+//
+// piano-sampler pulls Tone lazily through tone-loader's getTone() (the audio
+// engine is a first-gesture chunk), so we mock tone-loader rather than "tone".
 
 type SamplerOpts = {
   urls: Record<string, string>;
@@ -18,7 +21,7 @@ let lastSamplerOpts: SamplerOpts | null = null;
 let contextState = "suspended"; // flip to "running" to simulate an unlocked ctx
 const connectSpy = vi.fn();
 
-vi.mock("tone", () => {
+vi.mock("./tone-loader", () => {
   class Limiter {
     threshold: number;
     constructor(threshold: number) {
@@ -41,11 +44,16 @@ vi.mock("tone", () => {
     }
     connect = connectSpy;
   }
-  return {
+  const fakeTone = {
     Limiter,
     Reverb,
     Sampler,
     getContext: () => ({ get state() { return contextState; } }),
+  };
+  return {
+    getTone: () => fakeTone,
+    toneLoaded: () => true,
+    loadTone: () => Promise.resolve(fakeTone),
   };
 });
 
