@@ -120,4 +120,28 @@ describe("GET /api/daily", () => {
     await Promise.all(pending);
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
+
+  it("refreshes stale content in the background when no coordinator is bound", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-15T12:00:00.000Z"));
+    const store = new MemoryKV();
+    const stale = { ...FALLBACK_LICK, id: "2026-07-14" };
+    await store.put("daily:latest", JSON.stringify(stale));
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({
+      content: [{ type: "text", text: JSON.stringify(FALLBACK_LICK) }],
+    })));
+
+    const pending: Promise<unknown>[] = [];
+    // No LICK_COORDINATOR binding: acquireRefresh can never return a token, so
+    // without the fallback branch today's lick would stay stale forever.
+    const response = await onRequestGet({
+      env: { ANTHROPIC_API_KEY: "test", LICK_STORE: store },
+      waitUntil: (promise: Promise<unknown>) => pending.push(promise),
+    } as Parameters<typeof onRequestGet>[0]);
+
+    expect(response.headers.get("X-Lick-Cache")).toBe("stale-revalidating");
+    expect(pending).toHaveLength(1);
+    await Promise.all(pending);
+    await expect(store.get("daily:2026-07-15")).resolves.toContain('"id":"2026-07-15"');
+  });
 });

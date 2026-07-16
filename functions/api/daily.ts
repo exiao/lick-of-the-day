@@ -132,6 +132,13 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       const token = await acquireRefresh(context.env, kvKey);
       if (token) {
         context.waitUntil(refreshDailyLick(context.env, kvKey, token));
+      } else if (!context.env.LICK_COORDINATOR) {
+        // No coordinator binding at all: there is no lease to contend for, so
+        // acquireRefresh can never return a token and today's lick would stay
+        // stale forever. Kick off a background refresh directly (the KV writes
+        // are idempotent; a few concurrent refreshes just overwrite with the
+        // same day's lick). releaseRefresh is a no-op without a coordinator.
+        context.waitUntil(refreshDailyLick(context.env, kvKey, ""));
       }
       return jsonResponse(
         JSON.parse(stale),

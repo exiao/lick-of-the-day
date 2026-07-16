@@ -15,10 +15,18 @@ let toneMod: ToneModule | null = null;
 /** Import Tone.js once and cache it. Idempotent; safe to call on every gesture. */
 export function loadTone(): Promise<ToneModule> {
   if (!tonePromise) {
-    tonePromise = import("tone").then((m) => {
-      toneMod = m;
-      return m;
-    });
+    tonePromise = import("tone")
+      .then((m) => {
+        toneMod = m;
+        return m;
+      })
+      .catch((err) => {
+        // A failed chunk fetch (transient offline / CDN hiccup) must not poison
+        // the cache: clear the rejected promise so the next real gesture retries
+        // the import instead of replaying the same rejection forever.
+        tonePromise = null;
+        throw err;
+      });
   }
   return tonePromise;
 }
