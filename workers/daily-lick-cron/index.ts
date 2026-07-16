@@ -31,6 +31,7 @@ interface DurableObjectStateLike {
 
 type Genre = "jazz" | "blues" | "funk" | "rnb" | "bossa";
 const GENRES: Genre[] = ["jazz", "blues", "funk", "rnb", "bossa"];
+const DAY_MS = 24 * 60 * 60 * 1000;
 // Grok normally takes about 145s; cap a stalled request well below the cron's
 // 15-minute wall-time so generateDailyLick can still fall back to Haiku.
 const GROK_TIMEOUT_MS = 5 * 60 * 1000;
@@ -94,13 +95,12 @@ export class LickCoordinator {
   }
 }
 
-function getTodayKey(): string {
-  return new Date().toISOString().split("T")[0];
+function getDayKey(date = new Date()): string {
+  return date.toISOString().split("T")[0];
 }
 
-function pickGenre(): Genre {
+function pickGenre(now = new Date()): Genre {
   // Deterministic from day-of-year so it rotates predictably
-  const now = new Date();
   const start = new Date(now.getFullYear(), 0, 0);
   const dayOfYear = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
   return GENRES[dayOfYear % GENRES.length];
@@ -108,7 +108,7 @@ function pickGenre(): Genre {
 
 // Haiku via Anthropic. Fast (~8s); used as the cron fallback and for all
 // user-facing paths (daily.ts cold-start, random.ts).
-async function generateWithHaiku(genre: Genre, apiKey: string): Promise<unknown> {
+async function generateWithHaiku(genre: Genre, apiKey: string, dayKey: string): Promise<unknown> {
   const { system, user } = buildLickPrompt(genre, 4);
 
   const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -135,13 +135,13 @@ async function generateWithHaiku(genre: Genre, apiKey: string): Promise<unknown>
   const rawText = data.content[0]?.type === "text" ? data.content[0].text : "";
   // id goes LAST so the UTC-date key always wins over any id the model emitted
   // in its JSON (main's daily-cache keying depends on this).
-  return { ...JSON.parse(extractJSON(rawText)), id: getTodayKey() };
+  return { ...JSON.parse(extractJSON(rawText)), id: dayKey };
 }
 
 // Grok 4.5 via xAI's OpenAI-compatible chat/completions. Best musical quality
 // (see lick-config note) but ~145s/call due to uncappable reasoning — only
 // acceptable here in the midnight cron where no user waits.
-async function generateWithGrok(genre: Genre, apiKey: string): Promise<unknown> {
+async function generateWithGrok(genre: Genre, apiKey: string, dayKey: string): Promise<unknown> {
   const { system, user } = buildLickPrompt(genre, 4);
 
   const res = await fetch("https://api.x.ai/v1/chat/completions", {
@@ -171,33 +171,35 @@ async function generateWithGrok(genre: Genre, apiKey: string): Promise<unknown> 
   if (!jsonString) {
     throw new Error("xAI API returned empty content that cannot be parsed as JSON.");
   }
-  return { ...JSON.parse(jsonString), id: getTodayKey() };
+  return { ...JSON.parse(jsonString), id: dayKey };
 }
 
 // Generate the daily lick: prefer grok for quality, fall back to haiku if grok
 // errors, times out, or its key is missing. The fallback guarantees the cron
 // still populates KV even when xAI is down.
-async function generateDailyLick(genre: Genre, env: Env): Promise<unknown> {
+async function generateDailyLick(genre: Genre, env: Env, dayKey: string): Promise<unknown> {
   if (env.XAI_API_KEY) {
     try {
-      return await generateWithGrok(genre, env.XAI_API_KEY);
+      return await generateWithGrok(genre, env.XAI_API_KEY, dayKey);
     } catch (err) {
       console.error(`Grok generation failed, falling back to haiku: ${err}`);
     }
   } else {
     console.warn("XAI_API_KEY not set; using haiku for daily lick");
   }
-  return generateWithHaiku(genre, env.ANTHROPIC_API_KEY);
+  return generateWithHaiku(genre, env.ANTHROPIC_API_KEY, dayKey);
 }
 
 export default {
-  // Runs at midnight UTC every day
+  // Runs before midnight UTC so Grok is ready before Pages starts serving the new day.
   async scheduled(_event: ScheduledEvent, env: Env, _ctx: ExecutionContext): Promise<void> {
-    const genre = pickGenre();
-    console.log(`Generating daily lick: genre=${genre}`);
+    const tomorrow = new Date(Date.now() + DAY_MS);
+    const dayKey = getDayKey(tomorrow);
+    const genre = pickGenre(tomorrow);
+    console.log(`Generating daily lick: date=${dayKey} genre=${genre}`);
 
-    const lick = await generateDailyLick(genre, env);
-    const key = `daily:${getTodayKey()}`;
+    const lick = await generateDailyLick(genre, env, dayKey);
+    const key = `daily:${dayKey}`;
     const payload = JSON.stringify(lick);
 
     await env.LICK_STORE.put(key, payload, {
@@ -212,9 +214,10 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname === "/trigger" && request.method === "POST") {
+      const dayKey = getDayKey();
       const genre = pickGenre();
-      const lick = await generateDailyLick(genre, env);
-      const key = `daily:${getTodayKey()}`;
+      const lick = await generateDailyLick(genre, env, dayKey);
+      const key = `daily:${dayKey}`;
       const payload = JSON.stringify(lick);
       await env.LICK_STORE.put(key, payload, { expirationTtl: 90000 });
       await env.LICK_STORE.put(LATEST_KEY, payload, { expirationTtl: 90000 });

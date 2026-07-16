@@ -3,6 +3,7 @@ import worker from "./index";
 
 describe("daily lick cron worker", () => {
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
   });
@@ -41,6 +42,28 @@ describe("daily lick cron worker", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "https://api.x.ai/v1/chat/completions",
       expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
+  });
+
+  it("pre-generates tomorrow's key before the UTC day boundary", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-16T23:45:00.000Z"));
+    const put = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({
+      choices: [{ message: { content: '{"id":"model-id","title":"Tomorrow"}' } }],
+    })));
+
+    await worker.scheduled({} as never, {
+      XAI_API_KEY: "xai-key",
+      ANTHROPIC_API_KEY: "anthropic-key",
+      LICK_STORE: { put },
+    } as never, {} as never);
+
+    expect(put).toHaveBeenNthCalledWith(
+      1,
+      "daily:2026-07-17",
+      expect.stringContaining('"id":"2026-07-17"'),
+      expect.any(Object),
     );
   });
 });
