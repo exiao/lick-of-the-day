@@ -1,9 +1,15 @@
 import { buildLickPrompt } from "../../functions/_shared/prompt";
 import { extractJSON } from "../../functions/_shared/parse";
-import { LICK_MODEL, LICK_MAX_TOKENS } from "../../functions/_shared/lick-config";
+import {
+  LICK_MODEL,
+  LICK_MAX_TOKENS,
+  GROK_MODEL,
+  GROK_MAX_TOKENS,
+} from "../../functions/_shared/lick-config";
 
 interface Env {
   ANTHROPIC_API_KEY: string;
+  XAI_API_KEY: string;
   LICK_STORE: KVNamespace;
 }
 
@@ -22,7 +28,9 @@ function pickGenre(): Genre {
   return GENRES[dayOfYear % GENRES.length];
 }
 
-async function generateLick(genre: Genre, apiKey: string): Promise<unknown> {
+// Haiku via Anthropic. Fast (~8s); used as the cron fallback and for all
+// user-facing paths (daily.ts cold-start, random.ts).
+async function generateWithHaiku(genre: Genre, apiKey: string): Promise<unknown> {
   const { system, user } = buildLickPrompt(genre, 4);
 
   const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -47,8 +55,54 @@ async function generateLick(genre: Genre, apiKey: string): Promise<unknown> {
 
   const data = (await res.json()) as { content: { type: string; text: string }[] };
   const rawText = data.content[0]?.type === "text" ? data.content[0].text : "";
-  const todayKey = getTodayKey();
-  return { id: todayKey, ...JSON.parse(extractJSON(rawText)) };
+  return { id: getTodayKey(), ...JSON.parse(extractJSON(rawText)) };
+}
+
+// Grok 4.5 via xAI's OpenAI-compatible chat/completions. Best musical quality
+// (see lick-config note) but ~145s/call due to uncappable reasoning — only
+// acceptable here in the midnight cron where no user waits.
+async function generateWithGrok(genre: Genre, apiKey: string): Promise<unknown> {
+  const { system, user } = buildLickPrompt(genre, 4);
+
+  const res = await fetch("https://api.x.ai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: GROK_MODEL,
+      max_tokens: GROK_MAX_TOKENS,
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`xAI API error: ${res.status} ${await res.text()}`);
+  }
+
+  const data = (await res.json()) as { choices: { message: { content: string } }[] };
+  const rawText = data.choices[0]?.message?.content ?? "";
+  return { id: getTodayKey(), ...JSON.parse(extractJSON(rawText)) };
+}
+
+// Generate the daily lick: prefer grok for quality, fall back to haiku if grok
+// errors, times out, or its key is missing. The fallback guarantees the cron
+// still populates KV even when xAI is down.
+async function generateDailyLick(genre: Genre, env: Env): Promise<unknown> {
+  if (env.XAI_API_KEY) {
+    try {
+      return await generateWithGrok(genre, env.XAI_API_KEY);
+    } catch (err) {
+      console.error(`Grok generation failed, falling back to haiku: ${err}`);
+    }
+  } else {
+    console.warn("XAI_API_KEY not set; using haiku for daily lick");
+  }
+  return generateWithHaiku(genre, env.ANTHROPIC_API_KEY);
 }
 
 export default {
@@ -57,7 +111,7 @@ export default {
     const genre = pickGenre();
     console.log(`Generating daily lick: genre=${genre}`);
 
-    const lick = await generateLick(genre, env.ANTHROPIC_API_KEY);
+    const lick = await generateDailyLick(genre, env);
     const key = `daily:${getTodayKey()}`;
 
     await env.LICK_STORE.put(key, JSON.stringify(lick), {
@@ -72,7 +126,7 @@ export default {
     const url = new URL(request.url);
     if (url.pathname === "/trigger" && request.method === "POST") {
       const genre = pickGenre();
-      const lick = await generateLick(genre, env.ANTHROPIC_API_KEY);
+      const lick = await generateDailyLick(genre, env);
       const key = `daily:${getTodayKey()}`;
       await env.LICK_STORE.put(key, JSON.stringify(lick), { expirationTtl: 90000 });
       return Response.json({ ok: true, key, genre });
