@@ -28,7 +28,7 @@ All 25 responses parsed and were scored. Composite means include every generated
 | Bossa | 5 | 5 | 100.0% | 0.923 | 0.050 |
 | **Overall** | **25** | **25** | **100.0%** | **0.835** | **0.095** |
 
-Unrounded overall composite mean: `0.8347647058823529`.
+Post-merge provenance correction: the committed raw rows yield an unrounded overall composite mean of `0.834960000000` (the rounded table value remains `0.835`).
 
 ## Provenance and raw artifacts
 
