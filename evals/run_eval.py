@@ -65,9 +65,11 @@ ARMS = {
     "sonnet5":        ("anthropic", "claude-sonnet-5", {"merge_system": True, "thinking": {"type": "disabled"}}),
     # Grok 4.5 via OpenRouter (OpenAI-compatible chat/completions). Grok 4.5 is a
     # mandatory-reasoning model: OpenRouter rejects reasoning.enabled=false (400),
-    # so we can't turn it off. In practice one call emits ~28k reasoning tokens
-    # and takes ~4 min — see the eval findings. Long per-sample timeout needed.
-    "grok45":         ("openrouter", "x-ai/grok-4.5", {"timeout": 300}),
+    # but reasoning EFFORT is tunable. At default effort one call burns ~28k
+    # reasoning tokens and takes 4-7 min; reasoning:{effort:"low"} drops that to
+    # ~25 tokens and ~9s (comparable to the Claude arms) with no quality loss on
+    # this task. Always pin effort low here.
+    "grok45":         ("openrouter", "x-ai/grok-4.5", {"timeout": 120, "reasoning": {"effort": "low"}}),
     "flash_think0":   ("gemini", "gemini-3.5-flash", {"thinking_budget": 0}),
     "flash_dynamic":  ("gemini", "gemini-3.5-flash", {"thinking_budget": -1}),
 }
@@ -284,6 +286,8 @@ def main():
 
     # Only purge rows for arms we're about to regenerate; keep everything else.
     rows = retained_rows(RESULTS_PATH, runnable, metadata)
+    save_licks = os.environ.get("EVAL_SAVE_LICKS") == "1"
+    licks: list[dict] = []
     for arm in runnable:
         provider, model, opts = ARMS[arm]
         gen = PROVIDERS[provider]
@@ -307,12 +311,18 @@ def main():
                                                  "note_count")}
                     rows.append({"arm": arm, "genre": g, "ms": ms, "out": out_tok,
                                  "think": think_tok, "comp": s["composite"], **sub})
+                    if save_licks:
+                        licks.append({"arm": arm, "genre": g, "i": i,
+                                      "comp": s["composite"], "lick": j})
                     print(f"  {arm:14}{g:6} #{i} comp={s['composite']:.3f} ms={ms:.0f} out={out_tok} think={think_tok}")
                 except Exception as e:
                     rows.append({"arm": arm, "genre": g, "ms": None, "comp": None, "fail": str(e)[:80]})
                     print(f"  {arm:14}{g:6} #{i} ERR {str(e)[:90]}")
 
     RESULTS_PATH.write_text(json.dumps({"metadata": metadata, "rows": rows}, indent=2))
+    if save_licks:
+        (HERE / "licks.json").write_text(json.dumps(licks, indent=2))
+        print(f"saved {len(licks)} licks to {HERE / 'licks.json'}")
     print_report(rows, GENRES)
     print(f"\nsaved {RESULTS_PATH}")
 

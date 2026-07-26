@@ -1,0 +1,5334 @@
+[
+  {
+    "arm": "haiku",
+    "genre": "jazz",
+    "i": 0,
+    "comp": 0.746,
+    "lick": {
+      "genre": "jazz",
+      "title": "Bebop Enclosure Swing",
+      "bars": 4,
+      "tempo": 160,
+      "timeSignature": "4/4",
+      "key": "F",
+      "swing": 0.55,
+      "feel": "medium swing with enclosures",
+      "chords": [
+        {
+          "chord": "Gm7",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "C7",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "Fmaj7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "Fmaj7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/8\nK:F\n\"Gm7\"z2 D E F2 z G|\"C7\"B2 z A G2 z2|\"Fmaj7\"E2 z F A2 z G|\"Fmaj7\"F2 z2 E4|",
+      "notes": [
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "D4",
+          "duration": "8n",
+          "velocity": 0.3,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "E4",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "8n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "8n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "B4",
+          "duration": "4n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "A4",
+          "duration": "8n",
+          "velocity": 0.6,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "G4",
+          "duration": "4n",
+          "velocity": 0.8,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "E4",
+          "duration": "4n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "8n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "A4",
+          "duration": "4n",
+          "velocity": 0.8,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "F4",
+          "duration": "4n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "E4",
+          "duration": "2n",
+          "velocity": 0.85,
+          "articulation": "legato"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "haiku",
+    "genre": "jazz",
+    "i": 1,
+    "comp": 0.925,
+    "lick": {
+      "genre": "jazz",
+      "title": "Bebop Enclosure Swing",
+      "bars": 4,
+      "tempo": 160,
+      "timeSignature": "4/4",
+      "key": "F",
+      "swing": 0.55,
+      "feel": "medium swing with enclosures",
+      "chords": [
+        {
+          "chord": "Gm7",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "C7",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "Fmaj7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "Fmaj7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/8\nK:F\n\"Gm7\"B2 z A G2 z G|\"C7\"E2 z B B2 z2|\"Fmaj7\"C2 z D F2 z E|\"Fmaj7\"D2 z C F4|",
+      "notes": [
+        {
+          "pitch": "B4",
+          "duration": "4n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "A4",
+          "duration": "8n",
+          "velocity": 0.6,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "G4",
+          "duration": "4n",
+          "velocity": 0.8,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "8n",
+          "velocity": 0.7,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "E4",
+          "duration": "4n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "B4",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "B4",
+          "duration": "4n",
+          "velocity": 0.8,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C5",
+          "duration": "4n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "D5",
+          "duration": "8n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F5",
+          "duration": "4n",
+          "velocity": 0.8,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "E5",
+          "duration": "8n",
+          "velocity": 0.6,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "D5",
+          "duration": "4n",
+          "velocity": 0.75,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C5",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "F5",
+          "duration": "2n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "haiku",
+    "genre": "blues",
+    "i": 0,
+    "comp": 0.776,
+    "lick": {
+      "genre": "blues",
+      "title": "Bb Blues Call & Answer with Blue Note Slide",
+      "bars": 4,
+      "tempo": 90,
+      "timeSignature": "4/4",
+      "key": "Bb",
+      "swing": 0.42,
+      "feel": "shuffle with blue note targeting",
+      "chords": [
+        {
+          "chord": "Bb7",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "Bb7",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "Eb7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "Bb7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/8\nK:Bb\n\"Bb7\"z2 Bb Bz z2|\"Bb7\"z2 Db C z Bb z2|\"Eb7\"z2 Bb Ab z Bbc'|\"Bb7\"z4 Bb4|",
+      "notes": [
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "8n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "B4",
+          "duration": "8n",
+          "velocity": 0.25,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "8n",
+          "velocity": 0.8,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Db5",
+          "duration": "8n",
+          "velocity": 0.3,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "C5",
+          "duration": "8n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "8n",
+          "velocity": 0.75,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "8n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "Ab4",
+          "duration": "8n",
+          "velocity": 0.25,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "8n",
+          "velocity": 0.8,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "B4",
+          "duration": "8n",
+          "velocity": 0.3,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "C5",
+          "duration": "8n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "2n",
+          "velocity": 0.95,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "haiku",
+    "genre": "blues",
+    "i": 1,
+    "comp": 0.795,
+    "lick": {
+      "genre": "blues",
+      "title": "Bb Blues Call & Answer with Blue Note Slide",
+      "bars": 4,
+      "tempo": 90,
+      "timeSignature": "4/4",
+      "key": "Bb",
+      "swing": 0.42,
+      "feel": "shuffle with blue note slides",
+      "chords": [
+        {
+          "chord": "Bb7",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "Bb7",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "Bb7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "Bb7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/8\nK:Bb\n\"Bb7\"Bb2 z _B B2 z2|\"Bb7\"z F z2 Bb z D2|\"Bb7\"Bb2 z _B c2 z2|\"Bb7\"F A z2 Bb4|",
+      "notes": [
+        {
+          "pitch": "Bb4",
+          "duration": "4n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bbb4",
+          "duration": "16n",
+          "velocity": 0.3,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "B4",
+          "duration": "8n",
+          "velocity": 0.85,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "B4",
+          "duration": "4n",
+          "velocity": 0.8,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "8n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "8n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "D4",
+          "duration": "4n",
+          "velocity": 0.75,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "4n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bbb4",
+          "duration": "16n",
+          "velocity": 0.3,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "C5",
+          "duration": "8n",
+          "velocity": 0.85,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C5",
+          "duration": "4n",
+          "velocity": 0.8,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "A4",
+          "duration": "8n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "2n",
+          "velocity": 0.95,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "haiku",
+    "genre": "funk",
+    "i": 0,
+    "comp": 0.839,
+    "lick": {
+      "genre": "funk",
+      "title": "Root & Flat-Seven Pocket Syncopation",
+      "bars": 4,
+      "tempo": 100,
+      "timeSignature": "4/4",
+      "key": "Fm",
+      "swing": 0.1,
+      "feel": "straight funk with syncopated 16th stabs",
+      "chords": [
+        {
+          "chord": "Fm7",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "Fm7",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "Fm7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "Fm7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/16\nK:Fm\n\"Fm7\"F4 z2 E2 F4 z4|z2 F2 E2 z2 F4 z4|z4 F2 E2 F4 z2 E2|F4 z2 E2 F8|",
+      "notes": [
+        {
+          "pitch": "F4",
+          "duration": "4n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "8n",
+          "velocity": 0.35,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "F4",
+          "duration": "4n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "8n",
+          "velocity": 0.7,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "8n",
+          "velocity": 0.4,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "4n",
+          "velocity": 0.88,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "8n",
+          "velocity": 0.72,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "8n",
+          "velocity": 0.38,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "4n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "8n",
+          "velocity": 0.68,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "8n",
+          "velocity": 0.36,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "F4",
+          "duration": "4n",
+          "velocity": 0.92,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "8n",
+          "velocity": 0.42,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "F4",
+          "duration": "2n",
+          "velocity": 0.95,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "haiku",
+    "genre": "funk",
+    "i": 1,
+    "comp": 0.642,
+    "lick": {
+      "genre": "funk",
+      "title": "Root & Flat-Seven Groove",
+      "bars": 4,
+      "tempo": 104,
+      "timeSignature": "4/4",
+      "key": "Fm",
+      "swing": 0.1,
+      "feel": "straight funk pocket with tight 16th syncopation",
+      "chords": [
+        {
+          "chord": "Fm7",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "Fm7",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "Fm7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "Fm7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/16\nK:Fm\n\"Fm7\"F2 z2 _E z z F F2 z2 z _E|F2 z _E F4 z4 z2 _E z|z2 F2 _E z z F z2 z2 z _E z2|F2 z _E F2 z2 z4 F4|",
+      "notes": [
+        {
+          "pitch": "F4",
+          "duration": "16n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "F4",
+          "duration": "16n",
+          "velocity": 0.85,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "16n",
+          "velocity": 0.3,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "16n",
+          "velocity": 0.8,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "F4",
+          "duration": "16n",
+          "velocity": 0.75,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "F4",
+          "duration": "16n",
+          "velocity": 0.7,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "16n",
+          "velocity": 0.35,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "F4",
+          "duration": "16n",
+          "velocity": 0.88,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "F4",
+          "duration": "16n",
+          "velocity": 0.8,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "16n",
+          "velocity": 0.32,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "F4",
+          "duration": "16n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "F4",
+          "duration": "16n",
+          "velocity": 0.78,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "16n",
+          "velocity": 0.38,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "16n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "F4",
+          "duration": "16n",
+          "velocity": 0.8,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "16n",
+          "velocity": 0.3,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "F4",
+          "duration": "16n",
+          "velocity": 0.88,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "16n",
+          "velocity": 0.92,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "F4",
+          "duration": "16n",
+          "velocity": 0.82,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "16n",
+          "velocity": 0.35,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "F4",
+          "duration": "8n",
+          "velocity": 0.95,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "haiku",
+    "genre": "rnb",
+    "i": 0,
+    "comp": 0.768,
+    "lick": {
+      "genre": "rnb",
+      "title": "Pentatonic Glide with Suspended Resolution",
+      "bars": 4,
+      "tempo": 68,
+      "timeSignature": "4/4",
+      "key": "Eb",
+      "swing": 0.25,
+      "feel": "laid-back groove with grace note slides",
+      "chords": [
+        {
+          "chord": "Ebmaj9",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "Ebmaj9",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "Bbm7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "Abm7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/8\nK:Eb\n\"Ebmaj9\"G2 z2 ^c z G2|\"Ebmaj9\"c z ^d c _B2 z2|\"Bbm7\"^d2 z ^c _B z F2|\"Abm7\"_B z A G4|",
+      "notes": [
+        {
+          "pitch": "G4",
+          "duration": "4n",
+          "velocity": 0.88,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C5",
+          "duration": "8n",
+          "velocity": 0.68,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "4n",
+          "velocity": 0.72,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C5",
+          "duration": "8n",
+          "velocity": 0.35,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "Db5",
+          "duration": "8n",
+          "velocity": 0.78,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C5",
+          "duration": "8n",
+          "velocity": 0.82,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "8n",
+          "velocity": 0.58,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Db5",
+          "duration": "4n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Db5",
+          "duration": "8n",
+          "velocity": 0.32,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "C5",
+          "duration": "4n",
+          "velocity": 0.8,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "8n",
+          "velocity": 0.62,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "4n",
+          "velocity": 0.75,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "8n",
+          "velocity": 0.3,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "A4",
+          "duration": "8n",
+          "velocity": 0.72,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "2n",
+          "velocity": 0.92,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "haiku",
+    "genre": "rnb",
+    "i": 1,
+    "comp": 0.89,
+    "lick": {
+      "genre": "rnb",
+      "title": "Descending Pentatonic Soul Slide",
+      "bars": 4,
+      "tempo": 68,
+      "timeSignature": "4/4",
+      "key": "Eb",
+      "swing": 0.25,
+      "feel": "laid-back groove with grace slides",
+      "chords": [
+        {
+          "chord": "Ebmaj9",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "Ebmaj9",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "Bbm7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "Abm7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/8\nK:Eb\n\"Ebmaj9\"G2 z2 _B z G2|\"Ebmaj9\"_B2 z G _E4|\"Bbm7\"_B2 z2 _E z _B2|\"Abm7\"_E2 z G _E4|",
+      "notes": [
+        {
+          "pitch": "G5",
+          "duration": "4n",
+          "velocity": 0.88,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "8n",
+          "velocity": 0.3,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "4n",
+          "velocity": 0.72,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "4n",
+          "velocity": 0.78,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "A4",
+          "duration": "16n",
+          "velocity": 0.25,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "8n",
+          "velocity": 0.72,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "4n",
+          "velocity": 0.82,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "4n",
+          "velocity": 0.88,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "8n",
+          "velocity": 0.35,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "4n",
+          "velocity": 0.75,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "4n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "8n",
+          "velocity": 0.4,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "2n",
+          "velocity": 0.92,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "haiku",
+    "genre": "bossa",
+    "i": 0,
+    "comp": 0.787,
+    "lick": {
+      "genre": "bossa",
+      "title": "Carioca Sway Line",
+      "bars": 4,
+      "tempo": 128,
+      "timeSignature": "4/4",
+      "key": "F",
+      "swing": 0.0,
+      "feel": "straight bossa with dotted rhythms",
+      "chords": [
+        {
+          "chord": "Fmaj7",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "Bm7b5",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "Bbmaj7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "Fmaj7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/8\nK:F\n\"Fmaj7\"z A3 G F2 z|\"Bm7b5\"z D3 C B,2 z|\"Bbmaj7\"z B3 A G2 z|\"Fmaj7\"A3 G F4|",
+      "notes": [
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "A4",
+          "duration": "4n.",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "G4",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "4n",
+          "velocity": 0.75,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "D4",
+          "duration": "4n.",
+          "velocity": 0.8,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "C4",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "B3",
+          "duration": "4n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "B4",
+          "duration": "4n.",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "A4",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "4n",
+          "velocity": 0.75,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "A4",
+          "duration": "4n.",
+          "velocity": 0.8,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "G4",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "2n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "haiku",
+    "genre": "bossa",
+    "i": 1,
+    "comp": 0.798,
+    "lick": {
+      "genre": "bossa",
+      "title": "Carioca Guide Tone Waltz",
+      "bars": 4,
+      "tempo": 128,
+      "timeSignature": "4/4",
+      "key": "F",
+      "swing": 0.0,
+      "feel": "straight bossa with dotted-quarter syncopation",
+      "chords": [
+        {
+          "chord": "Fmaj7",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "Gm7",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "C7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "Fmaj7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/8\nK:F\n\"Fmaj7\"z2 A2 G3 F|\"Gm7\"G3 A B2 z2|\"C7\"B3 A G2 z2|\"Fmaj7\"A3 G F4|",
+      "notes": [
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "A4",
+          "duration": "8n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "G4",
+          "duration": "4n.",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "F4",
+          "duration": "8n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "4n.",
+          "velocity": 0.8,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "A4",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "B4",
+          "duration": "8n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "B4",
+          "duration": "4n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "B4",
+          "duration": "4n.",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "A4",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "G4",
+          "duration": "8n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "4n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "A4",
+          "duration": "4n.",
+          "velocity": 0.82,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "G4",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "F4",
+          "duration": "2n",
+          "velocity": 0.95,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "sonnet5",
+    "genre": "jazz",
+    "i": 0,
+    "comp": 0.825,
+    "lick": {
+      "genre": "jazz",
+      "title": "Enclosure Blues in F",
+      "bars": 4,
+      "tempo": 132,
+      "timeSignature": "4/4",
+      "key": "F",
+      "swing": 0.58,
+      "feel": "medium swing",
+      "chords": [
+        {
+          "chord": "Gm7",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "C7",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "Fmaj7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "Fmaj7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/8\nK:F\nz2\"Gm7\"BcB G2 z2|\"C7\"ABG^F G4 z2|\"Fmaj7\"z2 A2 c2 zB|\"Fmaj7\"^G2 A4 z2|",
+      "notes": [
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "B4",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "C5",
+          "duration": "8n",
+          "velocity": 0.6,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "B4",
+          "duration": "8n",
+          "velocity": 0.8,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "G4",
+          "duration": "4n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "A4",
+          "duration": "8n",
+          "velocity": 0.6,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "G4",
+          "duration": "8n",
+          "velocity": 0.55,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "Gb4",
+          "duration": "8n",
+          "velocity": 0.5,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "G4",
+          "duration": "2n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "A4",
+          "duration": "4n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C5",
+          "duration": "4n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "B4",
+          "duration": "8n",
+          "velocity": 0.6,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Gb4",
+          "duration": "8n",
+          "velocity": 0.55,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "A4",
+          "duration": "2n.",
+          "velocity": 0.9,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "sonnet5",
+    "genre": "jazz",
+    "i": 1,
+    "comp": 0.762,
+    "lick": {
+      "genre": "jazz",
+      "title": "Enclosure Turnaround in F",
+      "bars": 4,
+      "tempo": 138,
+      "timeSignature": "4/4",
+      "key": "F",
+      "swing": 0.58,
+      "feel": "medium swing",
+      "chords": [
+        {
+          "chord": "Gm7",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "C7",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "Fmaj7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "Fmaj7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/8\nK:F\nz2 A,BC2 z2|\"Gm7\"D2 z2 F2 GB|\"C7\"^A2 z2 B2 zc|\"Fmaj7\"A2 z2 GF z2|\"Fmaj7\"E2 z2 F4|",
+      "notes": [
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "A3",
+          "duration": "8n",
+          "velocity": 0.4,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "B3",
+          "duration": "8n",
+          "velocity": 0.55,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C4",
+          "duration": "4n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "D4",
+          "duration": "4n",
+          "velocity": 0.8,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "4n",
+          "velocity": 0.65,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "8n",
+          "velocity": 0.55,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "B4",
+          "duration": "8n",
+          "velocity": 0.75,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "A#4",
+          "duration": "4n",
+          "velocity": 0.35,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "B4",
+          "duration": "4n",
+          "velocity": 0.8,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C5",
+          "duration": "8n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "A4",
+          "duration": "4n",
+          "velocity": 0.7,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "8n",
+          "velocity": 0.4,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "F4",
+          "duration": "8n",
+          "velocity": 0.6,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "E4",
+          "duration": "4n",
+          "velocity": 0.5,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "2n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "sonnet5",
+    "genre": "blues",
+    "i": 0,
+    "comp": 0.836,
+    "lick": {
+      "genre": "blues",
+      "title": "Shuffle Call and Blue Note Answer",
+      "bars": 4,
+      "tempo": 84,
+      "timeSignature": "4/4",
+      "key": "C",
+      "swing": 0.4,
+      "feel": "medium shuffle",
+      "chords": [
+        {
+          "chord": "C7",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "C7",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "F7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "C7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/8\nK:C\nz2 G2 z _B B2|\"C7\"C2 z2 _E E2 z2|\"F7\"z2 A2 z _B c2|\"C7\"z2 _B A2 G4|",
+      "notes": [
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "4n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "16n",
+          "velocity": 0.4,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "B4",
+          "duration": "8n.",
+          "velocity": 0.8,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C5",
+          "duration": "4n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "16n",
+          "velocity": 0.35,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "E4",
+          "duration": "8n.",
+          "velocity": 0.75,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "A4",
+          "duration": "4n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "16n",
+          "velocity": 0.4,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "C5",
+          "duration": "8n.",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "8n",
+          "velocity": 0.6,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "A4",
+          "duration": "4n",
+          "velocity": 0.65,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "2n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "sonnet5",
+    "genre": "blues",
+    "i": 1,
+    "comp": 0.812,
+    "lick": {
+      "genre": "blues",
+      "title": "Shuffle Call & Blue Note Answer",
+      "bars": 4,
+      "tempo": 84,
+      "timeSignature": "4/4",
+      "key": "C",
+      "swing": 0.4,
+      "feel": "medium shuffle",
+      "chords": [
+        {
+          "chord": "C7",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "C7",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "F7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "C7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/8\nK:C\nz2 \"C7\"_E E2 G2 z2|z2 c2 z _B B2 z2|\"F7\"_e2 e2 z2 c2|\"C7\"_B B2 z2 G4|",
+      "notes": [
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "16n",
+          "velocity": 0.4,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "E4",
+          "duration": "8n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "G4",
+          "duration": "4n",
+          "velocity": 0.75,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C5",
+          "duration": "4n",
+          "velocity": 0.8,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "16n",
+          "velocity": 0.4,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "B4",
+          "duration": "8n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Eb5",
+          "duration": "8n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "E5",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C5",
+          "duration": "4n",
+          "velocity": 0.75,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "16n",
+          "velocity": 0.4,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "B4",
+          "duration": "8n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "2n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "sonnet5",
+    "genre": "funk",
+    "i": 0,
+    "comp": 0.81,
+    "lick": {
+      "genre": "funk",
+      "title": "Root and Seven Pocket",
+      "bars": 4,
+      "tempo": 100,
+      "timeSignature": "4/4",
+      "key": "C",
+      "swing": 0.1,
+      "feel": "tight 16th note funk pocket",
+      "chords": [
+        {
+          "chord": "C7",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "C7",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "F7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "C7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/16\nK:C\n\"C7\"C2 z Bc z2 C2 z2 _B2 z2|\"C7\"C4 z2 _B2 z2 C4 z2|\"F7\"F2 z E^E z2 F2 z2 _e2 z2|\"C7\"C2 z _B z2 C4 z4 C4|",
+      "notes": [
+        {
+          "pitch": "C4",
+          "duration": "16n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "B3",
+          "duration": "16n",
+          "velocity": 0.4,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "C4",
+          "duration": "16n",
+          "velocity": 0.75,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C4",
+          "duration": "8n",
+          "velocity": 0.6,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "8n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C4",
+          "duration": "4n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "8n",
+          "velocity": 0.55,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C4",
+          "duration": "4n",
+          "velocity": 0.8,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "F4",
+          "duration": "8n",
+          "velocity": 0.7,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "E4",
+          "duration": "16n",
+          "velocity": 0.35,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "F4",
+          "duration": "16n",
+          "velocity": 0.4,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "F4",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Eb5",
+          "duration": "8n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C4",
+          "duration": "16n",
+          "velocity": 0.6,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "8n",
+          "velocity": 0.5,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C4",
+          "duration": "2n",
+          "velocity": 0.95,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "sonnet5",
+    "genre": "funk",
+    "i": 1,
+    "comp": 0.757,
+    "lick": {
+      "genre": "funk",
+      "title": "Root and b7 Pocket Stab",
+      "bars": 4,
+      "tempo": 100,
+      "timeSignature": "4/4",
+      "key": "Cm",
+      "swing": 0.1,
+      "feel": "tight 16th note funk pocket",
+      "chords": [
+        {
+          "chord": "Cm7",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "Cm7",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "Fm7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "Cm7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/16\nK:Cm\n\"Cm7\"C4 z2_B_A z2 C2 z2 C4|\"Cm7\"z4 z2_B_A C4 z2 _E2|\"Fm7\"F4 z2_E=D z2 F2 z2 _A2|\"Cm7\"z2 B,=D z2 C8 z4|",
+      "notes": [
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C4",
+          "duration": "16n",
+          "velocity": 0.6,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "C4",
+          "duration": "16n",
+          "velocity": 0.95,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "16n",
+          "velocity": 0.55,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "Ab4",
+          "duration": "16n",
+          "velocity": 0.4,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C4",
+          "duration": "8n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "16n",
+          "velocity": 0.5,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "Ab4",
+          "duration": "16n",
+          "velocity": 0.35,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "C4",
+          "duration": "8n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "8n",
+          "velocity": 0.7,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "F4",
+          "duration": "4n",
+          "velocity": 0.8,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "E4",
+          "duration": "16n",
+          "velocity": 0.4,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "16n",
+          "velocity": 0.55,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "8n",
+          "velocity": 0.75,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Ab4",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "B3",
+          "duration": "16n",
+          "velocity": 0.35,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "D4",
+          "duration": "16n",
+          "velocity": 0.5,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C4",
+          "duration": "2n",
+          "velocity": 0.95,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "sonnet5",
+    "genre": "rnb",
+    "i": 0,
+    "comp": 0.744,
+    "lick": {
+      "genre": "rnb",
+      "title": "Suspended Pentatonic Glide",
+      "bars": 4,
+      "tempo": 68,
+      "timeSignature": "4/4",
+      "key": "Eb",
+      "swing": 0.25,
+      "feel": "laid-back neo-soul groove",
+      "chords": [
+        {
+          "chord": "Ebmaj9",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "Ebmaj9",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "Cm7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "Bbsus4",
+          "bar": 4,
+          "beat": 1
+        },
+        {
+          "chord": "Bb7",
+          "bar": 4,
+          "beat": 3
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/8\nK:Eb\nz2 F2 \"Ebmaj9\"B2 z c|d2 c B z2 G2|\"Cm7\"z F=A c2 z2 B2|\"Bbsus4\"c4 \"Bb7\"B2 z2|",
+      "notes": [
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "8n",
+          "velocity": 0.55,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "4n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C5",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "D5",
+          "duration": "8n",
+          "velocity": 0.75,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C5",
+          "duration": "8n",
+          "velocity": 0.6,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "4n",
+          "velocity": 0.7,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "4n",
+          "velocity": 0.6,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "16n",
+          "velocity": 0.35,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "A4",
+          "duration": "8n.",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C5",
+          "duration": "4n",
+          "velocity": 0.8,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "4n",
+          "velocity": 0.65,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "C5",
+          "duration": "2n.",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "4n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "sonnet5",
+    "genre": "rnb",
+    "i": 1,
+    "comp": 0.809,
+    "lick": {
+      "genre": "rnb",
+      "title": "Velvet Ninth Cascade",
+      "bars": 4,
+      "tempo": 68,
+      "timeSignature": "4/4",
+      "key": "Eb",
+      "swing": 0.25,
+      "feel": "laid-back neo-soul groove",
+      "chords": [
+        {
+          "chord": "Ebmaj9",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "Ebmaj9",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "Cm7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "Bbsus4",
+          "bar": 4,
+          "beat": 1
+        },
+        {
+          "chord": "Bb7",
+          "bar": 4,
+          "beat": 3
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/8\nK:Eb\n\"Ebmaj9\"z2 F2 z ^DEF|\"Ebmaj9\"G2 z2 c2 Bc|\"Cm7\"d2 z c z2 GA|\"Bbsus4\"_B2 c2 \"Bb7\"A2 F4|",
+      "notes": [
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "8n",
+          "velocity": 0.55,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "D4",
+          "duration": "16n",
+          "velocity": 0.4,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "16n",
+          "velocity": 0.65,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "8n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "G4",
+          "duration": "4n",
+          "velocity": 0.8,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C5",
+          "duration": "4n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "8n",
+          "velocity": 0.5,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "C5",
+          "duration": "8n",
+          "velocity": 0.6,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "D5",
+          "duration": "4n",
+          "velocity": 0.8,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C5",
+          "duration": "8n",
+          "velocity": 0.55,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "8n",
+          "velocity": 0.5,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "A4",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "4n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "C5",
+          "duration": "8n",
+          "velocity": 0.6,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "A4",
+          "duration": "8n",
+          "velocity": 0.55,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "2n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "sonnet5",
+    "genre": "bossa",
+    "i": 0,
+    "comp": 0.859,
+    "lick": {
+      "genre": "bossa",
+      "title": "Guide Tone Sway",
+      "bars": 4,
+      "tempo": 128,
+      "timeSignature": "4/4",
+      "key": "C",
+      "swing": 0.0,
+      "feel": "straight bossa",
+      "chords": [
+        {
+          "chord": "Dm7",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "G7",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "Cmaj7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "Cmaj7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/8\nK:C\nz2 A2|\"Dm7\"F3 E D2 z2|\"G7\"^C2 D3 B,2 z2|\"Cmaj7\"E3 ^D E2 z2|\"Cmaj7\"D2 C4 z2|",
+      "notes": [
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "A4",
+          "duration": "4n",
+          "velocity": 0.65,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "4n.",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "E4",
+          "duration": "8n",
+          "velocity": 0.5,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "D4",
+          "duration": "4n",
+          "velocity": 0.7,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C#4",
+          "duration": "8n",
+          "velocity": 0.35,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "D4",
+          "duration": "4n.",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "B3",
+          "duration": "4n",
+          "velocity": 0.55,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "E4",
+          "duration": "4n.",
+          "velocity": 0.8,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "D#4",
+          "duration": "8n",
+          "velocity": 0.3,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "E4",
+          "duration": "4n",
+          "velocity": 0.7,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "D4",
+          "duration": "4n",
+          "velocity": 0.6,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C4",
+          "duration": "2n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "sonnet5",
+    "genre": "bossa",
+    "i": 1,
+    "comp": 0.887,
+    "lick": {
+      "genre": "bossa",
+      "title": "Guide Tone Sway",
+      "bars": 4,
+      "tempo": 128,
+      "timeSignature": "4/4",
+      "key": "F",
+      "swing": 0.0,
+      "feel": "straight bossa",
+      "chords": [
+        {
+          "chord": "Dm7",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "G7",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "Cmaj7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "Cmaj7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/8\nK:F\nz2 A2|\"Dm7\"F3 E D2 z2|\"G7\"^C2 D3 B,2 z2|\"Cmaj7\"E3 D C2 z2|\"Cmaj7\"^F2 G2 E4|",
+      "notes": [
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "A4",
+          "duration": "4n",
+          "velocity": 0.65,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "4n.",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "E4",
+          "duration": "8n",
+          "velocity": 0.6,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "D4",
+          "duration": "4n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C#4",
+          "duration": "8n",
+          "velocity": 0.35,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "D4",
+          "duration": "4n.",
+          "velocity": 0.8,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "B3",
+          "duration": "8n",
+          "velocity": 0.55,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "E4",
+          "duration": "4n.",
+          "velocity": 0.8,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "D4",
+          "duration": "8n",
+          "velocity": 0.6,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C4",
+          "duration": "4n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F#4",
+          "duration": "8n",
+          "velocity": 0.4,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "G4",
+          "duration": "8n",
+          "velocity": 0.55,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "E4",
+          "duration": "2n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "grok45",
+    "genre": "jazz",
+    "i": 0,
+    "comp": 0.934,
+    "lick": {
+      "genre": "jazz",
+      "title": "Flipped Enclosure Bebop",
+      "bars": 4,
+      "tempo": 152,
+      "timeSignature": "4/4",
+      "key": "C",
+      "swing": 0.55,
+      "feel": "medium bebop swing",
+      "chords": [
+        {
+          "chord": "Dm7",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "G7",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "Cmaj7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "Cmaj7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/8\nK:C\n\"Dm7\"G/2E/2F2 zA D2 z|\"G7\"Ac B2 z^FG2|\"Cmaj7\"G2 z F/2D/2 E2 c2|\"Cmaj7\"B z G E C4|",
+      "notes": [
+        {
+          "pitch": "G4",
+          "duration": "16n",
+          "velocity": 0.45,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "E4",
+          "duration": "16n",
+          "velocity": 0.55,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "F4",
+          "duration": "4n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "A4",
+          "duration": "8n",
+          "velocity": 0.75,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "D4",
+          "duration": "4n",
+          "velocity": 0.8,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "A4",
+          "duration": "8n",
+          "velocity": 0.5,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "C5",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "B4",
+          "duration": "4n",
+          "velocity": 0.92,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F#4",
+          "duration": "8n",
+          "velocity": 0.4,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "G4",
+          "duration": "4n",
+          "velocity": 0.85,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "4n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "16n",
+          "velocity": 0.4,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "D4",
+          "duration": "16n",
+          "velocity": 0.45,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "E4",
+          "duration": "4n",
+          "velocity": 0.92,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "C5",
+          "duration": "4n",
+          "velocity": 0.75,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "B4",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "8n",
+          "velocity": 0.55,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "E4",
+          "duration": "8n",
+          "velocity": 0.75,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "C4",
+          "duration": "2n",
+          "velocity": 0.95,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "grok45",
+    "genre": "jazz",
+    "i": 1,
+    "comp": 0.978,
+    "lick": {
+      "genre": "jazz",
+      "title": "Flipped Enclosures over ii-V-I",
+      "bars": 4,
+      "tempo": 160,
+      "timeSignature": "4/4",
+      "key": "C",
+      "swing": 0.55,
+      "feel": "medium swing",
+      "chords": [
+        {
+          "chord": "Dm7",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "G7",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "Cmaj7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "Cmaj7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/8\nK:C\n\"Dm7\"GEF z A2 z D|\"G7\"D2 z F B2 z2|\"Cmaj7\"E2DB c4-|\"Cmaj7\"c2 z D E4|",
+      "notes": [
+        {
+          "pitch": "G4",
+          "duration": "8n",
+          "velocity": 0.55,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "E4",
+          "duration": "8n",
+          "velocity": 0.5,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "F4",
+          "duration": "8n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "A4",
+          "duration": "4n",
+          "velocity": 0.8,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "D4",
+          "duration": "8n",
+          "velocity": 0.75,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "D4",
+          "duration": "4n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "B4",
+          "duration": "4n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "E4",
+          "duration": "4n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "D4",
+          "duration": "8n",
+          "velocity": 0.55,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "B4",
+          "duration": "8n",
+          "velocity": 0.5,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "C5",
+          "duration": "2n.",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "D4",
+          "duration": "8n",
+          "velocity": 0.6,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "E4",
+          "duration": "2n",
+          "velocity": 0.95,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "grok45",
+    "genre": "blues",
+    "i": 0,
+    "comp": 0.951,
+    "lick": {
+      "genre": "blues",
+      "title": "Shuffle Blue Slide Call",
+      "bars": 4,
+      "tempo": 90,
+      "timeSignature": "4/4",
+      "key": "G",
+      "swing": 0.42,
+      "feel": "medium shuffle",
+      "chords": [
+        {
+          "chord": "G7",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "G7",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "C7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "G7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/8\nK:G\n\"G7\"F_B/2B D z G2 z F|G2 z_B/2B D z2|\"C7\"_B2 z_E/2E G z_B z|z3/2 D F G4|",
+      "notes": [
+        {
+          "pitch": "F4",
+          "duration": "8n",
+          "velocity": 0.55,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "16n",
+          "velocity": 0.45,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "B4",
+          "duration": "8n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "D4",
+          "duration": "8n",
+          "velocity": 0.75,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "4n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "8n",
+          "velocity": 0.6,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "G4",
+          "duration": "4n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "16n",
+          "velocity": 0.5,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "B4",
+          "duration": "8n",
+          "velocity": 0.8,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "D4",
+          "duration": "8n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "4n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "16n",
+          "velocity": 0.45,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "E4",
+          "duration": "8n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "G4",
+          "duration": "8n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n.",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "D4",
+          "duration": "8n",
+          "velocity": 0.6,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "F4",
+          "duration": "8n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "2n",
+          "velocity": 0.95,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "grok45",
+    "genre": "blues",
+    "i": 1,
+    "comp": 0.838,
+    "lick": {
+      "genre": "blues",
+      "title": "Sliding Call and Response Blues",
+      "bars": 4,
+      "tempo": 86,
+      "timeSignature": "4/4",
+      "key": "G",
+      "swing": 0.42,
+      "feel": "medium shuffle",
+      "chords": [
+        {
+          "chord": "G7",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "G7",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "C7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "G7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/8\nK:G\n\"G7\"DG2 z _B/2B z D3/2 | \"G7\"z _B _d/2d z G F D3/2 | \"C7\"c2 z _e/2e z _B3/2 G | \"G7\"^F/2G z _B/2B D z G2 |",
+      "notes": [
+        {
+          "pitch": "D4",
+          "duration": "8n",
+          "velocity": 0.6,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "G4",
+          "duration": "4n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "16n",
+          "velocity": 0.35,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "B4",
+          "duration": "8n",
+          "velocity": 0.8,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "D4",
+          "duration": "8n.",
+          "velocity": 0.75,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "8n",
+          "velocity": 0.6,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "Db5",
+          "duration": "16n",
+          "velocity": 0.4,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "D5",
+          "duration": "8n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "8n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "8n",
+          "velocity": 0.55,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "D4",
+          "duration": "8n.",
+          "velocity": 0.65,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C5",
+          "duration": "4n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Eb5",
+          "duration": "16n",
+          "velocity": 0.4,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "E5",
+          "duration": "8n",
+          "velocity": 0.8,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "8n.",
+          "velocity": 0.65,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "G4",
+          "duration": "8n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F#4",
+          "duration": "16n",
+          "velocity": 0.45,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "G4",
+          "duration": "8n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "16n",
+          "velocity": 0.35,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "B4",
+          "duration": "8n",
+          "velocity": 0.75,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "D4",
+          "duration": "8n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "4n",
+          "velocity": 0.95,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "grok45",
+    "genre": "funk",
+    "i": 0,
+    "comp": 0.951,
+    "lick": {
+      "genre": "funk",
+      "title": "Root b7 Pocket Snap",
+      "bars": 4,
+      "tempo": 100,
+      "timeSignature": "4/4",
+      "key": "Dm",
+      "swing": 0.05,
+      "feel": "tight sixteenth funk pocket",
+      "chords": [
+        {
+          "chord": "Dm7",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "Dm7",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "G7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "Dm7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/16\nK:Dm\n\"Dm7\"^CD2zCzzDD4z2C2|\"Dm7\"D2z2CzzDD2z2z4|\"G7\"FGz2EFz2G2z2F4|\"Dm7\"CD2z2CzzD8|",
+      "notes": [
+        {
+          "pitch": "C#4",
+          "duration": "16n",
+          "velocity": 0.35,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "D4",
+          "duration": "8n",
+          "velocity": 0.95,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C4",
+          "duration": "16n",
+          "velocity": 0.65,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "D4",
+          "duration": "16n",
+          "velocity": 0.8,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "D4",
+          "duration": "4n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C4",
+          "duration": "8n",
+          "velocity": 0.6,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "D4",
+          "duration": "8n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C4",
+          "duration": "16n",
+          "velocity": 0.55,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "D4",
+          "duration": "16n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "D4",
+          "duration": "8n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "16n",
+          "velocity": 0.6,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "G4",
+          "duration": "16n",
+          "velocity": 0.95,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "E4",
+          "duration": "16n",
+          "velocity": 0.4,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "F4",
+          "duration": "16n",
+          "velocity": 0.75,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "8n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "4n",
+          "velocity": 0.8,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "C4",
+          "duration": "16n",
+          "velocity": 0.5,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "D4",
+          "duration": "8n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C4",
+          "duration": "16n",
+          "velocity": 0.65,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "16n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "D4",
+          "duration": "2n",
+          "velocity": 0.95,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "grok45",
+    "genre": "funk",
+    "i": 1,
+    "comp": 0.85,
+    "lick": {
+      "genre": "funk",
+      "title": "Offbeat Root-b7 Pushes",
+      "bars": 4,
+      "tempo": 98,
+      "timeSignature": "4/4",
+      "key": "Cm",
+      "swing": 0.05,
+      "feel": "tight straight 16th funk pocket",
+      "chords": [
+        {
+          "chord": "Cm7",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "Cm7",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "F7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "Cm7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/16\nK:Cm\n\"Cm7\" z2 c B z2 c B z8 |\"Cm7\" z2 c B z2 d =B c4 z4 |\"F7\" z2 F E z2 F E z2 F2 z4 |\"Cm7\" z2 c B z2 d =B c8 |",
+      "notes": [
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C5",
+          "duration": "16n",
+          "velocity": 0.92,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "16n",
+          "velocity": 0.35,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C5",
+          "duration": "16n",
+          "velocity": 0.88,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "16n",
+          "velocity": 0.65,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "2n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C5",
+          "duration": "16n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "16n",
+          "velocity": 0.38,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "D5",
+          "duration": "16n",
+          "velocity": 0.32,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "B4",
+          "duration": "16n",
+          "velocity": 0.35,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "C5",
+          "duration": "4n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "16n",
+          "velocity": 0.92,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "16n",
+          "velocity": 0.4,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "16n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "16n",
+          "velocity": 0.6,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "8n",
+          "velocity": 0.82,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C5",
+          "duration": "16n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "16n",
+          "velocity": 0.35,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "D5",
+          "duration": "16n",
+          "velocity": 0.3,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "B4",
+          "duration": "16n",
+          "velocity": 0.35,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "C5",
+          "duration": "2n",
+          "velocity": 0.95,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "grok45",
+    "genre": "rnb",
+    "i": 0,
+    "comp": 0.956,
+    "lick": {
+      "genre": "rnb",
+      "title": "Pentatonic Soul Descents",
+      "bars": 4,
+      "tempo": 78,
+      "timeSignature": "4/4",
+      "key": "Bb",
+      "swing": 0.25,
+      "feel": "laid-back neo-soul groove with slides",
+      "chords": [
+        {
+          "chord": "Bbmaj9",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "Bbmaj9",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "Ebmaj7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "Cm7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/8\nK:Bb\n\"Bbmaj9\"d/2c3/2 z B G2 z2|\"Bbmaj9\"A/2B3/2 z F D3/2 z3/2|\"Ebmaj7\"E/2F2 z _A G3|\"Cm7\"z F/2_E2 z G z3/2 C4|",
+      "notes": [
+        {
+          "pitch": "D5",
+          "duration": "16n",
+          "velocity": 0.35,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "C5",
+          "duration": "8n.",
+          "velocity": 0.85,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "8n",
+          "velocity": 0.7,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "G4",
+          "duration": "4n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "A4",
+          "duration": "16n",
+          "velocity": 0.4,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "8n.",
+          "velocity": 0.8,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "8n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "D4",
+          "duration": "8n.",
+          "velocity": 0.75,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "E4",
+          "duration": "16n",
+          "velocity": 0.4,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "F4",
+          "duration": "4n",
+          "velocity": 0.85,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "Ab4",
+          "duration": "8n",
+          "velocity": 0.55,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "G4",
+          "duration": "4n.",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "16n",
+          "velocity": 0.4,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "4n",
+          "velocity": 0.8,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "G4",
+          "duration": "8n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n.",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C4",
+          "duration": "2n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "grok45",
+    "genre": "rnb",
+    "i": 1,
+    "comp": 0.934,
+    "lick": {
+      "genre": "rnb",
+      "title": "Neo-Soul Descending Extensions",
+      "bars": 4,
+      "tempo": 76,
+      "timeSignature": "4/4",
+      "key": "C",
+      "swing": 0.3,
+      "feel": "laid-back neo-soul with grace slides",
+      "chords": [
+        {
+          "chord": "Am9",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "Dm9",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "G13",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "Cmaj9",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/8\nK:C\n\"Am9\"^D/2E3/2 z2 c A3|\"Dm9\"D/2E3/2 z2 c z A2|\"G13\"A/2G3/2 z2 c B3|\"Cmaj9\"E2 z D C4|",
+      "notes": [
+        {
+          "pitch": "D#5",
+          "duration": "16n",
+          "velocity": 0.35,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "E5",
+          "duration": "8n.",
+          "velocity": 0.88,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C5",
+          "duration": "8n",
+          "velocity": 0.68,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "A4",
+          "duration": "4n.",
+          "velocity": 0.82,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "D5",
+          "duration": "16n",
+          "velocity": 0.38,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "E5",
+          "duration": "8n.",
+          "velocity": 0.87,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C5",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "staccato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "A4",
+          "duration": "4n",
+          "velocity": 0.78,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "A4",
+          "duration": "16n",
+          "velocity": 0.32,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "G4",
+          "duration": "8n.",
+          "velocity": 0.89,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "C5",
+          "duration": "8n",
+          "velocity": 0.62,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "B4",
+          "duration": "4n.",
+          "velocity": 0.8,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "E5",
+          "duration": "4n",
+          "velocity": 0.86,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "8n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "D5",
+          "duration": "8n",
+          "velocity": 0.45,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "C5",
+          "duration": "2n",
+          "velocity": 0.92,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "grok45",
+    "genre": "bossa",
+    "i": 0,
+    "comp": 1.0,
+    "lick": {
+      "genre": "bossa",
+      "title": "Anticipation Cascade",
+      "bars": 4,
+      "tempo": 128,
+      "timeSignature": "4/4",
+      "key": "C",
+      "swing": 0.0,
+      "feel": "straight bossa with dotted cells",
+      "chords": [
+        {
+          "chord": "Dm7",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "G7",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "Cmaj7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "Cmaj7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/8\nK:C\n\"Dm7\"F3 E D2 z2|\"G7\"D3^C D2 E2-|\"Cmaj7\"E D2 C2 z3|\"Cmaj7\"E3 D C4|",
+      "notes": [
+        {
+          "pitch": "F4",
+          "duration": "4n.",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "E4",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "D4",
+          "duration": "4n",
+          "velocity": 0.75,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "D4",
+          "duration": "4n.",
+          "velocity": 0.8,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "C#4",
+          "duration": "8n",
+          "velocity": 0.35,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "D4",
+          "duration": "4n",
+          "velocity": 0.7,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "E4",
+          "duration": "4n.",
+          "velocity": 0.8,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "D4",
+          "duration": "4n",
+          "velocity": 0.55,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "C4",
+          "duration": "4n",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n.",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "E4",
+          "duration": "4n.",
+          "velocity": 0.8,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "D4",
+          "duration": "8n",
+          "velocity": 0.65,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "C4",
+          "duration": "2n",
+          "velocity": 0.9,
+          "articulation": "accent"
+        }
+      ]
+    }
+  },
+  {
+    "arm": "grok45",
+    "genre": "bossa",
+    "i": 1,
+    "comp": 1.0,
+    "lick": {
+      "genre": "bossa",
+      "title": "Lyrical Guide-Tone Bossa",
+      "bars": 4,
+      "tempo": 132,
+      "timeSignature": "4/4",
+      "key": "Bb",
+      "swing": 0.0,
+      "feel": "straight bossa with lyrical dotted motifs",
+      "chords": [
+        {
+          "chord": "Cm7",
+          "bar": 1,
+          "beat": 1
+        },
+        {
+          "chord": "F7",
+          "bar": 2,
+          "beat": 1
+        },
+        {
+          "chord": "Bbmaj7",
+          "bar": 3,
+          "beat": 1
+        },
+        {
+          "chord": "Bbmaj7",
+          "bar": 4,
+          "beat": 1
+        }
+      ],
+      "abc": "X:1\nM:4/4\nL:1/8\nK:Bb\n\"Cm7\"G3_A B2 z2|\"F7\"A3G F2 z2|\"Bbmaj7\"F3E D2 z2|\"Bbmaj7\"F3E D4|",
+      "notes": [
+        {
+          "pitch": "G4",
+          "duration": "4n.",
+          "velocity": 0.82,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "Ab4",
+          "duration": "8n",
+          "velocity": 0.38,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "Bb4",
+          "duration": "4n",
+          "velocity": 0.7,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "A4",
+          "duration": "4n.",
+          "velocity": 0.85,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "G4",
+          "duration": "8n",
+          "velocity": 0.5,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "F4",
+          "duration": "4n",
+          "velocity": 0.72,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "4n.",
+          "velocity": 0.8,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "8n",
+          "velocity": 0.42,
+          "articulation": "ghost"
+        },
+        {
+          "pitch": "D4",
+          "duration": "4n",
+          "velocity": 0.75,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "rest",
+          "duration": "4n",
+          "velocity": 0.0,
+          "articulation": "normal"
+        },
+        {
+          "pitch": "F4",
+          "duration": "4n.",
+          "velocity": 0.78,
+          "articulation": "accent"
+        },
+        {
+          "pitch": "Eb4",
+          "duration": "8n",
+          "velocity": 0.6,
+          "articulation": "legato"
+        },
+        {
+          "pitch": "D4",
+          "duration": "2n",
+          "velocity": 0.92,
+          "articulation": "accent"
+        }
+      ]
+    }
+  }
+]
