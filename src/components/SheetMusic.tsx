@@ -13,6 +13,11 @@ export function SheetMusic({ abc, currentNoteIndex, completedNotes }: SheetMusic
 
   useEffect(() => {
     if (!containerRef.current) return;
+    // Don't feed abcjs an empty/partial string during the pre-sheet window.
+    if (!abc || !abc.includes("K:")) {
+      containerRef.current.innerHTML = "";
+      return;
+    }
     tuneRef.current = abcjs.renderAbc(containerRef.current, abc, {
       responsive: "resize",
       staffwidth: 600,

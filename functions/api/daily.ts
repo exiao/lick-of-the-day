@@ -1,7 +1,7 @@
 import { buildLickPrompt } from "../_shared/prompt";
 import { FALLBACK_LICK } from "../_shared/fallback";
 import { extractJSON, validateNotes } from "../_shared/parse";
-import { LICK_MODEL, LICK_MAX_TOKENS } from "../_shared/lick-config";
+import { STREAM_HEADERS, streamAnthropicText, streamString } from "../_shared/stream";
 
 interface Env {
   ANTHROPIC_API_KEY: string;
@@ -22,61 +22,64 @@ function getTodayKey(): string {
   return new Date().toISOString().split("T")[0];
 }
 
+/**
+ * Streams the day's lick as plain JSON text so the client can render the sheet
+ * music the moment the `abc` field arrives, before the large `notes` array
+ * finishes. The body is always a stream of the JSON object's characters,
+ * whether served from the KV cache or generated on demand, so the client has a
+ * single code path.
+ */
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   const kvKey = `daily:${getTodayKey()}`;
 
-  // Try KV first — shared across all isolates, written by cron worker at midnight
+  // Cache hit: replay the stored JSON as a one-shot stream.
   if (context.env.LICK_STORE) {
     const cached = await context.env.LICK_STORE.get(kvKey);
     if (cached) {
-      return Response.json(JSON.parse(cached));
+      return new Response(streamString(cached), { headers: STREAM_HEADERS });
     }
   }
 
-  // Cold start: cron hasn't run yet (or KV unavailable) — generate on demand
+  // Cold start: cron hasn't run yet (or KV unavailable) — generate on demand.
   const genre = GENRES[getDayOfYear() % GENRES.length];
+  const { system, user } = buildLickPrompt(genre, 4);
 
+  let modelStream: ReadableStream<Uint8Array>;
   try {
-    const { system, user } = buildLickPrompt(genre, 4);
-
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": context.env.ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "anthropic-beta": "prompt-caching-2024-07-31",
-      },
-      body: JSON.stringify({
-        model: LICK_MODEL,
-        max_tokens: LICK_MAX_TOKENS,
-        system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
-        messages: [{ role: "user", content: user }],
-      }),
-    });
-
-    if (!res.ok) {
-      console.error("Anthropic API error:", res.status, await res.text());
-      return Response.json(FALLBACK_LICK);
-    }
-
-    const data = (await res.json()) as { content: { type: string; text: string }[] };
-    const rawText = data.content[0]?.type === "text" ? data.content[0].text : "";
-    const parsed = JSON.parse(extractJSON(rawText));
-    validateNotes(parsed.notes, parsed.bars ?? 4);
-    const lick = { id: getTodayKey(), ...parsed };
-
-    // Write to KV so subsequent requests (and isolates) get the same lick
-    if (context.env.LICK_STORE) {
-      await context.env.LICK_STORE.put(kvKey, JSON.stringify(lick), {
-        expirationTtl: 90000,
-      });
-    }
-
-    return Response.json(lick);
+    modelStream = await streamAnthropicText(
+      context.env.ANTHROPIC_API_KEY,
+      "claude-sonnet-4-6",
+      system,
+      user,
+    );
   } catch (err) {
-    console.error("Failed to generate daily lick:", err);
-    // Do not cache the fallback — let next request retry the API
-    return Response.json(FALLBACK_LICK);
+    // Upstream failed before any bytes — serve the fallback as a stream.
+    console.error("Failed to start daily lick stream:", err);
+    return new Response(streamString(JSON.stringify(FALLBACK_LICK)), { headers: STREAM_HEADERS });
   }
+
+  // Tee: one branch streams to the client, the other assembles the full text so
+  // we can validate it and write it to KV once complete.
+  const [toClient, toCache] = modelStream.tee();
+
+  context.waitUntil(
+    (async () => {
+      try {
+        const full = await new Response(toCache).text();
+        const parsed = JSON.parse(extractJSON(full));
+        validateNotes(parsed.notes, parsed.bars ?? 4);
+        const lick = { id: getTodayKey(), ...parsed };
+        if (context.env.LICK_STORE) {
+          await context.env.LICK_STORE.put(kvKey, JSON.stringify(lick), {
+            expirationTtl: 90000,
+          });
+        }
+      } catch (err) {
+        // Don't cache a bad/partial generation — next request retries.
+        console.error("Daily lick post-stream cache write failed:", err);
+      }
+    })(),
+  );
+
+  return new Response(toClient, { headers: STREAM_HEADERS });
 };

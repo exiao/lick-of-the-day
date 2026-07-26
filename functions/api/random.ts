@@ -1,6 +1,6 @@
 import { buildLickPrompt } from "../_shared/prompt";
-import { extractJSON, validateNotes } from "../_shared/parse";
 import { LICK_MODEL, LICK_MAX_TOKENS } from "../_shared/lick-config";
+import { STREAM_HEADERS, streamAnthropicText } from "../_shared/stream";
 
 interface Env {
   ANTHROPIC_API_KEY: string;
@@ -64,36 +64,18 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   try {
     const { system, user } = buildLickPrompt(genre as "jazz" | "blues" | "funk" | "rnb" | "bossa", bars);
 
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": context.env.ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "anthropic-beta": "prompt-caching-2024-07-31",
-      },
-      body: JSON.stringify({
-        model: LICK_MODEL,
-        max_tokens: LICK_MAX_TOKENS,
-        system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
-        messages: [{ role: "user", content: user }],
-      }),
-    });
+    const modelStream = await streamAnthropicText(
+      context.env.ANTHROPIC_API_KEY,
+      LICK_MODEL,
+      system,
+      user,
+      LICK_MAX_TOKENS,
+    );
 
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error("Anthropic API error:", res.status, errText);
-      return Response.json({ error: "Anthropic API error", status: res.status, detail: errText }, { status: 502 });
-    }
-
-    const data = (await res.json()) as { content: { type: string; text: string }[] };
-    const rawText = data.content[0]?.type === "text" ? data.content[0].text : "";
-    const id = `${new Date().toISOString().split("T")[0]}-${Date.now()}`;
-    const parsed = JSON.parse(extractJSON(rawText));
-    validateNotes(parsed.notes, parsed.bars ?? bars);
-    const lick = { id, ...parsed };
-
-    return Response.json(lick);
+    // Stream the raw model JSON to the client. The client assembles and
+    // validates it (and assigns its own id); the sheet renders as soon as the
+    // `abc` field closes, before the notes array finishes.
+    return new Response(modelStream, { headers: STREAM_HEADERS });
   } catch (err) {
     console.error("Failed to generate random lick:", err);
     return Response.json({ error: "Failed to generate lick", detail: String(err) }, { status: 500 });
