@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { Knob } from "./Knob";
 
 interface TransportControlsProps {
   isPlaying: boolean;
@@ -6,11 +7,29 @@ interface TransportControlsProps {
   onPause: () => void;
   onStop: () => void;
   tempo: number;
+  /** The lick's written tempo: the knob's reset point. */
+  originalTempo: number;
   onTempoChange: (bpm: number) => void;
+  swing: number;
+  originalSwing: number;
+  onSwingChange: (amount: number) => void;
   chordsEnabled: boolean;
   onChordsToggle: (enabled: boolean) => void;
+  loopEnabled: boolean;
+  onLoopToggle: (enabled: boolean) => void;
+  clickEnabled: boolean;
+  onClickToggle: (enabled: boolean) => void;
   /** Disable Play while notes are still streaming in. */
   playDisabled?: boolean;
+}
+
+function Toggle({ label, pressed, onToggle, hint }: { label: string; pressed: boolean; onToggle: (v: boolean) => void; hint: string }) {
+  return (
+    <button type="button" className="cap h-10 px-3.5" aria-pressed={pressed} onClick={() => onToggle(!pressed)} title={hint}>
+      <span className="led" aria-hidden="true" />
+      {label}
+    </button>
+  );
 }
 
 // Memoized: its props are stable across a playback sweep (isPlaying/tempo only
@@ -22,61 +41,68 @@ export const TransportControls = memo(function TransportControls({
   onPause,
   onStop,
   tempo,
+  originalTempo,
   onTempoChange,
+  swing,
+  originalSwing,
+  onSwingChange,
   chordsEnabled,
   onChordsToggle,
+  loopEnabled,
+  onLoopToggle,
+  clickEnabled,
+  onClickToggle,
   playDisabled = false,
 }: TransportControlsProps) {
   return (
-    <div className="flex items-center justify-center gap-4 py-3">
-      {!isPlaying ? (
+    <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-4 sm:justify-between">
+      <div className="well-sm flex items-center gap-3 p-2.5">
         <button
-          onClick={onPlay}
-          disabled={playDisabled}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          type="button"
+          className="cap cap-primary h-14 w-24 text-base"
+          onClick={isPlaying ? onPause : onPlay}
+          disabled={!isPlaying && playDisabled}
+          aria-label={isPlaying ? "Pause" : "Play"}
+          title="Space"
         >
-          <span className="text-lg">&#9654;</span> {playDisabled ? "Finishing\u2026" : "Play"}
+          {isPlaying ? (
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="2" width="3.5" height="12" rx="1" fill="currentColor" /><rect x="9.5" y="2" width="3.5" height="12" rx="1" fill="currentColor" /></svg>
+          ) : (
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.2v11.6a.8.8 0 0 0 1.2.7l9.4-5.8a.8.8 0 0 0 0-1.4L5.2 1.5A.8.8 0 0 0 4 2.2z" fill="currentColor" /></svg>
+          )}
+          {playDisabled && !isPlaying ? "Wait" : isPlaying ? "Pause" : "Play"}
         </button>
-      ) : (
-        <button
-          onClick={onPause}
-          className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors"
-        >
-          <span className="text-lg">&#9646;&#9646;</span> Pause
+        <button type="button" className="cap h-14 w-14" onClick={onStop} aria-label="Stop">
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="2" fill="currentColor" /></svg>
         </button>
-      )}
-
-      <button
-        onClick={onStop}
-        className="flex items-center gap-2 px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-      >
-        <span className="text-lg">&#9632;</span> Stop
-      </button>
-
-      <div className="flex items-center gap-2 ml-4">
-        <span className="text-sm text-gray-500">BPM</span>
-        <input
-          type="range"
-          min={40}
-          max={240}
-          value={tempo}
-          onChange={(e) => onTempoChange(parseInt(e.target.value))}
-          className="w-24 sm:w-32"
-        />
-        <span className="text-sm font-mono w-8 text-right">{tempo}</span>
       </div>
 
-      <button
-        onClick={() => onChordsToggle(!chordsEnabled)}
-        title={chordsEnabled ? "Chords on" : "Chords off"}
-        className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-          chordsEnabled
-            ? "bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
-            : "bg-gray-100 text-gray-400 hover:bg-gray-200"
-        }`}
-      >
-        🎹 Chords
-      </button>
+      <div className="flex items-start gap-5 sm:gap-7">
+        <Knob
+          label="Tempo"
+          value={tempo}
+          min={40}
+          max={240}
+          defaultValue={originalTempo}
+          onChange={onTempoChange}
+          format={v => `${v} bpm`}
+        />
+        <Knob
+          label="Swing"
+          value={Math.round(swing * 100)}
+          min={0}
+          max={100}
+          defaultValue={Math.round(originalSwing * 100)}
+          onChange={v => onSwingChange(v / 100)}
+          format={v => (v === 0 ? "Straight" : `${v}%`)}
+        />
+      </div>
+
+      <div className="flex flex-wrap items-center justify-center gap-2.5">
+        <Toggle label="Loop" pressed={loopEnabled} onToggle={onLoopToggle} hint="Repeat the lick" />
+        <Toggle label="Comp" pressed={chordsEnabled} onToggle={onChordsToggle} hint="Bass and left-hand chords under the lick" />
+        <Toggle label="Click" pressed={clickEnabled} onToggle={onClickToggle} hint="Metronome on every beat" />
+      </div>
     </div>
   );
 });

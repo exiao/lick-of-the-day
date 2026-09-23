@@ -10,11 +10,6 @@ export function extractJSON(text: string): string {
 /** Duration values considered "long" (quarter note or longer) */
 const LONG_DURATIONS = new Set(["4n", "4n.", "2n", "2n.", "1n"]);
 
-/** All valid Tone.js durations mapped to approximate beat values for range checks */
-const VALID_DURATIONS = new Set([
-  "32n", "16n", "16n.", "8n", "8n.", "4n", "4n.", "2n", "2n.", "1n",
-]);
-
 /** Parse a scientific pitch string and return its MIDI-ish numeric value for range checking */
 function pitchToMidi(pitch: string): number | null {
   if (pitch === "rest") return null;

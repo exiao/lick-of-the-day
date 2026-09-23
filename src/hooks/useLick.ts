@@ -1,11 +1,13 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import type { Lick, Genre } from "../types/lick";
-import { FALLBACK_LICK } from "../utils/mock-lick";
+import { SOUL_LICKS } from "../utils/soul-licks";
 import { streamLick } from "../utils/stream-lick";
+import { readJsonResponse, reportLickError } from "../utils/lick-errors";
 import type { PartialLick } from "../utils/partial-json";
 
 const ALL_GENRES: Genre[] = ["jazz", "blues", "funk", "rnb", "bossa"];
 const DEFAULT_BARS = 4;
+const FALLBACK_LICK = SOUL_LICKS[0].lick;
 
 function randomGenre(): Genre {
   return ALL_GENRES[Math.floor(Math.random() * ALL_GENRES.length)];
@@ -35,6 +37,10 @@ interface UseLickReturn {
   phase: GenPhase;
   /** True while notes are still streaming in (gate playback on this). */
   notesPending: boolean;
+  /** Show a specific, already-complete lick (e.g. a curated studio lick). */
+  selectLick: (lick: Lick) => void;
+  /** Go back to today's shared lick. */
+  showDaily: () => void;
 }
 
 // Overlay whatever partial fields have arrived onto a base lick so the rendered
@@ -61,7 +67,7 @@ export function useLick(): UseLickReturn {
   const [lick, setLick] = useState<Lick>(FALLBACK_LICK);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isDaily, setIsDaily] = useState(true);
+  const [isDaily, setIsDaily] = useState(false);
   const [phase, setPhase] = useState<GenPhase>("idle");
   const [notesPending, setNotesPending] = useState(false);
 
@@ -69,6 +75,8 @@ export function useLick(): UseLickReturn {
   const prefetchRef = useRef<Promise<Lick> | null>(null);
   // Guard the mount fetch against React Strict Mode's double-invoke in dev.
   const initialFetchRef = useRef(false);
+  // The last daily lick we received, so "Today" can switch back without a fetch.
+  const dailyRef = useRef<Lick | null>(null);
 
   const startPrefetch = useCallback(() => {
     const p = fetchLickFull(randomGenre(), DEFAULT_BARS);
@@ -85,16 +93,16 @@ export function useLick(): UseLickReturn {
       // Daily is a KV cache hit (cron pre-generates it), so a plain fetch is
       // already instant — no need to stream here.
       const res = await fetch("/api/daily");
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: Lick = await res.json();
+      const data = await readJsonResponse<Lick>(res);
+      dailyRef.current = data;
       setLick(data);
       setIsDaily(true);
       setPhase("idle");
       setNotesPending(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch daily lick");
+      setError(reportLickError(err, "daily"));
       setLick(FALLBACK_LICK);
-      setIsDaily(true);
+      setIsDaily(false);
     } finally {
       setLoading(false);
     }
@@ -123,7 +131,7 @@ export function useLick(): UseLickReturn {
       // Roll back to the last complete lick so we never show a half-streamed
       // sheet with mismatched notes or an enabled Play button.
       setLick(prevLick);
-      setError(err instanceof Error ? err.message : "Failed to generate lick");
+      setError(reportLickError(err, "new"));
       setPhase("idle");
       setNotesPending(false);
     } finally {
@@ -162,11 +170,31 @@ export function useLick(): UseLickReturn {
     startPrefetch();
   }, [startPrefetch, streamFresh]);
 
+  const selectLick = useCallback((next: Lick) => {
+    setError(null);
+    setLick(next);
+    setIsDaily(false);
+    setPhase("idle");
+    setNotesPending(false);
+  }, []);
+
+  const showDaily = useCallback(() => {
+    if (!dailyRef.current) {
+      void fetchDaily();
+      return;
+    }
+    setError(null);
+    setLick(dailyRef.current);
+    setIsDaily(true);
+    setPhase("idle");
+    setNotesPending(false);
+  }, [fetchDaily]);
+
   useEffect(() => {
     if (initialFetchRef.current) return;
     initialFetchRef.current = true;
     fetchDaily().then(() => startPrefetch());
   }, [fetchDaily, startPrefetch]);
 
-  return { lick, loading, error, fetchDaily, newLick, isDaily, phase, notesPending };
+  return { lick, loading, error, fetchDaily, newLick, isDaily, phase, notesPending, selectLick, showDaily };
 }

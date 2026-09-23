@@ -1,6 +1,7 @@
 import type { Lick, Genre } from "../types/lick";
 import { extractClosedFields, type PartialLick } from "./partial-json";
 import { extractJSON } from "./parse";
+import { assertEventStream, errorFromResponse } from "./lick-errors";
 
 // Consume the SSE stream from /api/random and assemble a Lick. Calls
 // `onProgress` with the partially-parsed lick as fields arrive (title/key →
@@ -22,15 +23,10 @@ export async function streamLick(
     body: JSON.stringify({ genre, bars }),
   });
 
-  // Pre-stream validation/rate-limit errors come back as plain JSON.
-  if (!res.ok) {
-    let msg = `HTTP ${res.status}`;
-    try {
-      const body = (await res.json()) as { error?: string };
-      if (body.error) msg = body.error;
-    } catch { /* non-JSON error body */ }
-    throw new Error(msg);
-  }
+  // Pre-stream validation/rate-limit errors come back as plain JSON; a missing
+  // endpoint (plain Vite dev) comes back as 404 or an HTML page.
+  if (!res.ok) throw await errorFromResponse(res);
+  assertEventStream(res);
   if (!res.body) throw new Error("No response body");
 
   const reader = res.body.getReader();

@@ -1,10 +1,14 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import type { Note } from "../types/lick";
 import { pitchesMatch } from "../utils/music";
 
 interface UsePracticeModeReturn {
+  /** Position within the pitched (non-rest) notes. */
   currentIndex: number;
+  /** Index into the full notes array (rests included) of the expected note, or -1. */
+  currentNoteIndex: number;
   score: number;
+  misses: number;
   total: number;
   isComplete: boolean;
   showHint: boolean;
@@ -16,30 +20,46 @@ interface UsePracticeModeReturn {
 }
 
 export function usePracticeMode(notes: Note[]): UsePracticeModeReturn {
+  // Rests are played as silence, so practice steps only through pitched notes.
+  const pitched = useMemo(
+    () => notes.flatMap((n, i) => (n.pitch === "rest" ? [] : [i])),
+    [notes],
+  );
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
-  const [showHint, setShowHint] = useState(false);
+  const [misses, setMisses] = useState(0);
+  const [showHint, setShowHint] = useState(true);
   const [lastResult, setLastResult] = useState<"correct" | "incorrect" | null>(null);
 
-  const isComplete = currentIndex >= notes.length;
-  const expectedPitch = isComplete ? null : notes[currentIndex].pitch;
+  // Start over whenever a different lick arrives (adjust-state-during-render).
+  const [trackedNotes, setTrackedNotes] = useState(notes);
+  if (trackedNotes !== notes) {
+    setTrackedNotes(notes);
+    setCurrentIndex(0);
+    setScore(0);
+    setMisses(0);
+    setLastResult(null);
+  }
+
+  const isComplete = currentIndex >= pitched.length;
+  const currentNoteIndex = isComplete ? -1 : pitched[currentIndex];
+  const expectedPitch = isComplete ? null : notes[currentNoteIndex].pitch;
 
   const checkNote = useCallback(
     (pitch: string): "correct" | "incorrect" => {
-      if (isComplete) return "incorrect";
-
-      const expected = notes[currentIndex].pitch;
-      if (pitchesMatch(pitch, expected)) {
+      if (expectedPitch === null) return "incorrect";
+      if (pitchesMatch(pitch, expectedPitch)) {
         setScore(s => s + 1);
         setCurrentIndex(i => i + 1);
         setLastResult("correct");
         return "correct";
-      } else {
-        setLastResult("incorrect");
-        return "incorrect";
       }
+      setMisses(m => m + 1);
+      setLastResult("incorrect");
+      return "incorrect";
     },
-    [currentIndex, notes, isComplete],
+    [expectedPitch],
   );
 
   const toggleHint = useCallback(() => setShowHint(h => !h), []);
@@ -47,13 +67,16 @@ export function usePracticeMode(notes: Note[]): UsePracticeModeReturn {
   const restart = useCallback(() => {
     setCurrentIndex(0);
     setScore(0);
+    setMisses(0);
     setLastResult(null);
   }, []);
 
   return {
     currentIndex,
+    currentNoteIndex,
     score,
-    total: notes.length,
+    misses,
+    total: pitched.length,
     isComplete,
     showHint,
     lastResult,

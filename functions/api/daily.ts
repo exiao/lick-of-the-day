@@ -1,6 +1,7 @@
 import { buildLickPrompt } from "../_shared/prompt";
 import { FALLBACK_LICK } from "../_shared/fallback";
 import { extractJSON, validateNotes } from "../_shared/parse";
+import { checkLick, describeIssues } from "../_shared/validate";
 import { LICK_MODEL, LICK_MAX_TOKENS } from "../_shared/lick-config";
 import type { CoordinatorNamespace } from "../_shared/coordinator";
 
@@ -69,7 +70,14 @@ async function generateDailyLick(env: Env): Promise<Record<string, unknown>> {
   const data = (await res.json()) as { content: { type: string; text: string }[] };
   const rawText = data.content[0]?.type === "text" ? data.content[0].text : "";
   const parsed = JSON.parse(extractJSON(rawText));
-  validateNotes(parsed.notes, parsed.bars ?? 4);
+  // Unplayable licks throw (cold start serves FALLBACK_LICK; a background
+  // refresh keeps the stale lick). Off-grid licks are only logged here: this
+  // path has no retry, and rejecting them would re-bill a generation on every
+  // request until one passes. The cron enforces the strict tier.
+  const issues = checkLick(parsed, 4);
+  if (issues.fatal.length > 0) throw new Error(`Generated lick is unusable: ${describeIssues(issues)}`);
+  if (issues.strict.length > 0) console.warn(`[lick-validate] daily lick is off-grid: ${describeIssues(issues)}`);
+  validateNotes(parsed.notes, 4);
   return { ...parsed, id: getTodayKey() };
 }
 
