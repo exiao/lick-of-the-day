@@ -1,5 +1,6 @@
 import { buildLickPrompt } from "../_shared/prompt";
 import { extractJSON, validateNotes } from "../_shared/parse";
+import { checkLick, describeIssues } from "../_shared/validate";
 import { LICK_MODEL, LICK_MAX_TOKENS } from "../_shared/lick-config";
 import { SSE_HEADERS, sseData, sseDone, sseError, AnthropicSSEParser, anthropicDeltaText } from "../_shared/sse";
 import type { CoordinatorNamespace } from "../_shared/coordinator";
@@ -53,7 +54,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return Response.json({ error: "Invalid bars. Must be one of: 2, 4, 6, 8" }, { status: 400 });
   }
 
-  const { system, user } = buildLickPrompt(genre as "jazz" | "blues" | "funk" | "rnb" | "bossa", bars);
+  const requestedBars = bars;
+  const { system, user } = buildLickPrompt(genre as "jazz" | "blues" | "funk" | "rnb" | "bossa", requestedBars);
 
   // Abort the upstream request if the client disconnects.
   const abort = new AbortController();
@@ -121,7 +123,14 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         if (!parsed || typeof parsed !== "object") {
           throw new Error("Invalid JSON structure received from model");
         }
-        validateNotes(parsed.notes, parsed.bars ?? bars);
+        // Unplayable licks become a stream error (the client rolls back to the
+        // previous lick). Off-grid licks are logged, not rejected: the text has
+        // already streamed, so there is no retry here, and every rejection costs
+        // the user one of their hourly generations.
+        const issues = checkLick(parsed, requestedBars);
+        if (issues.fatal.length > 0) throw new Error(`Generated lick is unusable: ${describeIssues(issues)}`);
+        if (issues.strict.length > 0) console.warn(`[lick-validate] random lick is off-grid: ${describeIssues(issues)}`);
+        validateNotes(parsed.notes, requestedBars);
         const id = `${new Date().toISOString().split("T")[0]}-${Date.now()}`;
         safeEnqueue(sseDone(id));
       } catch (err) {

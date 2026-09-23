@@ -1,5 +1,6 @@
 import { buildLickPrompt } from "../../functions/_shared/prompt";
 import { extractJSON } from "../../functions/_shared/parse";
+import { checkLick, describeIssues } from "../../functions/_shared/validate";
 import {
   LICK_MODEL,
   LICK_MAX_TOKENS,
@@ -174,25 +175,45 @@ async function generateWithGrok(genre: Genre, apiKey: string, dayKey: string): P
   return { ...JSON.parse(jsonString), id: dayKey };
 }
 
-// Generate the daily lick: prefer grok for quality, fall back to haiku if grok
-// errors, times out, or its key is missing. The fallback guarantees the cron
-// still populates KV even when xAI is down.
+// Generate the daily lick: prefer grok for quality, then haiku (twice). Each
+// candidate must pass checkLick's fatal AND strict tiers, so an off-grid lick
+// (notes not filling the bars, ABC disagreeing with the notes) is regenerated
+// instead of cached for every visitor. If no candidate is fully clean, keep the
+// first one that is at least playable rather than leaving the day empty.
 async function generateDailyLick(genre: Genre, env: Env, dayKey: string): Promise<unknown> {
+  const attempts: Array<[string, () => Promise<unknown>]> = [];
   if (env.XAI_API_KEY) {
-    try {
-      return await generateWithGrok(genre, env.XAI_API_KEY, dayKey);
-    } catch (err) {
-      console.error(`Grok generation failed, falling back to haiku: ${err}`);
-    }
+    attempts.push(["grok", () => generateWithGrok(genre, env.XAI_API_KEY, dayKey)]);
   } else {
     console.warn("XAI_API_KEY not set; using haiku for daily lick");
   }
-  return generateWithHaiku(genre, env.ANTHROPIC_API_KEY, dayKey);
+  attempts.push(["haiku", () => generateWithHaiku(genre, env.ANTHROPIC_API_KEY, dayKey)]);
+  attempts.push(["haiku retry", () => generateWithHaiku(genre, env.ANTHROPIC_API_KEY, dayKey)]);
+
+  let playable: unknown;
+  for (const [name, generate] of attempts) {
+    let lick: unknown;
+    try {
+      lick = await generate();
+    } catch (err) {
+      console.error(`${name} generation failed: ${err}`);
+      continue;
+    }
+    const issues = checkLick(lick, 4);
+    if (issues.fatal.length === 0 && issues.strict.length === 0) return lick;
+    console.warn(`${name} lick failed validation: ${describeIssues(issues)}`);
+    if (issues.fatal.length === 0 && playable === undefined) playable = lick;
+  }
+  if (playable !== undefined) {
+    console.warn("No fully valid daily lick; storing the first playable one");
+    return playable;
+  }
+  throw new Error("Every daily-lick generation attempt failed or was unplayable");
 }
 
 export default {
   // Runs before midnight UTC so Grok is ready before Pages starts serving the new day.
-  async scheduled(_event: ScheduledEvent, env: Env, _ctx: ExecutionContext): Promise<void> {
+  async scheduled(_event: ScheduledEvent, env: Env): Promise<void> {
     const tomorrow = new Date(Date.now() + DAY_MS);
     const dayKey = getDayKey(tomorrow);
     const genre = pickGenre(tomorrow);

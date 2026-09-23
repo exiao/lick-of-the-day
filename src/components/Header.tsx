@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { GENRES } from "../types/lick";
 
 interface HeaderProps {
   onNewLick: () => void;
@@ -6,7 +7,10 @@ interface HeaderProps {
   lickTitle: string;
   lickKey: string;
   lickGenre: string;
+  /** Overrides the "Lick of the Day" eyebrow, e.g. for studio-set items. */
+  eyebrow?: string;
   isDaily: boolean;
+  tempo: number;
 }
 
 // Memoized: none of its props change while a lick plays, so it should not
@@ -18,37 +22,33 @@ export const Header = memo(function Header({
   lickTitle,
   lickKey,
   lickGenre,
+  eyebrow,
   isDaily,
+  tempo,
 }: HeaderProps) {
   const today = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
     month: "long",
     day: "numeric",
-    year: "numeric",
   });
+  const genreLabel = GENRES.find(g => g.value === lickGenre)?.label ?? lickGenre;
 
   return (
-    <div className="flex flex-col gap-3 pb-4 border-b border-gray-200">
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            Lick of the Day
-          </h1>
-          <p className="text-sm text-gray-500">
-            {today} · {lickGenre} · Key of {lickKey}
-            {isDaily && " · Daily"}
-          </p>
-        </div>
-
-        <button
-          onClick={onNewLick}
-          disabled={loading}
-          className="px-4 py-1.5 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 disabled:opacity-50 transition-colors"
-        >
-          {loading ? "Generating..." : "New Lick"}
-        </button>
+    <header className="flex flex-wrap items-end justify-between gap-4">
+      <div className="min-w-0">
+        <p className="panel-label">{eyebrow ?? (isDaily ? `Lick of the Day for ${today}` : "Lick of the Day")}</p>
+        <h1 className="chart-type text-3xl sm:text-4xl leading-tight mt-1 truncate">{lickTitle}</h1>
+        <p className="mt-1 text-sm" style={{ color: "var(--ink-soft)" }}>
+          {genreLabel} in {lickKey}, written at <span className="num">{tempo}</span> bpm
+        </p>
       </div>
 
-      <p className="text-lg font-medium text-gray-800">{lickTitle}</p>
-    </div>
+      <button type="button" onClick={onNewLick} disabled={loading} className="cap h-11 px-5">
+        <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true" className={loading ? "animate-spin" : ""}>
+          <path d="M13.5 8A5.5 5.5 0 1 1 11.9 4.1M13.5 2v3.2h-3.2" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        {loading ? "Writing a lick" : "Generate new lick"}
+      </button>
+    </header>
   );
 });

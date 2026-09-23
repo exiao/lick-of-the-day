@@ -3,29 +3,27 @@ interface ModeToggleProps {
   onModeChange: (mode: "listen" | "practice") => void;
 }
 
+const MODES = [
+  { value: "listen", label: "Listen" },
+  { value: "practice", label: "Play it back" },
+] as const;
+
 export function ModeToggle({ mode, onModeChange }: ModeToggleProps) {
   return (
-    <div className="flex justify-center gap-1 bg-gray-100 rounded-lg p-1 w-fit mx-auto">
-      <button
-        onClick={() => onModeChange("listen")}
-        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-          mode === "listen"
-            ? "bg-white text-blue-600 shadow-sm"
-            : "text-gray-500 hover:text-gray-700"
-        }`}
-      >
-        Listen
-      </button>
-      <button
-        onClick={() => onModeChange("practice")}
-        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-          mode === "practice"
-            ? "bg-white text-green-600 shadow-sm"
-            : "text-gray-500 hover:text-gray-700"
-        }`}
-      >
-        Practice
-      </button>
+    <div className="well-sm inline-flex gap-1 p-1.5" role="radiogroup" aria-label="Mode">
+      {MODES.map(m => (
+        <button
+          key={m.value}
+          type="button"
+          role="radio"
+          aria-checked={mode === m.value}
+          onClick={() => onModeChange(m.value)}
+          className="cap h-9 px-4"
+          style={mode === m.value ? { color: "var(--cobalt)" } : { boxShadow: "none", background: "transparent" }}
+        >
+          {m.label}
+        </button>
+      ))}
     </div>
   );
 }

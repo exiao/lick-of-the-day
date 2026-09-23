@@ -4,55 +4,57 @@ import abcjs from "abcjs";
 interface SheetMusicProps {
   abc: string;
   currentNoteIndex: number;
-  completedNotes?: number; // for practice mode
+  /** Practice mode: notes before this index are marked done, this one is the target. */
+  completedNotes?: number;
+  /** Small screens: wrap to two bars per line so the staff stays readable. */
+  narrow?: boolean;
 }
 
-export function SheetMusic({ abc, currentNoteIndex, completedNotes }: SheetMusicProps) {
+export function SheetMusic({ abc, currentNoteIndex, completedNotes, narrow = false }: SheetMusicProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const tuneRef = useRef<abcjs.TuneObject[]>([]);
 
   useEffect(() => {
     if (!containerRef.current) return;
-    tuneRef.current = abcjs.renderAbc(containerRef.current, abc, {
-      responsive: "resize",
-      staffwidth: 600,
-      paddingtop: 10,
-      paddingbottom: 10,
-    });
-  }, [abc]);
+    try {
+      abcjs.renderAbc(containerRef.current, abc, {
+        responsive: "resize",
+        // Needed for the .abcjs-note / .abcjs-rest classes the highlight uses.
+        add_classes: true,
+        jazzchords: true,
+        staffwidth: narrow ? 380 : 640,
+        wrap: narrow ? { minSpacing: 1, maxSpacing: 3, preferredMeasuresPerLine: 2 } : undefined,
+        format: { gchordfont: "Palatino Italic 15" },
+        paddingtop: 10,
+        paddingbottom: 10,
+        paddingleft: 0,
+        paddingright: 0,
+      });
+    } catch (err) {
+      // Malformed ABC from generation must not take the whole instrument down.
+      console.warn("[sheet-music] could not render ABC:", err);
+      containerRef.current.textContent = "This lick's notation could not be drawn, but it still plays.";
+    }
+  }, [abc, narrow]);
 
-  // Highlight current note during playback
+  // Highlight by position among notes AND rests, so indices line up with the
+  // notes array (which includes rests).
   useEffect(() => {
     if (!containerRef.current) return;
-    const notes = containerRef.current.querySelectorAll(".abcjs-note");
-
-    notes.forEach((note, i) => {
-      note.classList.remove("playing", "completed");
-      if (i === currentNoteIndex) {
-        note.classList.add("playing");
-      } else if (completedNotes !== undefined && i < completedNotes) {
-        note.classList.add("completed");
+    const els = containerRef.current.querySelectorAll(".abcjs-note, .abcjs-rest");
+    els.forEach((el, i) => {
+      el.classList.remove("playing", "completed", "target");
+      if (completedNotes !== undefined) {
+        if (i === currentNoteIndex) el.classList.add("target");
+        else if (i < completedNotes) el.classList.add("completed");
+      } else if (i === currentNoteIndex) {
+        el.classList.add("playing");
       }
     });
-  }, [currentNoteIndex, completedNotes]);
+  }, [abc, narrow, currentNoteIndex, completedNotes]);
 
   return (
-    <div className="w-full bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+    <div className="paper px-3 py-2 sm:px-5 sm:py-3">
       <div ref={containerRef} className="sheet-music-container" />
-      <style>{`
-        .sheet-music-container svg {
-          width: 100%;
-          max-width: 100%;
-        }
-        .abcjs-note.playing path,
-        .abcjs-note.playing circle {
-          fill: #3b82f6 !important;
-        }
-        .abcjs-note.completed path,
-        .abcjs-note.completed circle {
-          fill: #22c55e !important;
-        }
-      `}</style>
     </div>
   );
 }
