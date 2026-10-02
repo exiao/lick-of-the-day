@@ -472,14 +472,14 @@ export function usePlayback(
     // mid-play lets the transport run on into this).
     if (notesRef.current.length > 0) {
       const endTime = beatsToTransportTime(Math.max(totalBeats, loopBeats) + 1, beatsPerBar);
-      transport.scheduleOnce(() => {
+      transport.scheduleOnce((time) => {
         Tone.getDraw().schedule(() => {
           setIsPlaying(false);
           setCurrentNoteIndex(-1);
           setCurrentBeat(-1);
           stepStore.set(-1);
-        }, Tone.now());
-        transport.stop();
+        }, time);
+        transport.stop(time);
       }, endTime);
     }
 
