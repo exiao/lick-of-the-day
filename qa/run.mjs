@@ -29,6 +29,10 @@ const exitCode = await new Promise((resolve, reject) => {
   child.on('exit', (code, signal) => signal ? reject(new Error(`QA interrupted by ${signal}`)) : resolve(code));
 });
 const report = JSON.parse(await readFile(`${directory}/report.json`, 'utf8'));
+if (execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim() !== revision ||
+    createHash('sha256').update(execFileSync('git', ['diff', 'HEAD'])).digest('hex') !== diffHash) {
+  throw new Error('Source changed during QA; evidence does not apply to the final checkout');
+}
 function specs(suites) {
   return suites.flatMap(suite => [...suite.specs, ...specs(suite.suites || [])]);
 }
