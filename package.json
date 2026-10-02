@@ -11,16 +11,19 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "dump-prompts": "tsx evals/dump_prompts.ts > evals/prompts.json",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "vitest run --exclude \"qa/**\"",
+    "test:watch": "vitest --exclude \"qa/**\"",
+    "qa": "node --import tsx qa/run.mjs fixture",
+    "qa:negative": "node --import tsx qa/run.mjs negative",
+    "qa:live": "node --import tsx qa/run.mjs live"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.79.0",
-    "@tailwindcss/vite": "^4.2.1",
+    "@tailwindcss/vite": "^4.3.3",
     "abcjs": "^6.6.2",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "tailwindcss": "^4.2.1",
+    "tailwindcss": "^4.3.3",
     "tone": "^15.1.22",
     "tslib": "^2.8.1"
   },
@@ -40,6 +43,7 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.56.1",
     "vite": "^8.0.0",
-    "vitest": "^4.1.8"
+    "vitest": "^4.1.8",
+    "@playwright/test": "^1.63.0"
   }
 }
