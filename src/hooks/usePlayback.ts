@@ -140,7 +140,6 @@ export function usePlayback(
   const drumsRef = useRef(drumsEnabled);
   const bassRef = useRef(bassEnabled);
   const grooveStyleRef = useRef(grooveStyle);
-  const grooveBassOn = () => bassRef.current;
   // Which instrument each held key went to, so the release reaches the same one
   // even if the sampler finishes loading while the key is down.
   const heldRef = useRef<Map<string, Voice>>(new Map());
@@ -372,7 +371,7 @@ export function usePlayback(
         const secs = Math.max(0.1, (60 / transport.bpm.value) * event.durationBeats - 0.05);
         // The groove bass owns the low end while it's playing; the comp keeps
         // its sustained root only when the groove bass is muted.
-        if (!grooveBassOn()) bass.triggerAttackRelease(event.bass, secs, time, 0.55);
+        if (!bassRef.current) bass.triggerAttackRelease(event.bass, secs, time, 0.55);
         // Shell voicing through the piano, a touch late and soft, like a comping left hand.
         triggerMelody(event.shell, Math.min(secs, 1.6), time + 0.012, 0.32);
       },
@@ -472,14 +471,14 @@ export function usePlayback(
     // mid-play lets the transport run on into this).
     if (notesRef.current.length > 0) {
       const endTime = beatsToTransportTime(Math.max(totalBeats, loopBeats) + 1, beatsPerBar);
-      transport.scheduleOnce(() => {
+      transport.scheduleOnce((time) => {
         Tone.getDraw().schedule(() => {
           setIsPlaying(false);
           setCurrentNoteIndex(-1);
           setCurrentBeat(-1);
           stepStore.set(-1);
-        }, Tone.now());
-        transport.stop();
+        }, time);
+        transport.stop(time);
       }, endTime);
     }
 
