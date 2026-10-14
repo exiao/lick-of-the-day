@@ -190,17 +190,54 @@ describe("GET /api/daily", () => {
     expect(fallback?.headers.get("Cache-Control")).toBe("no-store");
     expect(await fallback?.json()).toEqual(FALLBACK_LICK);
   });
-  it("returns an explicitly marked uncached fallback after one off-grid generation", async () => {
+  it.each([
+    [false, false], [false, true], [true, false], [true, true],
+  ])("suppresses failed daily retries and recovers after cooldown (stale=%s, coordinator=%s)", async (stale, coordinated) => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-15T12:00:00.000Z"));
     const store = new MemoryKV();
-    const fetchMock = vi.fn(async () => Response.json({ content: [{ type: "text", text: JSON.stringify({ ...FALLBACK_LICK, notes: FALLBACK_LICK.notes.slice(1) }) }] }));
+    const invalid = { ...FALLBACK_LICK, id: "2026-07-15", notes: FALLBACK_LICK.notes.slice(1) };
+    const previous = { ...FALLBACK_LICK, id: "2026-07-14" };
+    await store.put("daily:2026-07-15", JSON.stringify(invalid));
+    await store.put("daily:latest", JSON.stringify(stale ? previous : invalid));
+    const fetchMock = vi.fn()
+      .mockImplementationOnce(async () => {
+        vi.advanceTimersByTime(60_001); // Cooldown starts after a slow generation fails.
+        return Response.json({ content: [{ type: "text", text: JSON.stringify(invalid) }] });
+      })
+      .mockImplementation(async () => Response.json({ content: [{ type: "text", text: JSON.stringify(invalid) }] }));
     vi.stubGlobal("fetch", fetchMock);
-    const context = { env: { ANTHROPIC_API_KEY: "test", LICK_STORE: store } } as Parameters<typeof onRequestGet>[0];
-    const response = await onRequestGet(context);
-    expect(await response.json()).toEqual(FALLBACK_LICK);
-    expect(response.headers.get("Cache-Control")).toBe("no-store");
-    expect(response.headers.get("X-Lick-Cache")).toBe("fallback");
-    expect(await store.get("daily:latest")).toBeNull();
+    const pending: Promise<unknown>[] = [];
+    const context = { env: { ANTHROPIC_API_KEY: "test", LICK_STORE: store, ...(coordinated ? { LICK_COORDINATOR: new RefreshCoordinator() } : {}) }, waitUntil: (p: Promise<unknown>) => pending.push(p) } as Parameters<typeof onRequestGet>[0];
+    for (let i = 0; i < 5; i++) {
+      const response = await onRequestGet(context);
+      await Promise.all(pending.splice(0));
+      expect(response.headers.get("Cache-Control")).toBe("no-store");
+      expect(await response.json()).toEqual(stale ? previous : FALLBACK_LICK);
+    }
     expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(await store.get("daily:latest")).toBe(JSON.stringify(stale ? previous : invalid));
+    await store.put("daily:2026-07-15", JSON.stringify({ ...FALLBACK_LICK, id: "2026-07-15" }));
+    const duringCooldown = await onRequestGet(context);
+    expect(await duringCooldown.json()).toEqual({ ...FALLBACK_LICK, id: "2026-07-15" });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    await store.put("daily:2026-07-15", JSON.stringify(invalid));
+    vi.advanceTimersByTime(300_001);
+    fetchMock.mockImplementation(async () => Response.json({ content: [{ type: "text", text: JSON.stringify(FALLBACK_LICK) }] }));
+    await onRequestGet(context);
+    await Promise.all(pending.splice(0));
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const recovered = await onRequestGet(context);
+    expect(await recovered.json()).toEqual({ ...FALLBACK_LICK, id: "2026-07-15" });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("returns the uncached fallback if writing a failure cooldown also fails", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ content: [{ type: "text", text: JSON.stringify({ ...FALLBACK_LICK, notes: FALLBACK_LICK.notes.slice(1) }) }] })));
+    const response = await onRequestGet({ env: { ANTHROPIC_API_KEY: "test", LICK_STORE: { get: async () => null, put: async () => { throw new Error("KV unavailable"); } } } } as Parameters<typeof onRequestGet>[0]);
+    expect(await response.json()).toEqual(FALLBACK_LICK);
+    expect(response.headers.get("X-Lick-Cache")).toBe("fallback");
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
   });
   it.each([
     ["malformed JSON", "{broken"],

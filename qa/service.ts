@@ -5,12 +5,14 @@ import { SSE_HEADERS, sseData, sseDone } from '../functions/_shared/sse';
 // Only this loopback fixture accepts fault injection. No production flags.
 const injectHTML = process.env.QA_INJECT_HTML === '1';
 let dailyScenario = "healthy";
+let generation = 0;
 const server = createServer((req, res) => {
   const path = new URL(req.url || '/', 'http://127.0.0.1:4319').pathname;
   if (path === '/__qa/health') {
     res.end('ready');
   } else if (path === '/__qa/scenario' && req.method === 'POST') {
     dailyScenario = new URL(req.url || '/', 'http://127.0.0.1:4319').searchParams.get('daily') || 'healthy';
+    generation = 0;
     res.end('ready');
   } else if (path === '/api/daily' && req.method === 'GET') {
     res.setHeader('Cache-Control', 'no-store');
@@ -37,7 +39,7 @@ const server = createServer((req, res) => {
         res.end('Invalid JSON');
         return;
       }
-      const { id, ...lick } = SOUL_LICKS[2].lick;
+      const { id, ...lick } = SOUL_LICKS[generation++ === 0 ? 2 : 1].lick;
       const text = JSON.stringify({ ...lick, id: 'model-supplied-id' });
       res.writeHead(200, SSE_HEADERS);
       res.write(sseData(text.slice(0, text.indexOf('"notes"'))));

@@ -15,7 +15,7 @@ Fixture mode starts a loopback HTTP service on 4319 and builds and starts real V
 | Case ID from cases.ts | User entry and prerequisites | Observable proof | Credible failure detected |
 | --- | --- | --- | --- |
 | daily-load | Open `/`, healthy daily fixture | JSON 200 and authored daily ID, matching title, rendered staff, playback note and piano highlight, Stop clears highlight, no alert or uncaught errors | Missing proxy silently returns index.html; stale fallback appears successful; audio never starts |
-| generate-new-lick | Open `/`, wait for mount prefetch, click Generate new lick | Real POST/SSE, canonical generated ID, changed title and notation, usable playback, no alert | HTML random response, missing done event, button never consumes generated lick, stuck loading |
+| generate-new-lick | Open `/`, wait for mount prefetch, click Generate new lick | Real POST/SSE, canonical generated ID, changed title and notation, two POSTs including the next prefetch, usable playback, no alert | HTML random response, missing done event, button ignores the distinct mount-prefetch result or generates twice, stuck loading |
 | unavailable-daily-playback | Open `/`, daily fixture returns 503 HTML | Captured 503, visible fallback message, Late Night Vamp staff, advancing playback/piano, Stop works | Alert-only recovery, unusable fallback notes or audio |
 | malformed-daily-recovery | Daily fixture sends incomplete JSON | Fallback alert, usable staff/playback, no uncaught browser errors | Invalid response crashes the application |
 | stale-daily-date | Previous UTC daily date; studio then Today | Returned date stays Tuesday, July 14 | Header relabels stale music with today's date |

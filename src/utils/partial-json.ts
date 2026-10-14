@@ -13,7 +13,7 @@
 
 import type { Lick } from "../types/lick";
 
-export type PartialLick = Partial<Pick<Lick, "title" | "feel" | "abc">>;
+export type PartialLick = Partial<Pick<Lick, "title" | "abc">>;
 
 function readString(s: string, from: number): { value: string; end: number } | null {
   // `from` points at the opening quote. Returns null if not yet terminated.
@@ -86,7 +86,7 @@ function findKey(s: string, key: string): number {
   return -1;
 }
 
-const STRING_KEYS = ["title", "feel", "abc"] as const;
+const STRING_KEYS = ["title", "abc"] as const;
 
 /**
  * Extract whatever top-level fields have fully arrived in an in-progress JSON

@@ -22,7 +22,9 @@ test(CASES.daily, async ({ page }, info) => {
 });
 
 test(CASES.generate, async ({ page }, info) => {
-  // The mount prefetch is a real POST through Vite, and the button consumes it.
+  let generationRequests = 0;
+  page.on('request', r => { if (new URL(r.url()).pathname === '/api/random' && r.method() === 'POST') generationRequests++; });
+  // The button consumes the mount prefetch, then starts the next one.
   const random = page.waitForResponse(r => new URL(r.url()).pathname === '/api/random' && r.request().method() === 'POST');
   await page.goto('/');
   await readyLick(page, EXPECTED.daily.title);
@@ -31,8 +33,11 @@ test(CASES.generate, async ({ page }, info) => {
   expect(response.status()).toBe(200);
   expect(response.headers()['content-type']).toContain('text/event-stream');
   expect(stream).toContain(`event: done\ndata: {"id":"${EXPECTED.generated.id}"}`);
+  const nextPrefetch = page.waitForRequest(r => new URL(r.url()).pathname === '/api/random' && r.method() === 'POST');
   await page.getByRole('button', { name: 'Generate new lick', exact: true }).click();
   await readyLick(page, EXPECTED.generated.title);
+  await nextPrefetch;
+  expect(generationRequests, 'Consume the existing prefetch without a duplicate generation').toBe(2);
   await expect(page.getByRole('button').filter({ hasText: EXPECTED.generated.title }), 'server id overrides any model-provided id').toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('alert')).toHaveCount(0);
   await playback(page);

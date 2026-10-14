@@ -20,9 +20,8 @@ describe("extractClosedFields — truncation sweep", () => {
       const got = extractClosedFields(full.slice(0, n));
       if (got.title !== undefined) expect(got.title).toBe(FALLBACK_LICK.title);
       if (got.abc !== undefined) expect(got.abc).toBe(FALLBACK_LICK.abc);
-      if (got.feel !== undefined) expect(got.feel).toBe(FALLBACK_LICK.feel);
     }
-    expect(extractClosedFields(full)).toEqual({ title: FALLBACK_LICK.title, feel: FALLBACK_LICK.feel, abc: FALLBACK_LICK.abc });
+    expect(extractClosedFields(full)).toEqual({ title: FALLBACK_LICK.title, abc: FALLBACK_LICK.abc });
   });
 
   it("abc becomes available before the stream ends (early sheet paint)", () => {

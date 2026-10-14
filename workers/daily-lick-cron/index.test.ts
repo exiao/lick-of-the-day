@@ -45,12 +45,7 @@ describe("daily lick cron worker", () => {
       .mockResolvedValueOnce(haikuReply(VALID));
     vi.stubGlobal("fetch", fetchMock);
 
-    const response = await worker.fetch(new Request("https://cron.test/trigger", { method: "POST", headers: { Authorization: "Bearer trigger-token" } }), {
-      CRON_TRIGGER_TOKEN: "trigger-token",
-      XAI_API_KEY: "xai-key",
-      ANTHROPIC_API_KEY: "anthropic-key",
-      LICK_STORE: { put },
-    } as never);
+    const response = await worker.fetch(trigger(), ENV(put));
 
     expect(response.status).toBe(200);
     // Two writes: the daily:<date> key and the daily:latest pointer (added when
@@ -63,12 +58,7 @@ describe("daily lick cron worker", () => {
     const fetchMock = vi.fn().mockResolvedValue(grokReply(VALID));
     vi.stubGlobal("fetch", fetchMock);
 
-    await worker.fetch(new Request("https://cron.test/trigger", { method: "POST", headers: { Authorization: "Bearer trigger-token" } }), {
-      CRON_TRIGGER_TOKEN: "trigger-token",
-      XAI_API_KEY: "xai-key",
-      ANTHROPIC_API_KEY: "anthropic-key",
-      LICK_STORE: { put: vi.fn().mockResolvedValue(undefined) },
-    } as never);
+    await worker.fetch(trigger(), ENV(vi.fn().mockResolvedValue(undefined)));
 
     expect(fetchMock).toHaveBeenCalledWith(
       "https://api.x.ai/v1/chat/completions",

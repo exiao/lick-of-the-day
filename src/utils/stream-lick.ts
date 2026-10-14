@@ -5,7 +5,7 @@ import { parseLick } from "./lick-validation";
 import { assertEventStream, errorFromResponse } from "./lick-errors";
 
 // Consume the SSE stream from /api/random and assemble a Lick. Calls
-// `onProgress` with closed title, feel and ABC strings, so the UI can paint
+// `onProgress` with closed title and ABC strings, so the UI can paint
 // the sheet music before the notes array finishes. Resolves with the complete,
 // validated Lick.
 //

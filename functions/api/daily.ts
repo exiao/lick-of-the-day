@@ -18,6 +18,8 @@ const GENRES: Genre[] = ["jazz", "blues", "funk", "rnb", "bossa"];
 // day key. Lets us serve a (possibly stale) lick instantly while today's is
 // regenerated in the background — stale-while-revalidate.
 const LATEST_KEY = "daily:latest";
+const RETRY_DELAY_SEC = 300;
+const retryKey = (dayKey: string) => `daily:retry-after:${dayKey}`;
 
 function getDayOfYear(date: Date): number {
   const start = Date.UTC(date.getUTCFullYear(), 0, 0);
@@ -55,46 +57,55 @@ function readCachedLick(raw: string) {
 }
 
 async function generateAndCacheDailyLick(env: Env, dayKey: string): Promise<Record<string, unknown>> {
-  const genre = GENRES[getDayOfYear(new Date(`${dayKey}T00:00:00Z`)) % GENRES.length];
-  const { system, user } = buildLickPrompt(genre, 4);
+  try {
+    const genre = GENRES[getDayOfYear(new Date(`${dayKey}T00:00:00Z`)) % GENRES.length];
+    const { system, user } = buildLickPrompt(genre, 4);
 
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": env.ANTHROPIC_API_KEY,
-      "anthropic-version": "2023-06-01",
-      "anthropic-beta": "prompt-caching-2024-07-31",
-    },
-    body: JSON.stringify({
-      model: LICK_MODEL,
-      max_tokens: LICK_MAX_TOKENS,
-      system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
-      messages: [{ role: "user", content: user }],
-    }),
-  });
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": env.ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+        "anthropic-beta": "prompt-caching-2024-07-31",
+      },
+      body: JSON.stringify({
+        model: LICK_MODEL,
+        max_tokens: LICK_MAX_TOKENS,
+        system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
+        messages: [{ role: "user", content: user }],
+      }),
+    });
 
-  if (!res.ok) {
-    throw new Error(`Anthropic API error: ${res.status} ${await res.text()}`);
-  }
-
-  const data = (await res.json()) as { content: { type: string; text: string }[] };
-  const rawText = data.content[0]?.type === "text" ? data.content[0].text : "";
-  const parsed = JSON.parse(extractJSON(rawText));
-  const issues = checkLick(parsed, 4);
-  if (issues.fatal.length > 0 || issues.strict.length > 0) {
-    throw new Error(`Generated lick is unusable: ${describeIssues(issues)}`);
-  }
-  validateNotes(parsed.notes, 4);
-  const lick = { ...parsed, id: dayKey };
-  if (env.LICK_STORE) {
-    const payload = JSON.stringify(lick);
-    await env.LICK_STORE.put(`daily:${dayKey}`, payload, { expirationTtl: 90000 });
-    if (dayKey === getTodayKey()) {
-      await env.LICK_STORE.put(LATEST_KEY, payload, { expirationTtl: 90000 });
+    if (!res.ok) {
+      throw new Error(`Anthropic API error: ${res.status} ${await res.text()}`);
     }
+
+    const data = (await res.json()) as { content: { type: string; text: string }[] };
+    const rawText = data.content[0]?.type === "text" ? data.content[0].text : "";
+    const parsed = JSON.parse(extractJSON(rawText));
+    const issues = checkLick(parsed, 4);
+    if (issues.fatal.length > 0 || issues.strict.length > 0) {
+      throw new Error(`Generated lick is unusable: ${describeIssues(issues)}`);
+    }
+    validateNotes(parsed.notes, 4);
+    const lick = { ...parsed, id: dayKey };
+    if (env.LICK_STORE) {
+      const payload = JSON.stringify(lick);
+      await env.LICK_STORE.put(`daily:${dayKey}`, payload, { expirationTtl: 90000 });
+      if (dayKey === getTodayKey()) {
+        await env.LICK_STORE.put(LATEST_KEY, payload, { expirationTtl: 90000 });
+      }
+    }
+    return lick;
+  } catch (err) {
+    try {
+      await env.LICK_STORE?.put(retryKey(dayKey), String(Date.now() + RETRY_DELAY_SEC * 1000), { expirationTtl: RETRY_DELAY_SEC });
+    } catch (cacheError) {
+      console.warn("Could not record daily retry cooldown:", cacheError);
+    }
+    throw err;
   }
-  return lick;
 }
 
 async function requestCoordinator(env: Env, key: string, path: string, init?: RequestInit): Promise<Response | undefined> {
@@ -136,6 +147,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     ? `public, max-age=${secondsUntilMidnightUTC()}, must-revalidate`
     : "no-store";
 
+  let coolingDown = false;
   if (context.env.LICK_STORE) {
     // Fresh hit: today's lick exists (cron pre-generated it, or a prior request
     // did). Serve instantly and let it cache until the next UTC midnight.
@@ -150,18 +162,21 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     // Miss on today's key: serve the newest lick we have (yesterday's, or
     // whatever the latest pointer holds) INSTANTLY, and regenerate today's in
     // the background. Classic stale-while-revalidate — no blocking cold path.
+    coolingDown = Number(await context.env.LICK_STORE.get(retryKey(dayKey))) > Date.now();
     const stale = await context.env.LICK_STORE.get(LATEST_KEY);
     if (stale) {
       const lick = readCachedLick(stale);
       if (lick && lick.id <= dayKey) {
-        const token = await acquireRefresh(context.env, kvKey);
-        if (token || !context.env.LICK_COORDINATOR) {
+        const token = coolingDown ? undefined : await acquireRefresh(context.env, kvKey);
+        if (!coolingDown && (token || !context.env.LICK_COORDINATOR)) {
           context.waitUntil(refreshDailyLick(context.env, kvKey, token ?? ""));
         }
-        return jsonResponse(lick, "no-store", { "X-Lick-Cache": "stale-revalidating" });
+        return jsonResponse(lick, "no-store", { "X-Lick-Cache": coolingDown ? "stale" : "stale-revalidating" });
       }
     }
   }
+
+  if (coolingDown) return jsonResponse(FALLBACK_LICK, "no-store", { "X-Lick-Cache": "fallback" });
 
   // True cold start: no cached lick anywhere (first request ever, or KV
   // unavailable). Block and generate on demand.
@@ -177,7 +192,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     );
   } catch (err) {
     console.error("Failed to generate daily lick:", err);
-    // Do not cache the fallback — let the next request retry the API.
+    // Keep the fallback uncached; the retry marker bounds failed generation attempts.
     return jsonResponse(FALLBACK_LICK, "no-store", { "X-Lick-Cache": "fallback" });
   } finally {
     if (token) await releaseRefresh(context.env, kvKey, token);

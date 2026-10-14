@@ -21,7 +21,13 @@ function getTodayKey(): string {
 }
 
 // Simple in-memory cache for serverless (works within a single instance)
-const cache = new Map<string, { lick: Lick; expires: number }>();
+const cache = new Map<string, { lick: Lick; expires: number } | { expires: number }>();
+
+function fallbackResponse(res: VercelResponse) {
+  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("X-Lick-Cache", "fallback");
+  return res.status(200).json(FALLBACK_LICK);
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "GET") {
@@ -34,7 +40,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Check cache
   const cached = cache.get(todayKey);
   if (cached && cached.expires > Date.now()) {
-    return res.status(200).json(cached.lick);
+    return "lick" in cached ? res.status(200).json(cached.lick) : fallbackResponse(res);
   }
 
   // Determine genre for today
@@ -66,8 +72,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(lick);
   } catch (err) {
     console.error("Failed to generate daily lick:", err);
-    res.setHeader("Cache-Control", "no-store");
-    res.setHeader("X-Lick-Cache", "fallback");
-    return res.status(200).json(FALLBACK_LICK);
+    const current = cache.get(todayKey);
+    if (!current || current.expires <= Date.now() || !("lick" in current)) {
+      cache.set(todayKey, { expires: Date.now() + 300_000 });
+    }
+    return fallbackResponse(res);
   }
 }

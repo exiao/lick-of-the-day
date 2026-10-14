@@ -12,18 +12,12 @@
 //            rejects these and regenerates; request paths return a safe fallback or error.
 
 import { keySignature, meterBeats, parseAbc } from "./abc";
+import { DURATION_BEATS } from "./durations";
 
 export interface LickIssues {
   fatal: string[];
   strict: string[];
 }
-
-// Mirrors durationToBeats in src/utils/music.ts; anything else silently plays
-// as an 8th on the client and shifts every later note off the grid.
-const DURATION_BEATS: Record<string, number> = {
-  "1n": 4, "2n.": 3, "2n": 2, "4n.": 1.5, "4n": 1,
-  "8n.": 0.75, "8n": 0.5, "16n.": 0.375, "16n": 0.25, "32n": 0.125,
-};
 
 const PC: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
 const EPS = 1e-6;

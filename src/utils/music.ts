@@ -1,3 +1,5 @@
+import { DURATION_BEATS } from "../../functions/_shared/durations";
+
 const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
 const ENHARMONIC_MAP: Record<string, string> = {
@@ -105,19 +107,7 @@ export function pitchToMidiOrNull(pitch: string): number | null {
 
 /** Tone.js duration string → length in quarter-note beats. */
 export function durationToBeats(dur: string): number {
-  switch (dur) {
-    case "1n":  return 4;
-    case "2n":  return 2;
-    case "2n.": return 3;
-    case "4n":  return 1;
-    case "4n.": return 1.5;
-    case "8n":  return 0.5;
-    case "8n.": return 0.75;
-    case "16n": return 0.25;
-    case "16n.": return 0.375;
-    case "32n": return 0.125;
-    default:    return 0.5; // fallback to eighth
-  }
+  return Object.hasOwn(DURATION_BEATS, dur) ? DURATION_BEATS[dur] : 0.5;
 }
 
 /** Beat onset (from 0) of every note, rests included. */
