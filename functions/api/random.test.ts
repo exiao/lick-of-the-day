@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { CoordinatorNamespace } from "../_shared/coordinator";
-import { checkRateLimit } from "./random";
+import { FALLBACK_LICK } from "../_shared/fallback";
+import { checkRateLimit, onRequestPost } from "./random";
 
 class RateLimitCoordinator implements CoordinatorNamespace {
   private count = 0;
@@ -29,6 +30,7 @@ class RateLimitCoordinator implements CoordinatorNamespace {
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 describe("checkRateLimit", () => {
@@ -62,4 +64,43 @@ describe("checkRateLimit", () => {
 
     await expect(checkRateLimit(coordinator, "203.0.113.9")).resolves.toBe(true);
   });
+});
+
+describe("POST /api/random", () => {
+  it.each(["error", "truncated"])("does not declare success after an upstream %s stream", async (ending) => {
+    const delta = { type: "content_block_delta", delta: { type: "text_delta", text: JSON.stringify(FALLBACK_LICK) } };
+    const frames = `data: ${JSON.stringify(delta)}\n\n` + (ending === "error"
+      ? 'event: error\ndata: {"type":"error","error":{"type":"overloaded_error","message":"Overloaded"}}\n\n'
+      : "");
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(frames)));
+    const response = await onRequestPost({
+      request: new Request("https://app.test/api/random", { method: "POST", body: JSON.stringify({ genre: "jazz", bars: 4 }) }),
+      env: { ANTHROPIC_API_KEY: "test" },
+    } as Parameters<typeof onRequestPost>[0]);
+    const body = await response.text();
+    expect(body).toContain("event: error");
+    expect(body).not.toContain("event: done");
+  });
+
+  it("completes a valid provider stream", async () => {
+    const delta = { type: "content_block_delta", delta: { type: "text_delta", text: JSON.stringify(FALLBACK_LICK) } };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(`data: ${JSON.stringify(delta)}\n\ndata: {"type":"message_stop"}\n\n`)));
+    const response = await onRequestPost({
+      request: new Request("https://app.test/api/random", { method: "POST", body: JSON.stringify({ genre: "jazz", bars: 4 }) }),
+      env: { ANTHROPIC_API_KEY: "test" },
+    } as Parameters<typeof onRequestPost>[0]);
+    expect(await response.text()).toContain("event: done");
+  });
+  it("rejects notation that disagrees with playback before declaring success", async () => {
+    const delta = { type: "content_block_delta", delta: { type: "text_delta", text: JSON.stringify({ ...FALLBACK_LICK, notes: FALLBACK_LICK.notes.slice(1) }) } };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(`data: ${JSON.stringify(delta)}\n\ndata: {"type":"message_stop"}\n\n`)));
+    const response = await onRequestPost({
+      request: new Request("https://app.test/api/random", { method: "POST", body: JSON.stringify({ genre: "jazz", bars: 4 }) }),
+      env: { ANTHROPIC_API_KEY: "test" },
+    } as Parameters<typeof onRequestPost>[0]);
+    const body = await response.text();
+    expect(body).toContain("event: error");
+    expect(body).not.toContain("event: done");
+  });
+
 });

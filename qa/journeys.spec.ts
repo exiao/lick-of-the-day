@@ -33,6 +33,7 @@ test(CASES.generate, async ({ page }, info) => {
   expect(stream).toContain(`event: done\ndata: {"id":"${EXPECTED.generated.id}"}`);
   await page.getByRole('button', { name: 'Generate new lick', exact: true }).click();
   await readyLick(page, EXPECTED.generated.title);
+  await expect(page.getByRole('button').filter({ hasText: EXPECTED.generated.title }), 'server id overrides any model-provided id').toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('alert')).toHaveCount(0);
   await playback(page);
 });
@@ -46,4 +47,24 @@ test(CASES.fallback, async ({ page }, info) => {
   await expect(page.getByRole('alert')).toContainText('showing a practice lick instead');
   await readyLick(page, EXPECTED.fallback.title);
   await playback(page);
+});
+
+test(CASES.malformed, async ({ page, request }) => {
+  await request.post('http://127.0.0.1:4319/__qa/scenario?daily=malformed');
+  await page.goto('/');
+  await expect(page.getByRole('alert')).toContainText('showing a practice lick instead');
+  await readyLick(page, EXPECTED.fallback.title);
+  await playback(page);
+});
+
+test(CASES.stale, async ({ page, request }) => {
+  await request.post('http://127.0.0.1:4319/__qa/scenario?daily=stale');
+  await page.goto('/');
+  await readyLick(page, EXPECTED.daily.title);
+  await expect(page.locator('header')).toContainText('Tuesday, July 14');
+  await page.getByRole('button').filter({ hasText: 'Chromatic Doorway' }).click();
+  await readyLick(page, 'Chromatic Doorway');
+  await page.getByRole('button').filter({ hasText: 'Today' }).click();
+  await readyLick(page, EXPECTED.daily.title);
+  await expect(page.locator('header')).toContainText('Tuesday, July 14');
 });

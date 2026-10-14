@@ -10,6 +10,7 @@ interface HeaderProps {
   /** Overrides the "Lick of the Day" eyebrow, e.g. for studio-set items. */
   eyebrow?: string;
   isDaily: boolean;
+  lickId: string;
   tempo: number;
 }
 
@@ -24,19 +25,21 @@ export const Header = memo(function Header({
   lickGenre,
   eyebrow,
   isDaily,
+  lickId,
   tempo,
 }: HeaderProps) {
-  const today = new Date().toLocaleDateString("en-US", {
+  const dailyDate = /^\d{4}-\d{2}-\d{2}$/.test(lickId) ? new Date(`${lickId}T00:00:00Z`).toLocaleDateString("en-US", {
     weekday: "long",
     month: "long",
     day: "numeric",
-  });
+    timeZone: "UTC",
+  }) : null;
   const genreLabel = GENRES.find(g => g.value === lickGenre)?.label ?? lickGenre;
 
   return (
     <header className="flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0">
-        <p className="panel-label">{eyebrow ?? (isDaily ? `Lick of the Day for ${today}` : "Lick of the Day")}</p>
+        <p className="panel-label">{eyebrow ?? (isDaily ? dailyDate ? `Lick of the Day for ${dailyDate}` : "Practice lick" : "Lick of the Day")}</p>
         <h1 className="chart-type text-3xl sm:text-4xl leading-tight mt-1 truncate">{lickTitle}</h1>
         <p className="mt-1 text-sm" style={{ color: "var(--ink-soft)" }}>
           {genreLabel} in {lickKey}, written at <span className="num">{tempo}</span> bpm

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import abcjs from "abcjs";
 import type { Chord, Lick, Note } from "../types/lick";
 import { CURATED_LICKS } from "../utils/curated-licks";
-import { FALLBACK_LICK } from "../utils/mock-lick";
+import { FALLBACK_LICK } from "../../functions/_shared/fallback";
 import { checkLick, noteToMidi, parseAbc } from "../test/lick-checks";
 import {
   chordSplitSteps,

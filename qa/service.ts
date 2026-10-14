@@ -4,22 +4,22 @@ import { SSE_HEADERS, sseData, sseDone } from '../functions/_shared/sse';
 
 // Only this loopback fixture accepts fault injection. No production flags.
 const injectHTML = process.env.QA_INJECT_HTML === '1';
-let unavailable = false;
+let dailyScenario = "healthy";
 const server = createServer((req, res) => {
   const path = new URL(req.url || '/', 'http://127.0.0.1:4319').pathname;
   if (path === '/__qa/health') {
     res.end('ready');
   } else if (path === '/__qa/scenario' && req.method === 'POST') {
-    unavailable = new URL(req.url || '/', 'http://127.0.0.1:4319').searchParams.get('daily') === 'unavailable';
+    dailyScenario = new URL(req.url || '/', 'http://127.0.0.1:4319').searchParams.get('daily') || 'healthy';
     res.end('ready');
   } else if (path === '/api/daily' && req.method === 'GET') {
     res.setHeader('Cache-Control', 'no-store');
-    if (injectHTML || unavailable) {
-      res.writeHead(unavailable ? 503 : 200, { 'Content-Type': 'text/html' });
+    if (injectHTML || dailyScenario === 'unavailable') {
+      res.writeHead(dailyScenario === 'unavailable' ? 503 : 200, { 'Content-Type': 'text/html' });
       res.end('<!doctype html><html><body>QA fixture: API returned HTML</body></html>');
     } else {
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(SOUL_LICKS[1].lick));
+      res.end(JSON.stringify(dailyScenario === 'malformed' ? { id: 'broken', title: 'Broken payload', notes: [] } : dailyScenario === 'stale' ? { ...SOUL_LICKS[1].lick, id: '2026-07-14' } : SOUL_LICKS[1].lick));
     }
   } else if (path === '/api/random' && req.method === 'POST') {
     let body = '';
@@ -38,7 +38,7 @@ const server = createServer((req, res) => {
         return;
       }
       const { id, ...lick } = SOUL_LICKS[2].lick;
-      const text = JSON.stringify(lick);
+      const text = JSON.stringify({ ...lick, id: 'model-supplied-id' });
       res.writeHead(200, SSE_HEADERS);
       res.write(sseData(text.slice(0, text.indexOf('"notes"'))));
       res.end(sseData(text.slice(text.indexOf('"notes"'))) + sseDone(id));

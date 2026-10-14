@@ -43,7 +43,7 @@ function parseFraction(s: string): number | null {
 export function meterBeats(meter: string): number | null {
   const t = meter.trim();
   if (t === "C") return 4;
-  if (t === "C|") return 2;
+  if (t === "C|") return 4;
   const f = parseFraction(t);
   return f === null ? null : f * 4;
 }

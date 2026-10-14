@@ -9,9 +9,9 @@
 //            the bars, the ABC disagrees with the notes array (the sheet-music
 //            highlight and practice target then point at different notes), or
 //            the chord chart cannot drive the backing track. The daily cron
-//            rejects these and regenerates; user-facing paths log them.
+//            rejects these and regenerates; request paths return a safe fallback or error.
 
-import { meterBeats, parseAbc } from "./abc";
+import { keySignature, meterBeats, parseAbc } from "./abc";
 
 export interface LickIssues {
   fatal: string[];
@@ -42,29 +42,59 @@ function fmtBeats(b: number): string {
 export function checkLick(lick: unknown, expectedBars: number): LickIssues {
   const fatal: string[] = [];
   const strict: string[] = [];
-  if (!lick || typeof lick !== "object") return { fatal: ["lick is not an object"], strict };
+  if (!lick || typeof lick !== "object" || Array.isArray(lick)) return { fatal: ["lick is not an object"], strict };
   const l = lick as Record<string, unknown>;
 
   // --- fatal: can it play and render at all? ---
+  if (typeof l.title !== "string" || !l.title.trim()) fatal.push("title must be a non-empty string");
+  if (typeof l.genre !== "string" || !["jazz", "blues", "funk", "rnb", "bossa"].includes(l.genre)) fatal.push("genre is unsupported");
+  if (typeof l.key !== "string" || !/^[A-G][#b]?(?:\s*[A-Za-z]+)?$/.test(l.key.trim()) || keySignature(l.key) === null) fatal.push("key must be a readable key signature");
+  if (typeof l.tempo !== "number" || !Number.isFinite(l.tempo) || l.tempo < 40 || l.tempo > 240) fatal.push("tempo must be between 40 and 240");
+  if (typeof l.bars !== "number" || !Number.isInteger(l.bars) || l.bars < 1) fatal.push("bars must be a positive integer");
+  const timeSig = typeof l.timeSignature === "string" ? l.timeSignature : "";
+  const beatsPerBar = meterBeats(timeSig);
+  if (beatsPerBar === null || !Number.isFinite(beatsPerBar) || beatsPerBar <= 0 || !/^(?:C\|?|[1-9]\d*\/(?:1|2|4|8|16|32|64))$/.test(timeSig.trim())) fatal.push("timeSignature must be a positive readable meter");
+  if (l.swing !== undefined && (typeof l.swing !== "number" || !Number.isFinite(l.swing) || l.swing < 0 || l.swing > 1)) fatal.push("swing must be between 0 and 1");
+  if (l.feel !== undefined && typeof l.feel !== "string") fatal.push("feel must be a string");
   const notes = l.notes;
   if (!Array.isArray(notes) || notes.length === 0) {
     fatal.push("notes must be a non-empty array");
   } else {
     notes.forEach((n, idx) => {
-      const note = n as { pitch?: unknown; duration?: unknown } | null;
+      const note = n as { pitch?: unknown; duration?: unknown; velocity?: unknown; articulation?: unknown; attack?: unknown; release?: unknown } | null;
       if (!note || typeof note.pitch !== "string" || typeof note.duration !== "string") {
         fatal.push(`notes[${idx}] needs string pitch and duration`);
         return;
       }
+      if (note.velocity !== undefined && (typeof note.velocity !== "number" || !Number.isFinite(note.velocity) || note.velocity < 0 || note.velocity > 1)) fatal.push(`notes[${idx}] velocity must be between 0 and 1`);
+      if (note.articulation !== undefined && (typeof note.articulation !== "string" || !["normal", "staccato", "legato", "accent", "ghost"].includes(note.articulation))) fatal.push(`notes[${idx}] articulation is unsupported`);
+      for (const field of ["attack", "release"] as const) {
+        const value = note[field];
+        if (value !== undefined && (typeof value !== "number" || !Number.isFinite(value) || value < 0)) fatal.push(`notes[${idx}] ${field} must be a non-negative number`);
+      }
       if (note.pitch !== "rest" && pitchMidi(note.pitch) === null) {
         fatal.push(`notes[${idx}] has unplayable pitch "${note.pitch}"`);
       }
-      if (!(note.duration in DURATION_BEATS)) {
+      if (!Object.hasOwn(DURATION_BEATS, note.duration)) {
         fatal.push(`notes[${idx}] has unknown duration "${note.duration}"`);
       }
     });
   }
   if (typeof l.abc !== "string" || l.abc.trim() === "") fatal.push("abc must be a non-empty string");
+  const chords = l.chords;
+  if (!Array.isArray(chords) || chords.length === 0) {
+    fatal.push("chords must be a non-empty array");
+  } else {
+    chords.forEach((c, idx) => {
+      const ch = c as { chord?: unknown; bar?: unknown; beat?: unknown } | null;
+      if (!ch || typeof ch.chord !== "string" || !/^[A-G][b#]?/.test(ch.chord)) {
+        fatal.push(`chords[${idx}] has no readable root`);
+        return;
+      }
+      if (typeof ch.bar !== "number" || !Number.isInteger(ch.bar) || ch.bar < 1) fatal.push(`chords[${idx}] bar must be a positive integer`);
+      if (typeof ch.beat !== "number" || !Number.isFinite(ch.beat) || ch.beat < 1) fatal.push(`chords[${idx}] beat must be a positive number`);
+    });
+  }
   if (fatal.length > 0) return { fatal, strict };
 
   const noteList = notes as Array<{ pitch: string; duration: string }>;
@@ -72,12 +102,7 @@ export function checkLick(lick: unknown, expectedBars: number): LickIssues {
   // --- strict: does it fit the grid and agree with itself? ---
   if (l.bars !== expectedBars) strict.push(`bars is ${String(l.bars)}, expected ${expectedBars}`);
 
-  const timeSig = typeof l.timeSignature === "string" ? l.timeSignature : "4/4";
-  const beatsPerBar = meterBeats(timeSig);
-  if (beatsPerBar === null) {
-    strict.push(`unreadable timeSignature "${timeSig}"`);
-    return { fatal, strict };
-  }
+  if (beatsPerBar === null) return { fatal, strict };
   const target = expectedBars * beatsPerBar;
 
   const total = noteList.reduce((sum, n) => sum + DURATION_BEATS[n.duration], 0);
@@ -85,35 +110,12 @@ export function checkLick(lick: unknown, expectedBars: number): LickIssues {
     strict.push(`notes last ${fmtBeats(total)} beats; ${expectedBars} bars of ${timeSig} need ${target}`);
   }
 
-  // Scientific spellings that cross the octave boundary (Cb4 = B3, B#3 = C4)
-  // are read an octave off by the client's parsePitch.
-  noteList.forEach((n, idx) => {
-    if (/^(Cb|B#)\d$/.test(n.pitch)) strict.push(`notes[${idx}] "${n.pitch}" is misread by the player; respell it`);
+  const chordList = chords as Array<{ chord: string; bar: number; beat: number }>;
+  chordList.forEach(({ bar, beat }, idx) => {
+    if (bar > expectedBars) strict.push(`chords[${idx}] bar ${bar} is outside 1-${expectedBars}`);
+    if (beat >= beatsPerBar + 1) strict.push(`chords[${idx}] beat ${beat} is outside the bar`);
   });
-
-  // Chord chart drives the backing track and the chord-tone display.
-  const chords = l.chords;
-  if (!Array.isArray(chords) || chords.length === 0) {
-    strict.push("chords must be a non-empty array");
-  } else {
-    let hasDownbeat = false;
-    chords.forEach((c, idx) => {
-      const ch = c as { chord?: unknown; bar?: unknown; beat?: unknown } | null;
-      if (!ch || typeof ch.chord !== "string" || !/^[A-G][b#]?/.test(ch.chord)) {
-        strict.push(`chords[${idx}] has no readable root`);
-        return;
-      }
-      const bar = ch.bar, beat = ch.beat;
-      if (typeof bar !== "number" || !Number.isInteger(bar) || bar < 1 || bar > expectedBars) {
-        strict.push(`chords[${idx}] bar ${String(bar)} is outside 1-${expectedBars}`);
-      }
-      if (typeof beat !== "number" || beat < 1 || beat >= beatsPerBar + 1) {
-        strict.push(`chords[${idx}] beat ${String(beat)} is outside the bar`);
-      }
-      if (bar === 1 && beat === 1) hasDownbeat = true;
-    });
-    if (!hasDownbeat) strict.push("no chord at bar 1 beat 1");
-  }
+  if (!chordList.some(({ bar, beat }) => bar === 1 && beat === 1)) strict.push("no chord at bar 1 beat 1");
 
   // ABC must encode exactly the notes array, bar by bar.
   const abc = parseAbc(l.abc as string);

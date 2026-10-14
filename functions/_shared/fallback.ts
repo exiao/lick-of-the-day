@@ -1,4 +1,6 @@
-export const FALLBACK_LICK = {
+import type { Lick } from "../../src/types/lick";
+
+export const FALLBACK_LICK: Lick = {
   id: "2026-03-17",
   genre: "rnb",
   title: "Neo-Soul Bounce in Eb",

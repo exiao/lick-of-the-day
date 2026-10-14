@@ -117,8 +117,7 @@ export async function unlockAudio(): Promise<boolean> {
   // A dynamic import crosses an async boundary, which loses Safari's user
   // activation. Warm the module now, then require the next gesture to resume.
   if (!toneLoaded()) {
-    void loadTone().then(preloadPianoSampler);
-    await mediaPrime;
+    await Promise.all([loadTone().then(preloadPianoSampler), mediaPrime]);
     return false;
   }
 

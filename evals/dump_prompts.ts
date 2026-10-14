@@ -6,7 +6,7 @@
  *
  * Output shape: { [genre]: { system: string, user: string } }
  */
-import { buildLickPrompt } from "../src/utils/prompt";
+import { buildLickPrompt } from "../functions/_shared/prompt";
 import type { Genre } from "../src/types/lick";
 
 const GENRES: Genre[] = ["jazz", "blues", "funk", "rnb", "bossa"];

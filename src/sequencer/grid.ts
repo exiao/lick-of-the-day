@@ -51,6 +51,8 @@ export const DEFAULT_TRANSPOSE_RANGE: [number, number] = [48, 84];
 // Time signature
 
 function parseTimeSignature(ts: string): { num: number; den: number } {
+  if (ts.trim() === "C") return { num: 4, den: 4 };
+  if (ts.trim() === "C|") return { num: 2, den: 2 };
   const m = /^\s*(\d+)\s*\/\s*(\d+)\s*$/.exec(ts);
   if (!m) throw new Error(`Invalid time signature: ${ts}`);
   const num = Number(m[1]);
