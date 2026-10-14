@@ -1,14 +1,15 @@
 import type { Lick, Genre } from "../types/lick";
 import { extractClosedFields, type PartialLick } from "./partial-json";
-import { extractJSON } from "./parse";
+import { extractJSON } from "../../functions/_shared/parse";
+import { parseLick } from "./lick-validation";
 import { assertEventStream, errorFromResponse } from "./lick-errors";
 
 // Consume the SSE stream from /api/random and assemble a Lick. Calls
-// `onProgress` with the partially-parsed lick as fields arrive (title/key →
-// abc → notes), so the UI can paint the sheet music before the full notes
-// array finishes. Resolves with the complete, server-validated Lick.
+// `onProgress` with closed title, feel and ABC strings, so the UI can paint
+// the sheet music before the notes array finishes. Resolves with the complete,
+// validated Lick.
 //
-// Wire contract (see functions/_shared/sse.ts and src/utils/sse.ts):
+// Wire contract (see functions/_shared/sse.ts):
 //   data: {"text":"<delta>"}              incremental model text
 //   event: done\ndata: {"id":"<id>"}      success (carries the canonical id)
 //   event: error\ndata: {"error":"<msg>"}  failure
@@ -86,6 +87,7 @@ export async function streamLick(
   // lick in ```json fences, which the server strips via extractJSON before
   // sending `done`; do the same here so a fenced-but-valid response doesn't
   // fail client-side and roll back the UI.
-  const parsed = JSON.parse(extractJSON(assembled)) as Omit<Lick, "id">;
-  return { id, ...parsed };
+  const parsed: unknown = JSON.parse(extractJSON(assembled));
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("Invalid lick response");
+  return parseLick({ ...parsed, id });
 }

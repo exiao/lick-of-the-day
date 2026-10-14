@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { CURATED_LICKS } from "./curated-licks";
-import { FALLBACK_LICK } from "./mock-lick";
+import { FALLBACK_LICK } from "../../functions/_shared/fallback";
 import { checkLick } from "../test/lick-checks";
 
 // Validates that each hand-written lick's ABC notation, notes array and chord

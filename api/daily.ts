@@ -1,15 +1,17 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import Anthropic from "@anthropic-ai/sdk";
-import { buildLickPrompt } from "../src/utils/prompt";
+import { buildLickPrompt } from "../functions/_shared/prompt";
 import type { Genre, Lick } from "../src/types/lick";
-import { FALLBACK_LICK } from "../src/utils/mock-lick";
-import { LICK_MODEL, LICK_MAX_TOKENS } from "../src/utils/lick-config";
+import { FALLBACK_LICK } from "../functions/_shared/fallback";
+import { extractJSON } from "../functions/_shared/parse";
+import { checkLick, describeIssues } from "../functions/_shared/validate";
+import { LICK_MODEL, LICK_MAX_TOKENS } from "../functions/_shared/lick-config";
 
 const GENRES: Genre[] = ["jazz", "blues", "funk", "rnb", "bossa"];
 
 function getDayOfYear(): number {
   const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 0);
+  const start = new Date(Date.UTC(now.getUTCFullYear(), 0, 0));
   const diff = now.getTime() - start.getTime();
   return Math.floor(diff / (1000 * 60 * 60 * 24));
 }
@@ -26,7 +28,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const todayKey = `lick:${getTodayKey()}`;
+  const dayKey = getTodayKey();
+  const todayKey = `lick:${dayKey}`;
 
   // Check cache
   const cached = cache.get(todayKey);
@@ -51,14 +54,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     const text = message.content[0].type === "text" ? message.content[0].text : "";
-    const lick: Lick = { ...JSON.parse(text), id: getTodayKey() };
+    const parsed = JSON.parse(extractJSON(text));
+    const issues = checkLick(parsed, 4);
+    if (issues.fatal.length > 0 || issues.strict.length > 0) throw new Error(`Generated lick is unusable: ${describeIssues(issues)}`);
+    const lick: Lick = { ...parsed, id: dayKey };
 
-    // Cache for 24 hours
+    if (dayKey !== getTodayKey()) res.setHeader("Cache-Control", "no-store");
+    // The date key selects the UTC day; expired days are never served.
     cache.set(todayKey, { lick, expires: Date.now() + 24 * 60 * 60 * 1000 });
 
     return res.status(200).json(lick);
   } catch (err) {
     console.error("Failed to generate daily lick:", err);
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("X-Lick-Cache", "fallback");
     return res.status(200).json(FALLBACK_LICK);
   }
 }

@@ -37,7 +37,7 @@ function specs(suites) {
   return suites.flatMap(suite => [...suite.specs, ...specs(suite.suites || [])]);
 }
 const actual = specs(report.suites);
-const expected = mode === 'live' ? [CASES.live] : mode === 'negative' ? [CASES.daily] : [CASES.daily, CASES.generate, CASES.fallback];
+const expected = mode === 'live' ? [CASES.live] : mode === 'negative' ? [CASES.daily] : [CASES.daily, CASES.generate, CASES.fallback, CASES.malformed, CASES.stale];
 if (report.errors.length || actual.length !== expected.length || expected.some(id => actual.filter(s => s.title === id).length !== 1)) {
   throw new Error('QA report missing, duplicate, unknown cases, or runner errors');
 }

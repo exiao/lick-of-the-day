@@ -6,6 +6,7 @@ import { useMediaQuery } from "./hooks/useMediaQuery";
 import { loadTone } from "./utils/tone-loader";
 import { preloadPianoSampler } from "./utils/piano-sampler";
 import { computePianoRange, noteOnsets, pitchToMidiOrNull } from "./utils/music";
+import { meterBeats } from "../functions/_shared/abc";
 import { chordAtBeat, chordPitchClasses } from "./utils/chords";
 import { CURATED_LICKS, type CuratedLick } from "./utils/curated-licks";
 import { SOUL_LICKS } from "./utils/soul-licks";
@@ -49,7 +50,7 @@ function App() {
   // network idle rather than paid for on Play.
   useEffect(() => {
     const preload = () => {
-      void loadTone().then(preloadPianoSampler);
+      void loadTone().then(preloadPianoSampler).catch(err => console.warn("[audio] preload failed:", err));
     };
     window.addEventListener("pointerdown", preload, { once: true });
     window.addEventListener("keydown", preload, { once: true });
@@ -144,7 +145,7 @@ function App() {
   }, [stopPlayback]);
 
   // --- Sequencer editing ---
-  const beatsPerBar = parseInt(lick.timeSignature.split("/")[0]) || 4;
+  const beatsPerBar = meterBeats(lick.timeSignature) ?? 4;
   const canEdit = mode === "listen" && grid !== null;
   // No chord-change splits here: they would re-cut notes the user never touched
   // (a note held across a change). Only bar lines and unwritable lengths split.
@@ -262,6 +263,7 @@ function App() {
           lickGenre={lick.genre}
           eyebrow={studioEyebrow}
           isDaily={isDaily}
+          lickId={lick.id}
           tempo={lick.tempo}
         />
 
@@ -330,6 +332,10 @@ function App() {
           onClickToggle={playback.setClickEnabled}
           playDisabled={notesPending}
         />
+
+        {playback.audioNotice && (
+          <p role="status" className="panel-label">{playback.audioNotice}</p>
+        )}
 
         <GrooveControls
           style={playback.grooveStyle}

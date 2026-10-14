@@ -2,7 +2,7 @@ import { buildLickPrompt } from "../_shared/prompt";
 import { extractJSON, validateNotes } from "../_shared/parse";
 import { checkLick, describeIssues } from "../_shared/validate";
 import { LICK_MODEL, LICK_MAX_TOKENS } from "../_shared/lick-config";
-import { SSE_HEADERS, sseData, sseDone, sseError, AnthropicSSEParser, anthropicDeltaText } from "../_shared/sse";
+import { SSE_HEADERS, sseData, sseDone, sseError, AnthropicSSEParser } from "../_shared/sse";
 import type { CoordinatorNamespace } from "../_shared/coordinator";
 
 interface Env {
@@ -98,6 +98,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const decoder = new TextDecoder();
   const parser = new AnthropicSSEParser();
   let assembled = "";
+  let completed = false;
   const reader = upstream.body.getReader();
   let closed = false;
 
@@ -111,32 +112,31 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
           const { done, value } = await reader.read();
           if (done) break;
           for (const line of parser.push(decoder.decode(value, { stream: true }))) {
-            const delta = anthropicDeltaText(line);
-            if (delta) {
+            const event = JSON.parse(line) as { type?: string; delta?: { type?: string; text?: unknown } };
+            if (event.type === "error") throw new Error("Anthropic stream returned an error");
+            if (event.type === "message_stop") completed = true;
+            const delta = event.type === "content_block_delta" && event.delta?.type === "text_delta" ? event.delta.text : null;
+            if (typeof delta === "string" && delta) {
               assembled += delta;
               safeEnqueue(sseData(delta));
             }
           }
         }
+        if (!completed) throw new Error("Anthropic stream ended before message_stop");
         // Validate the assembled JSON before declaring success.
         const parsed = JSON.parse(extractJSON(assembled));
-        if (!parsed || typeof parsed !== "object") {
-          throw new Error("Invalid JSON structure received from model");
-        }
-        // Unplayable licks become a stream error (the client rolls back to the
-        // previous lick). Off-grid licks are logged, not rejected: the text has
-        // already streamed, so there is no retry here, and every rejection costs
-        // the user one of their hourly generations.
         const issues = checkLick(parsed, requestedBars);
-        if (issues.fatal.length > 0) throw new Error(`Generated lick is unusable: ${describeIssues(issues)}`);
-        if (issues.strict.length > 0) console.warn(`[lick-validate] random lick is off-grid: ${describeIssues(issues)}`);
+        if (issues.fatal.length > 0 || issues.strict.length > 0) throw new Error(`Generated lick is unusable: ${describeIssues(issues)}`);
         validateNotes(parsed.notes, requestedBars);
         const id = `${new Date().toISOString().split("T")[0]}-${Date.now()}`;
         safeEnqueue(sseDone(id));
       } catch (err) {
+        abort.abort();
+        await reader.cancel().catch(() => undefined);
         console.error("Stream failed:", err);
         safeEnqueue(sseError("Failed to generate lick"));
       } finally {
+        reader.releaseLock();
         if (!closed) controller.close();
       }
     },

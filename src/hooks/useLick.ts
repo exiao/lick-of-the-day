@@ -2,8 +2,8 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import type { Lick, Genre } from "../types/lick";
 import { SOUL_LICKS } from "../utils/soul-licks";
 import { streamLick } from "../utils/stream-lick";
+import { parseLick } from "../utils/lick-validation";
 import { readJsonResponse, reportLickError } from "../utils/lick-errors";
-import type { PartialLick } from "../utils/partial-json";
 
 const ALL_GENRES: Genre[] = ["jazz", "blues", "funk", "rnb", "bossa"];
 const DEFAULT_BARS = 4;
@@ -13,28 +13,12 @@ function randomGenre(): Genre {
   return ALL_GENRES[Math.floor(Math.random() * ALL_GENRES.length)];
 }
 
-// Streaming generation phases for the cold path.
-//   idle        nothing in flight
-//   waiting     request sent, nothing renderable yet
-//   sheet       abc has arrived: sheet music can paint, notes still streaming
-//   notes       notes complete: playback can start
-export type GenPhase = "idle" | "waiting" | "sheet" | "notes";
-
-// Full background fetch (no progressive UI) — used to warm the prefetch cache so
-// "New Lick" is instant when the user is ahead of generation.
-async function fetchLickFull(genre: Genre, bars: number): Promise<Lick> {
-  return streamLick(genre, bars);
-}
-
 interface UseLickReturn {
   lick: Lick;
   loading: boolean;
   error: string | null;
-  fetchDaily: () => Promise<void>;
   newLick: () => Promise<void>;
   isDaily: boolean;
-  /** Cold-path streaming phase; "notes" or "idle" once a lick is fully ready. */
-  phase: GenPhase;
   /** True while notes are still streaming in (gate playback on this). */
   notesPending: boolean;
   /** Show a specific, already-complete lick (e.g. a curated studio lick). */
@@ -43,32 +27,11 @@ interface UseLickReturn {
   showDaily: () => void;
 }
 
-// Overlay whatever partial fields have arrived onto a base lick so the rendered
-// object is always complete (no undefined access), while progressively
-// revealing the streamed title/key/abc/notes.
-function overlay(base: Lick, p: PartialLick): Lick {
-  return {
-    ...base,
-    ...(p.genre !== undefined ? { genre: p.genre as Genre } : {}),
-    ...(p.title !== undefined ? { title: p.title } : {}),
-    ...(p.key !== undefined ? { key: p.key } : {}),
-    ...(p.timeSignature !== undefined ? { timeSignature: p.timeSignature } : {}),
-    ...(p.feel !== undefined ? { feel: p.feel } : {}),
-    ...(p.bars != null ? { bars: p.bars } : {}),
-    ...(p.tempo != null ? { tempo: p.tempo } : {}),
-    ...(p.swing != null ? { swing: p.swing } : {}),
-    ...(Array.isArray(p.chords) ? { chords: p.chords as Lick["chords"] } : {}),
-    ...(p.abc !== undefined ? { abc: p.abc } : {}),
-    ...(Array.isArray(p.notes) ? { notes: p.notes as Lick["notes"] } : {}),
-  };
-}
-
 export function useLick(): UseLickReturn {
   const [lick, setLick] = useState<Lick>(FALLBACK_LICK);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDaily, setIsDaily] = useState(false);
-  const [phase, setPhase] = useState<GenPhase>("idle");
   const [notesPending, setNotesPending] = useState(false);
 
   // Background-prefetched next lick (random genre), so "New Lick" is instant.
@@ -79,7 +42,7 @@ export function useLick(): UseLickReturn {
   const dailyRef = useRef<Lick | null>(null);
 
   const startPrefetch = useCallback(() => {
-    const p = fetchLickFull(randomGenre(), DEFAULT_BARS);
+    const p = streamLick(randomGenre(), DEFAULT_BARS);
     p.catch(() => {
       if (prefetchRef.current === p) prefetchRef.current = null;
     });
@@ -93,11 +56,12 @@ export function useLick(): UseLickReturn {
       // Daily is a KV cache hit (cron pre-generates it), so a plain fetch is
       // already instant — no need to stream here.
       const res = await fetch("/api/daily");
-      const data = await readJsonResponse<Lick>(res);
-      dailyRef.current = data;
-      setLick(data);
-      setIsDaily(true);
-      setPhase("idle");
+      const data = parseLick(await readJsonResponse<unknown>(res));
+      const fallback = res.headers.get("X-Lick-Cache") === "fallback";
+      dailyRef.current = fallback ? null : data;
+      setLick(fallback ? FALLBACK_LICK : data);
+      setIsDaily(!fallback);
+      if (fallback) setError("Couldn't load today's lick. Showing a practice lick instead.");
       setNotesPending(false);
     } catch (err) {
       setError(reportLickError(err, "daily"));
@@ -111,7 +75,6 @@ export function useLick(): UseLickReturn {
   // Cold-path streaming generation with progressive render.
   const streamFresh = useCallback(async () => {
     setLoading(true);
-    setPhase("waiting");
     setNotesPending(true);
     const genre = randomGenre();
     // Snapshot the currently-displayed lick so a mid-stream failure can roll
@@ -120,19 +83,16 @@ export function useLick(): UseLickReturn {
     setLick((cur) => { prevLick = cur; return cur; });
     try {
       const full = await streamLick(genre, DEFAULT_BARS, (partial) => {
-        setLick((prev) => overlay(prev, partial));
-        if (partial.abc !== undefined) setPhase((ph) => (ph === "waiting" ? "sheet" : ph));
+        setLick((prev) => ({ ...prev, ...partial }));
       });
       setLick(full);
       setIsDaily(false);
-      setPhase("notes");
       setNotesPending(false);
     } catch (err) {
       // Roll back to the last complete lick so we never show a half-streamed
       // sheet with mismatched notes or an enabled Play button.
       setLick(prevLick);
       setError(reportLickError(err, "new"));
-      setPhase("idle");
       setNotesPending(false);
     } finally {
       setLoading(false);
@@ -148,12 +108,10 @@ export function useLick(): UseLickReturn {
 
     if (pending) {
       setLoading(true);
-      setPhase("waiting");
       try {
         const data = await pending;
         setLick(data);
         setIsDaily(false);
-        setPhase("idle");
         setNotesPending(false);
       } catch {
         // Prefetch failed — fall back to a fresh streaming generation.
@@ -174,7 +132,6 @@ export function useLick(): UseLickReturn {
     setError(null);
     setLick(next);
     setIsDaily(false);
-    setPhase("idle");
     setNotesPending(false);
   }, []);
 
@@ -186,7 +143,6 @@ export function useLick(): UseLickReturn {
     setError(null);
     setLick(dailyRef.current);
     setIsDaily(true);
-    setPhase("idle");
     setNotesPending(false);
   }, [fetchDaily]);
 
@@ -196,5 +152,5 @@ export function useLick(): UseLickReturn {
     fetchDaily().then(() => startPrefetch());
   }, [fetchDaily, startPrefetch]);
 
-  return { lick, loading, error, fetchDaily, newLick, isDaily, phase, notesPending, selectLick, showDaily };
+  return { lick, loading, error, newLick, isDaily, notesPending, selectLick, showDaily };
 }

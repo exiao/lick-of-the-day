@@ -8,6 +8,7 @@ import {
   isSamplerReady,
 } from "../utils/piano-sampler";
 import { durationToBeats, noteOnsets } from "../utils/music";
+import { meterBeats } from "../../functions/_shared/abc";
 import { compVoicing } from "../utils/chords";
 import type { Note, Articulation, Genre, Lick } from "../types/lick";
 import {
@@ -77,6 +78,7 @@ const isPending = (v: Voice | undefined) => v !== undefined && pendingVoices.has
 
 interface UsePlaybackReturn {
   isPlaying: boolean;
+  audioNotice: string | null;
   currentNoteIndex: number;
   /** Beat (0-based, from the top of the lick) under the playhead, or -1. */
   currentBeat: number;
@@ -112,6 +114,7 @@ export function usePlayback(
   lick?: Pick<Lick, "id" | "swing" | "chords" | "timeSignature" | "genre">,
 ): UsePlaybackReturn {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [audioNotice, setAudioNotice] = useState<string | null>(null);
   const [currentNoteIndex, setCurrentNoteIndex] = useState(-1);
   const [currentBeat, setCurrentBeat] = useState(-1);
   const [tempo, setTempoState] = useState(originalTempo);
@@ -219,6 +222,7 @@ export function usePlayback(
       heldRef.current.set(pitch, voice);
     };
     if (audioFullyUnlocked()) {
+      setAudioNotice(null);
       attack();
       return;
     }
@@ -228,11 +232,16 @@ export function usePlayback(
     pendingVoices.add(pending);
     heldRef.current.set(pitch, pending);
     void unlockAudio().then((unlocked) => {
+      if (unlocked) setAudioNotice(null);
+      else setAudioNotice("Tap the key again to enable audio.");
       if (!unlocked) return;
       const current = heldRef.current.get(pitch);
       if (current === pending) attack();
       else if (current === undefined) triggerMelody(pitch, "8n");
       // else: a later press of the same key owns it now.
+    }).catch(() => {
+      if (heldRef.current.get(pitch) === pending) heldRef.current.delete(pitch);
+      setAudioNotice("Audio couldn't start. Tap the key again to retry.");
     });
   }, [melodyVoice, triggerMelody]);
 
@@ -277,8 +286,7 @@ export function usePlayback(
 
   /** Beats per bar, the melody's beat length and the whole-bar loop length. */
   const form = useCallback(() => {
-    const ts = lickRef.current?.timeSignature;
-    const beatsPerBar = ts ? parseInt(ts.split("/")[0]) || 4 : 4;
+    const beatsPerBar = meterBeats(lickRef.current?.timeSignature ?? "4/4") ?? 4;
     const totalBeats = notesRef.current.reduce((s, n) => s + durationToBeats(n.duration), 0);
     // Loop on whole bars so the form (and the groove) stays square.
     const loopBeats = Math.max(beatsPerBar, Math.ceil(totalBeats / beatsPerBar) * beatsPerBar);
@@ -424,7 +432,16 @@ export function usePlayback(
   }, [form]);
 
   const play = useCallback(async () => {
-    if (!(await unlockAudio())) return;
+    try {
+      if (!(await unlockAudio())) {
+        setAudioNotice("Tap Play again to enable audio.");
+        return;
+      }
+    } catch {
+      setAudioNotice("Audio couldn't start. Tap Play again to retry.");
+      return;
+    }
+    setAudioNotice(null);
     // Keep the transport position and scheduled parts when resuming a pause.
     const existingTransport = getTone().getTransport();
     if (partRef.current && existingTransport.state === "paused") {
@@ -438,6 +455,7 @@ export function usePlayback(
     const transport = Tone.getTransport();
     const { beatsPerBar, totalBeats, loopBeats } = form();
 
+    transport.timeSignature = beatsPerBar;
     transport.bpm.value = tempo;
     transport.swing = swing;
 
@@ -583,7 +601,7 @@ export function usePlayback(
   }, [stop]);
 
   return {
-    isPlaying, currentNoteIndex, currentBeat, play, pause, stop, noteOn, noteOff,
+    isPlaying, audioNotice, currentNoteIndex, currentBeat, play, pause, stop, noteOn, noteOff,
     tempo, setTempo, swing, setSwing, chordsEnabled, setChordsEnabled: setChordsEnabledLive,
     loopEnabled, setLoopEnabled, clickEnabled, setClickEnabled,
     grooveStyle, setGrooveStyle, drumsEnabled, setDrumsEnabled, bassEnabled, setBassEnabled,

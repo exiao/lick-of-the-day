@@ -3,6 +3,8 @@ export const CASES = {
   daily: 'daily-load',
   generate: 'generate-new-lick',
   fallback: 'unavailable-daily-playback',
+  malformed: 'malformed-daily-recovery',
+  stale: 'stale-daily-date',
   live: 'live-daily-and-generation',
 };
 

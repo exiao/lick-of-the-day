@@ -1,10 +1,11 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import Anthropic from "@anthropic-ai/sdk";
-import { buildLickPrompt } from "../src/utils/prompt";
+import { buildLickPrompt } from "../functions/_shared/prompt";
 import type { Genre } from "../src/types/lick";
-import { LICK_MODEL, LICK_MAX_TOKENS } from "../src/utils/lick-config";
-import { extractJSON, validateNotes } from "../src/utils/parse";
-import { SSE_HEADERS, sseData, sseDone, sseError } from "../src/utils/sse";
+import { LICK_MODEL, LICK_MAX_TOKENS } from "../functions/_shared/lick-config";
+import { extractJSON, validateNotes } from "../functions/_shared/parse";
+import { checkLick, describeIssues } from "../functions/_shared/validate";
+import { SSE_HEADERS, sseData, sseDone, sseError } from "../functions/_shared/sse";
 
 const VALID_GENRES = new Set(["jazz", "blues", "funk", "rnb", "bossa"]);
 const VALID_BARS = new Set([2, 4, 6, 8]);
@@ -94,10 +95,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const text = finalMessage.content[0]?.type === "text" ? finalMessage.content[0].text : "";
     // Validate the assembled lick the same way Cloudflare does before success.
     const parsed = JSON.parse(extractJSON(text));
-    if (!parsed || typeof parsed !== "object") {
-      throw new Error("Invalid JSON structure received from model");
-    }
-    validateNotes(parsed.notes, parsed.bars ?? bars);
+    const issues = checkLick(parsed, bars);
+    if (issues.fatal.length > 0 || issues.strict.length > 0) throw new Error(`Generated lick is unusable: ${describeIssues(issues)}`);
+    validateNotes(parsed.notes, bars);
 
     ensureHeaders();
     const id = `${new Date().toISOString().split("T")[0]}-${Date.now()}`;

@@ -15,6 +15,7 @@ function promptExample(genre: (typeof GENRES)[number]): Record<string, unknown> 
 
 function lick(abcBody: string, notes: Array<[string, string]>, extra: Record<string, unknown> = {}) {
   return {
+    ...FALLBACK_LICK,
     bars: 1,
     timeSignature: "4/4",
     chords: [{ chord: "C7", bar: 1, beat: 1 }],
@@ -42,6 +43,26 @@ describe("checkLick", () => {
       'notes[1] has unknown duration "3n"',
     ]);
     expect(checkLick(null, 4).fatal).toHaveLength(1);
+  });
+
+  it.each(["toString", "constructor", "__proto__"])("rejects inherited property %s as a duration", (duration) => {
+    expect(checkLick(lick("C8|", [["C4", duration]]), 1).fatal).toContain(`notes[0] has unknown duration "${duration}"`);
+  });
+
+  it.each([
+    { title: "" }, { title: null }, { key: "H" }, { genre: "metal" },
+    { tempo: 39 }, { tempo: 241 }, { tempo: "95" }, { tempo: NaN },
+    { bars: 0 }, { bars: 1.5 }, { timeSignature: "0/4" }, { timeSignature: "4/0" },
+    { swing: -0.1 }, { swing: 1.1 }, { chords: null }, { chords: [] },
+    { chords: [null] }, { chords: [{ chord: "C7", bar: 1, beat: NaN }] },
+    { notes: [{ pitch: "C4", duration: "1n", velocity: 1.1 }] },
+    { notes: [{ pitch: "C4", duration: "1n", articulation: "invalid" }] },
+  ])("rejects malformed metadata or expression %j", (fields) => {
+    expect(checkLick(lick("C8|", [["C4", "1n"]], fields), 1).fatal.length).toBeGreaterThan(0);
+  });
+
+  it("rejects missing required metadata even when notes and ABC are playable", () => {
+    expect(checkLick({ notes: [{ pitch: "C4", duration: "1n" }], abc: "X:1\nM:4/4\nL:1/8\nK:C\nC8|" }, 1).fatal).toContain("chords must be a non-empty array");
   });
 
   it("flags notes that do not fill the requested bars", () => {
