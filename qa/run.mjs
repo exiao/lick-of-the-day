@@ -10,7 +10,16 @@ if (mode === 'live' && !process.env.QA_LIVE_BASE_URL) throw new Error('Live mode
 const directory = `qa/artifacts/${mode === 'negative' ? 'html-negative' : mode}`;
 const startedAt = new Date().toISOString();
 const revision = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
-const diffHash = createHash('sha256').update(execFileSync('git', ['diff', 'HEAD'])).digest('hex');
+async function sourceFingerprint() {
+  const hash = createHash('sha256').update(execFileSync('git', ['diff', 'HEAD']));
+  const untracked = execFileSync('git', ['ls-files', '--others', '--exclude-standard', '-z'], { encoding: 'utf8' }).split('\0').filter(Boolean);
+  for (const path of untracked) {
+    const content = await readFile(path);
+    hash.update(JSON.stringify([path, content.length])).update(content);
+  }
+  return hash.digest('hex');
+}
+const diffHash = await sourceFingerprint();
 await rm(directory, { recursive: true, force: true });
 const cli = createRequire(import.meta.url).resolve('@playwright/test/cli');
 const args = [cli, 'test'];
@@ -30,14 +39,14 @@ const exitCode = await new Promise((resolve, reject) => {
 });
 const report = JSON.parse(await readFile(`${directory}/report.json`, 'utf8'));
 if (execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim() !== revision ||
-    createHash('sha256').update(execFileSync('git', ['diff', 'HEAD'])).digest('hex') !== diffHash) {
+    await sourceFingerprint() !== diffHash) {
   throw new Error('Source changed during QA; evidence does not apply to the final checkout');
 }
 function specs(suites) {
   return suites.flatMap(suite => [...suite.specs, ...specs(suite.suites || [])]);
 }
 const actual = specs(report.suites);
-const expected = mode === 'live' ? [CASES.live] : mode === 'negative' ? [CASES.daily] : [CASES.daily, CASES.generate, CASES.fallback, CASES.malformed, CASES.stale];
+const expected = mode === 'live' ? [CASES.live] : mode === 'negative' ? [CASES.daily] : Object.values(CASES).filter(id => id !== CASES.live);
 if (report.errors.length || actual.length !== expected.length || expected.some(id => actual.filter(s => s.title === id).length !== 1)) {
   throw new Error('QA report missing, duplicate, unknown cases, or runner errors');
 }

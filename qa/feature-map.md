@@ -31,7 +31,7 @@ Each mode clears only its own artifact directory before execution. Reports, HTTP
 
 | Feature and entry | Current coverage / gap |
 | --- | --- |
-| Today button and studio pathway selection | Mapped in App/Pathway; switching and return-to-daily not exercised |
+| Today button and studio pathway selection | Stale-date case selects a jazz studio lick and returns to Today; other pathways not exercised |
 | Listen/practice mode and keyboard input | ModeToggle/Piano; correctness, misses, hints and completion not exercised |
 | Step sequencer editing and revert | Sequencer; mutation and notation/playback alignment not exercised |
 | Groove, tempo, swing, loop, comp and click controls | TransportControls/GrooveControls; only Play and Stop exercised |

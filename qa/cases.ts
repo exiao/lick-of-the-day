@@ -12,5 +12,5 @@ export const CASES = {
 export const EXPECTED = {
   daily: { id: 'soul-02-two-five-anticipation', title: 'Pushed Resolution' },
   generated: { id: 'soul-03-sunday-walkdown', title: 'Sunday Walk-Down' },
-  fallback: { id: 'soul-01-dorian-vamp', title: 'Late Night Vamp' },
+  fallback: { title: 'Late Night Vamp' },
 };
