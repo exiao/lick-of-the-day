@@ -65,6 +65,7 @@ function App() {
   const [edit, setEdit] = useState<{ id: string; notes: Note[] } | null>(null);
   const [armed, setArmed] = useState<number | null>(null);
   const [armedFor, setArmedFor] = useState(sourceLick.id);
+  const [editorOpen, setEditorOpen] = useState(false);
   if (armedFor !== sourceLick.id) {
     setArmedFor(sourceLick.id);
     setArmed(null);
@@ -146,7 +147,7 @@ function App() {
 
   // --- Sequencer editing ---
   const beatsPerBar = meterBeats(lick.timeSignature) ?? 4;
-  const canEdit = mode === "listen" && grid !== null;
+  const canEdit = mode === "listen" && grid !== null && editorOpen;
   // No chord-change splits here: they would re-cut notes the user never touched
   // (a note held across a change). Only bar lines and unwritable lengths split.
   const commitGrid = useCallback((g: Grid) => {
@@ -204,12 +205,12 @@ function App() {
       if (mode === "practice") {
         const result = checkNote(pitch);
         setFlash({ midi, kind: result === "correct" ? "hit" : "miss", id: ++flashId.current });
-      } else if (grid && armed !== null && noteAtStep(grid, armed)?.isOnset) {
+      } else if (canEdit && grid && armed !== null && noteAtStep(grid, armed)?.isOnset) {
         // Listen mode with a selected pad: the key you play becomes its pitch.
         commitGrid(setStepPitch(grid, armed, pitch));
       }
     },
-    [noteOn, mode, checkNote, grid, armed, commitGrid],
+    [noteOn, mode, checkNote, canEdit, grid, armed, commitGrid],
   );
   const handleNoteOff = useCallback((pitch: string) => noteOff(pitch), [noteOff]);
 
@@ -298,21 +299,6 @@ function App() {
           completedNotes={mode === "practice" ? (practice.isComplete ? lick.notes.length : practice.currentNoteIndex) : undefined}
         />
 
-        <Sequencer
-          grid={grid}
-          chords={sortedChords}
-          beatsPerBar={beatsPerBar}
-          armed={canEdit ? armed : null}
-          editable={canEdit}
-          edited={edited}
-          target={mode === "practice" && practice.showHint && focusIndex >= 0 ? Math.round((onsets[focusIndex] ?? 0) * 4) : null}
-          steps={playback.steps}
-          onPad={handlePad}
-          onNudge={handleNudge}
-          onClear={handleClear}
-          onRevert={handleRevert}
-        />
-
         <TransportControls
           isPlaying={playback.isPlaying}
           onPlay={playback.play}
@@ -372,6 +358,37 @@ function App() {
           targetMidi={targetMidi}
           flash={flash}
         />
+
+        <details
+          open={editorOpen}
+          onToggle={e => {
+            setEditorOpen(e.currentTarget.open);
+            if (!e.currentTarget.open) setArmed(null);
+          }}
+        >
+          <summary className="cap w-fit cursor-pointer px-4 py-3 text-sm">
+            <span aria-hidden="true">{editorOpen ? "▾" : "▸"}</span>
+            Advanced editing{edited ? " · edited" : ""}
+          </summary>
+          {editorOpen && (
+            <div className="mt-3">
+              <Sequencer
+                grid={grid}
+                chords={sortedChords}
+                beatsPerBar={beatsPerBar}
+                armed={canEdit ? armed : null}
+                editable={canEdit}
+                edited={edited}
+                target={mode === "practice" && practice.showHint && focusIndex >= 0 ? Math.round((onsets[focusIndex] ?? 0) * 4) : null}
+                steps={playback.steps}
+                onPad={handlePad}
+                onNudge={handleNudge}
+                onClear={handleClear}
+                onRevert={handleRevert}
+              />
+            </div>
+          )}
+        </details>
       </div>
 
       <Pathway
