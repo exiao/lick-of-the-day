@@ -129,7 +129,6 @@ export function usePlayback(
   const [stepStore] = useState(createStepStore);
 
   const synthRef = useRef<Tone.PolySynth | null>(null);
-  const bassSynthRef = useRef<Tone.PolySynth | null>(null);
   const clickSynthRef = useRef<Tone.Synth | null>(null);
   const partRef = useRef<Tone.Part | null>(null);
   const chordPartRef = useRef<Tone.Part | null>(null);
@@ -176,19 +175,6 @@ export function usePlayback(
       synthRef.current.volume.value = -12;
     }
     return synthRef.current;
-  }, []);
-
-  // Round, upright-ish bass for the comp's root motion.
-  const getBassSynth = useCallback(() => {
-    if (!bassSynthRef.current) {
-      const T = getTone();
-      bassSynthRef.current = new T.PolySynth(T.Synth, {
-        oscillator: { type: "sine" },
-        envelope: { attack: 0.01, decay: 0.4, sustain: 0.35, release: 0.25 },
-      }).connect(getMasterChain());
-      bassSynthRef.current.volume.value = -6;
-    }
-    return bassSynthRef.current;
   }, []);
 
   const getClickSynth = useCallback(() => {
@@ -334,7 +320,7 @@ export function usePlayback(
     return partEvents.map(e => e.onsetBeats);
   }, [form, triggerMelody]);
 
-  // --- Comp: bass root + 3rd/7th shell, snapped to the melody timeline ---
+  // --- Comp: 3rd/7th piano shell, snapped to the melody timeline ---
   const scheduleComp = useCallback((melodyOnsets: number[]) => {
     chordPartRef.current?.dispose();
     chordPartRef.current = null;
@@ -372,22 +358,19 @@ export function usePlayback(
       return [{ time: beatsToTransportTime(snappedBeat, beatsPerBar), durationBeats, ...voicing }];
     });
 
-    const bass = getBassSynth();
     const chordPart = new Tone.Part(
-      (time, event: { bass: string; shell: string[]; durationBeats: number }) => {
+      (time, event: { shell: string[]; durationBeats: number }) => {
         if (!chordsRef.current) return;
         const secs = Math.max(0.1, (60 / transport.bpm.value) * event.durationBeats - 0.05);
-        // The groove bass owns the low end while it's playing; the comp keeps
-        // its sustained root only when the groove bass is muted.
-        if (!bassRef.current) bass.triggerAttackRelease(event.bass, secs, time, 0.55);
         // Shell voicing through the piano, a touch late and soft, like a comping left hand.
+        // The low end belongs to the Bass toggle alone.
         triggerMelody(event.shell, Math.min(secs, 1.6), time + 0.012, 0.32);
       },
       chordEvents,
     );
     chordPart.start(0);
     chordPartRef.current = chordPart;
-  }, [form, getBassSynth, triggerMelody]);
+  }, [form, triggerMelody]);
 
   // --- Groove: synthesized drums + a bass line that follows the changes ---
   const scheduleGroove = useCallback(() => {
@@ -589,8 +572,6 @@ export function usePlayback(
       stop();
       synthRef.current?.dispose();
       synthRef.current = null;
-      bassSynthRef.current?.dispose();
-      bassSynthRef.current = null;
       clickSynthRef.current?.dispose();
       clickSynthRef.current = null;
       drumKitRef.current?.dispose();

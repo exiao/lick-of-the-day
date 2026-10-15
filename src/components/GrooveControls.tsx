@@ -47,7 +47,7 @@ export const GrooveControls = memo(function GrooveControls({
         <button type="button" className="cap h-10 px-3.5" aria-pressed={bassEnabled} onClick={() => onBassToggle(!bassEnabled)} title="Bass line that follows the chord changes">
           <span className="led" aria-hidden="true" /> Bass
         </button>
-        <button type="button" className="cap h-10 px-3.5" aria-pressed={chordsEnabled} onClick={() => onChordsToggle(!chordsEnabled)} title="Piano chords; adds a sustained bass root when Bass is off">
+        <button type="button" className="cap h-10 px-3.5" aria-pressed={chordsEnabled} onClick={() => onChordsToggle(!chordsEnabled)} title="Piano chords underneath the melody">
           <span className="led" aria-hidden="true" /> Comp
         </button>
       </div>
