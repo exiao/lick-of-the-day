@@ -13,8 +13,6 @@ interface TransportControlsProps {
   swing: number;
   originalSwing: number;
   onSwingChange: (amount: number) => void;
-  chordsEnabled: boolean;
-  onChordsToggle: (enabled: boolean) => void;
   loopEnabled: boolean;
   onLoopToggle: (enabled: boolean) => void;
   clickEnabled: boolean;
@@ -46,8 +44,6 @@ export const TransportControls = memo(function TransportControls({
   swing,
   originalSwing,
   onSwingChange,
-  chordsEnabled,
-  onChordsToggle,
   loopEnabled,
   onLoopToggle,
   clickEnabled,
@@ -100,7 +96,6 @@ export const TransportControls = memo(function TransportControls({
 
       <div className="flex flex-wrap items-center justify-center gap-2.5">
         <Toggle label="Loop" pressed={loopEnabled} onToggle={onLoopToggle} hint="Repeat the lick" />
-        <Toggle label="Comp" pressed={chordsEnabled} onToggle={onChordsToggle} hint="Bass and left-hand chords under the lick" />
         <Toggle label="Click" pressed={clickEnabled} onToggle={onClickToggle} hint="Metronome on every beat" />
       </div>
     </div>

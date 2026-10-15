@@ -8,11 +8,14 @@ interface GrooveControlsProps {
   onDrumsToggle: (enabled: boolean) => void;
   bassEnabled: boolean;
   onBassToggle: (enabled: boolean) => void;
+  chordsEnabled: boolean;
+  onChordsToggle: (enabled: boolean) => void;
 }
 
-// The rhythm section: which groove the drums and bass play, and whether each is in.
+// Accompaniment layers and the groove played by the drums and bass.
 export const GrooveControls = memo(function GrooveControls({
   style, onStyleChange, drumsEnabled, onDrumsToggle, bassEnabled, onBassToggle,
+  chordsEnabled, onChordsToggle,
 }: GrooveControlsProps) {
   const current = GROOVE_STYLES.find(g => g.value === style);
   return (
@@ -37,12 +40,15 @@ export const GrooveControls = memo(function GrooveControls({
         </div>
         {current && <span className="panel-label hidden md:inline">{current.hint}</span>}
       </div>
-      <div className="flex items-center gap-2.5">
+      <div className="flex flex-wrap items-center justify-center gap-2.5" role="group" aria-label="Accompaniment">
         <button type="button" className="cap h-10 px-3.5" aria-pressed={drumsEnabled} onClick={() => onDrumsToggle(!drumsEnabled)} title="Kick, snare and hats">
           <span className="led" aria-hidden="true" /> Drums
         </button>
         <button type="button" className="cap h-10 px-3.5" aria-pressed={bassEnabled} onClick={() => onBassToggle(!bassEnabled)} title="Bass line that follows the chord changes">
           <span className="led" aria-hidden="true" /> Bass
+        </button>
+        <button type="button" className="cap h-10 px-3.5" aria-pressed={chordsEnabled} onClick={() => onChordsToggle(!chordsEnabled)} title="Piano chords; adds a sustained bass root when Bass is off">
+          <span className="led" aria-hidden="true" /> Comp
         </button>
       </div>
     </div>

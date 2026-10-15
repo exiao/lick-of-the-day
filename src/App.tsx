@@ -310,8 +310,6 @@ function App() {
           swing={playback.swing}
           originalSwing={lick.swing ?? 0}
           onSwingChange={playback.setSwing}
-          chordsEnabled={playback.chordsEnabled}
-          onChordsToggle={playback.setChordsEnabled}
           loopEnabled={playback.loopEnabled}
           onLoopToggle={playback.setLoopEnabled}
           clickEnabled={playback.clickEnabled}
@@ -330,6 +328,8 @@ function App() {
           onDrumsToggle={playback.setDrumsEnabled}
           bassEnabled={playback.bassEnabled}
           onBassToggle={playback.setBassEnabled}
+          chordsEnabled={playback.chordsEnabled}
+          onChordsToggle={playback.setChordsEnabled}
         />
 
         <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
