@@ -332,19 +332,19 @@ function App() {
           onChordsToggle={playback.setChordsEnabled}
         />
 
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+        <div className="flex flex-col gap-3 border-t border-[var(--plate-lo)] pt-5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <ModeToggle mode={mode} onModeChange={handleModeChange} />
           {mode === "practice" ? (
-            <div className="flex items-center gap-2.5">
-              <button type="button" className="cap h-9 px-3.5" aria-pressed={practice.showHint} onClick={practice.toggleHint}>
+            <div className="grid grid-cols-[1fr_auto] gap-2.5">
+              <button type="button" className="cap h-11 px-3.5" aria-pressed={practice.showHint} onClick={practice.toggleHint}>
                 <span className="led" aria-hidden="true" /> Show next key
               </button>
-              <button type="button" className="cap h-9 px-3.5" onClick={practice.restart}>
+              <button type="button" className="cap h-11 px-3.5" onClick={practice.restart}>
                 Restart
               </button>
             </div>
           ) : (
-            <p className="panel-label">Listen first, then switch modes and play it back note by note.</p>
+            <p className="panel-label">Listen first, then play it back note by note.</p>
           )}
         </div>
 

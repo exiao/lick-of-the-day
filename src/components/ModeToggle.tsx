@@ -10,7 +10,7 @@ const MODES = [
 
 export function ModeToggle({ mode, onModeChange }: ModeToggleProps) {
   return (
-    <div className="well-sm inline-flex gap-1 p-1.5" role="radiogroup" aria-label="Mode">
+    <div className="well-sm grid grid-cols-2 gap-1 p-1.5 sm:inline-grid" role="radiogroup" aria-label="Mode">
       {MODES.map(m => (
         <button
           key={m.value}
@@ -18,7 +18,7 @@ export function ModeToggle({ mode, onModeChange }: ModeToggleProps) {
           role="radio"
           aria-checked={mode === m.value}
           onClick={() => onModeChange(m.value)}
-          className="cap h-9 px-4"
+          className="cap h-11 px-4"
           style={mode === m.value ? { color: "var(--cobalt)" } : { boxShadow: "none", background: "transparent" }}
         >
           {m.label}

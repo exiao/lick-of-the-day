@@ -9,7 +9,7 @@
   --plate-hi: #f6f9f3;
   --plate-lo: #b3bbae;
   --ink: #2c3530;
-  --ink-soft: #5d6a62;
+  --ink-soft: #56635b;
   --ink-faint: #8a968e;
   --cobalt: #2446d8;
   --cobalt-glow: rgba(36, 70, 216, 0.45);
@@ -89,6 +89,7 @@ body {
 /* Toggle LED inside a cap */
 .led {
   width: 7px; height: 7px; border-radius: 50%;
+  flex-shrink: 0;
   background: #a9b2a4;
   box-shadow: inset 1px 1px 2px rgba(0,0,0,.25);
   transition: background .15s, box-shadow .15s;
@@ -129,6 +130,13 @@ body {
   margin-left: -1.5px;
   border-radius: 2px;
   background: var(--ink);
+}
+
+@media (width < 768px) {
+  .transport-knobs .knob {
+    width: clamp(48px, 16vw, 76px);
+    height: clamp(48px, 16vw, 76px);
+  }
 }
 
 /* Display screen ---------------------------------------------------- */
