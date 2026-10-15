@@ -160,10 +160,10 @@ export function isChordTone(chord: string, midi: number): boolean {
 }
 
 /**
- * A rootless-ish left-hand comp: bass root in octave 2 plus a guide-tone shell
+ * A rootless left-hand comp: a guide-tone shell
  * (3rd + 7th, or 3rd + 6th) voiced between E3 and D4 so it sits under the lick.
  */
-export function compVoicing(chord: string): { bass: string; shell: string[] } | null {
+export function compVoicing(chord: string): string[] | null {
   const root = chordRootPc(chord);
   if (root === null) return null;
   const tones = chordToneIntervals(chord);
@@ -177,7 +177,7 @@ export function compVoicing(chord: string): { bass: string; shell: string[] } | 
   };
   const name = (midi: number) => `${SEMITONE_TO_NOTE[midi % 12]}${Math.floor(midi / 12) - 1}`;
   const shell = [place((root + third) % 12), place((root + top) % 12)].sort((a, b) => a - b);
-  return { bass: name(36 + root), shell: shell.map(name) };
+  return shell.map(name);
 }
 
 /** The chord active at a beat offset (chords sorted by bar/beat). */

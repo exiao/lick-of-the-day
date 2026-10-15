@@ -16,9 +16,9 @@ describe("chord theory helpers", () => {
     expect(degreeOver("C7", 70)).toBe("b7"); // Bb4
   });
 
-  it("voices a bass root under a 3rd/7th shell", () => {
-    expect(compVoicing("G7")).toEqual({ bass: "G2", shell: ["F3", "B3"] });
-    expect(compVoicing("Cm7")).toEqual({ bass: "C2", shell: ["Bb3", "Eb4"] });
+  it("voices a rootless 3rd/7th piano shell", () => {
+    expect(compVoicing("G7")).toEqual(["F3", "B3"]);
+    expect(compVoicing("Cm7")).toEqual(["Bb3", "Eb4"]);
   });
 
   it("finds the chord active at a beat, including beat-3 changes", () => {

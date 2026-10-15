@@ -331,8 +331,8 @@ export function usePlayback(
     const { beatsPerBar, loopBeats } = form();
 
     const chordEvents = chords.flatMap((c, i) => {
-      const voicing = compVoicing(c.chord);
-      if (!voicing) return [];
+      const shell = compVoicing(c.chord);
+      if (!shell) return [];
       const targetBeat = (c.bar - 1) * beatsPerBar + (c.beat - 1);
 
       // Snap to the nearest melody onset within half a beat; otherwise keep
@@ -355,7 +355,7 @@ export function usePlayback(
         : loopBeats;
       const durationBeats = Math.max(0.5, nextTargetBeat - snappedBeat);
 
-      return [{ time: beatsToTransportTime(snappedBeat, beatsPerBar), durationBeats, ...voicing }];
+      return [{ time: beatsToTransportTime(snappedBeat, beatsPerBar), durationBeats, shell }];
     });
 
     const chordPart = new Tone.Part(
