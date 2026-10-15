@@ -3,7 +3,17 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { visualizer } from 'rollup-plugin-visualizer'
 
+// Vite serves the UI; Cloudflare Pages owns the lick API.
+const proxy = {
+  '/api': {
+    target: process.env.LICK_API_ORIGIN || 'https://dailylick.com',
+    changeOrigin: true,
+  },
+}
+
 export default defineConfig({
+  server: { proxy },
+  preview: { proxy },
   plugins: [
     react(),
     tailwindcss(),

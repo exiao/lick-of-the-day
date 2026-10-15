@@ -11,6 +11,7 @@ import {
 interface Env {
   ANTHROPIC_API_KEY: string;
   XAI_API_KEY: string;
+  CRON_TRIGGER_TOKEN?: string;
   LICK_STORE: KVNamespace;
 }
 
@@ -102,7 +103,7 @@ function getDayKey(date = new Date()): string {
 
 function pickGenre(now = new Date()): Genre {
   // Deterministic from day-of-year so it rotates predictably
-  const start = new Date(now.getFullYear(), 0, 0);
+  const start = new Date(Date.UTC(now.getUTCFullYear(), 0, 0));
   const dayOfYear = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
   return GENRES[dayOfYear % GENRES.length];
 }
@@ -178,8 +179,7 @@ async function generateWithGrok(genre: Genre, apiKey: string, dayKey: string): P
 // Generate the daily lick: prefer grok for quality, then haiku (twice). Each
 // candidate must pass checkLick's fatal AND strict tiers, so an off-grid lick
 // (notes not filling the bars, ABC disagreeing with the notes) is regenerated
-// instead of cached for every visitor. If no candidate is fully clean, keep the
-// first one that is at least playable rather than leaving the day empty.
+// instead of cached for every visitor. Failed runs preserve the previous cache.
 async function generateDailyLick(genre: Genre, env: Env, dayKey: string): Promise<unknown> {
   const attempts: Array<[string, () => Promise<unknown>]> = [];
   if (env.XAI_API_KEY) {
@@ -190,7 +190,6 @@ async function generateDailyLick(genre: Genre, env: Env, dayKey: string): Promis
   attempts.push(["haiku", () => generateWithHaiku(genre, env.ANTHROPIC_API_KEY, dayKey)]);
   attempts.push(["haiku retry", () => generateWithHaiku(genre, env.ANTHROPIC_API_KEY, dayKey)]);
 
-  let playable: unknown;
   for (const [name, generate] of attempts) {
     let lick: unknown;
     try {
@@ -202,13 +201,8 @@ async function generateDailyLick(genre: Genre, env: Env, dayKey: string): Promis
     const issues = checkLick(lick, 4);
     if (issues.fatal.length === 0 && issues.strict.length === 0) return lick;
     console.warn(`${name} lick failed validation: ${describeIssues(issues)}`);
-    if (issues.fatal.length === 0 && playable === undefined) playable = lick;
   }
-  if (playable !== undefined) {
-    console.warn("No fully valid daily lick; storing the first playable one");
-    return playable;
-  }
-  throw new Error("Every daily-lick generation attempt failed or was unplayable");
+  throw new Error("No valid daily lick after generation attempts");
 }
 
 export default {
@@ -235,9 +229,18 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname === "/trigger" && request.method === "POST") {
+      if (!env.CRON_TRIGGER_TOKEN || request.headers.get("Authorization") !== `Bearer ${env.CRON_TRIGGER_TOKEN}`) {
+        return Response.json({ error: "Forbidden" }, { status: 403 });
+      }
       const dayKey = getDayKey();
       const genre = pickGenre();
-      const lick = await generateDailyLick(genre, env, dayKey);
+      let lick: unknown;
+      try {
+        lick = await generateDailyLick(genre, env, dayKey);
+      } catch (err) {
+        console.error("Manual daily generation failed:", err);
+        return Response.json({ error: "Failed to generate daily lick" }, { status: 502 });
+      }
       const key = `daily:${dayKey}`;
       const payload = JSON.stringify(lick);
       await env.LICK_STORE.put(key, payload, { expirationTtl: 90000 });

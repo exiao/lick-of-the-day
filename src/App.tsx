@@ -6,6 +6,7 @@ import { useMediaQuery } from "./hooks/useMediaQuery";
 import { loadTone } from "./utils/tone-loader";
 import { preloadPianoSampler } from "./utils/piano-sampler";
 import { computePianoRange, noteOnsets, pitchToMidiOrNull } from "./utils/music";
+import { meterBeats } from "../functions/_shared/abc";
 import { chordAtBeat, chordPitchClasses } from "./utils/chords";
 import { CURATED_LICKS, type CuratedLick } from "./utils/curated-licks";
 import { SOUL_LICKS } from "./utils/soul-licks";
@@ -49,7 +50,7 @@ function App() {
   // network idle rather than paid for on Play.
   useEffect(() => {
     const preload = () => {
-      void loadTone().then(preloadPianoSampler);
+      void loadTone().then(preloadPianoSampler).catch(err => console.warn("[audio] preload failed:", err));
     };
     window.addEventListener("pointerdown", preload, { once: true });
     window.addEventListener("keydown", preload, { once: true });
@@ -64,6 +65,7 @@ function App() {
   const [edit, setEdit] = useState<{ id: string; notes: Note[] } | null>(null);
   const [armed, setArmed] = useState<number | null>(null);
   const [armedFor, setArmedFor] = useState(sourceLick.id);
+  const [editorOpen, setEditorOpen] = useState(false);
   if (armedFor !== sourceLick.id) {
     setArmedFor(sourceLick.id);
     setArmed(null);
@@ -144,8 +146,8 @@ function App() {
   }, [stopPlayback]);
 
   // --- Sequencer editing ---
-  const beatsPerBar = parseInt(lick.timeSignature.split("/")[0]) || 4;
-  const canEdit = mode === "listen" && grid !== null;
+  const beatsPerBar = meterBeats(lick.timeSignature) ?? 4;
+  const canEdit = mode === "listen" && grid !== null && editorOpen;
   // No chord-change splits here: they would re-cut notes the user never touched
   // (a note held across a change). Only bar lines and unwritable lengths split.
   const commitGrid = useCallback((g: Grid) => {
@@ -203,12 +205,12 @@ function App() {
       if (mode === "practice") {
         const result = checkNote(pitch);
         setFlash({ midi, kind: result === "correct" ? "hit" : "miss", id: ++flashId.current });
-      } else if (grid && armed !== null && noteAtStep(grid, armed)?.isOnset) {
+      } else if (canEdit && grid && armed !== null && noteAtStep(grid, armed)?.isOnset) {
         // Listen mode with a selected pad: the key you play becomes its pitch.
         commitGrid(setStepPitch(grid, armed, pitch));
       }
     },
-    [noteOn, mode, checkNote, grid, armed, commitGrid],
+    [noteOn, mode, checkNote, canEdit, grid, armed, commitGrid],
   );
   const handleNoteOff = useCallback((pitch: string) => noteOff(pitch), [noteOff]);
 
@@ -262,6 +264,7 @@ function App() {
           lickGenre={lick.genre}
           eyebrow={studioEyebrow}
           isDaily={isDaily}
+          lickId={lick.id}
           tempo={lick.tempo}
         />
 
@@ -296,21 +299,6 @@ function App() {
           completedNotes={mode === "practice" ? (practice.isComplete ? lick.notes.length : practice.currentNoteIndex) : undefined}
         />
 
-        <Sequencer
-          grid={grid}
-          chords={sortedChords}
-          beatsPerBar={beatsPerBar}
-          armed={canEdit ? armed : null}
-          editable={canEdit}
-          edited={edited}
-          target={mode === "practice" && practice.showHint && focusIndex >= 0 ? Math.round((onsets[focusIndex] ?? 0) * 4) : null}
-          steps={playback.steps}
-          onPad={handlePad}
-          onNudge={handleNudge}
-          onClear={handleClear}
-          onRevert={handleRevert}
-        />
-
         <TransportControls
           isPlaying={playback.isPlaying}
           onPlay={playback.play}
@@ -322,14 +310,16 @@ function App() {
           swing={playback.swing}
           originalSwing={lick.swing ?? 0}
           onSwingChange={playback.setSwing}
-          chordsEnabled={playback.chordsEnabled}
-          onChordsToggle={playback.setChordsEnabled}
           loopEnabled={playback.loopEnabled}
           onLoopToggle={playback.setLoopEnabled}
           clickEnabled={playback.clickEnabled}
           onClickToggle={playback.setClickEnabled}
           playDisabled={notesPending}
         />
+
+        {playback.audioNotice && (
+          <p role="status" className="panel-label">{playback.audioNotice}</p>
+        )}
 
         <GrooveControls
           style={playback.grooveStyle}
@@ -338,21 +328,23 @@ function App() {
           onDrumsToggle={playback.setDrumsEnabled}
           bassEnabled={playback.bassEnabled}
           onBassToggle={playback.setBassEnabled}
+          chordsEnabled={playback.chordsEnabled}
+          onChordsToggle={playback.setChordsEnabled}
         />
 
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+        <div className="flex flex-col gap-3 border-t border-[var(--plate-lo)] pt-5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <ModeToggle mode={mode} onModeChange={handleModeChange} />
           {mode === "practice" ? (
-            <div className="flex items-center gap-2.5">
-              <button type="button" className="cap h-9 px-3.5" aria-pressed={practice.showHint} onClick={practice.toggleHint}>
+            <div className="grid grid-cols-[1fr_auto] gap-2.5">
+              <button type="button" className="cap h-11 px-3.5" aria-pressed={practice.showHint} onClick={practice.toggleHint}>
                 <span className="led" aria-hidden="true" /> Show next key
               </button>
-              <button type="button" className="cap h-9 px-3.5" onClick={practice.restart}>
+              <button type="button" className="cap h-11 px-3.5" onClick={practice.restart}>
                 Restart
               </button>
             </div>
           ) : (
-            <p className="panel-label">Listen first, then switch modes and play it back note by note.</p>
+            <p className="panel-label">Listen first, then play it back note by note.</p>
           )}
         </div>
 
@@ -366,6 +358,37 @@ function App() {
           targetMidi={targetMidi}
           flash={flash}
         />
+
+        <details
+          open={editorOpen}
+          onToggle={e => {
+            setEditorOpen(e.currentTarget.open);
+            if (!e.currentTarget.open) setArmed(null);
+          }}
+        >
+          <summary className="cap w-fit cursor-pointer px-4 py-3 text-sm">
+            <span aria-hidden="true">{editorOpen ? "▾" : "▸"}</span>
+            Advanced editing{edited ? " · edited" : ""}
+          </summary>
+          {editorOpen && (
+            <div className="mt-3">
+              <Sequencer
+                grid={grid}
+                chords={sortedChords}
+                beatsPerBar={beatsPerBar}
+                armed={canEdit ? armed : null}
+                editable={canEdit}
+                edited={edited}
+                target={mode === "practice" && practice.showHint && focusIndex >= 0 ? Math.round((onsets[focusIndex] ?? 0) * 4) : null}
+                steps={playback.steps}
+                onPad={handlePad}
+                onNudge={handleNudge}
+                onClear={handleClear}
+                onRevert={handleRevert}
+              />
+            </div>
+          )}
+        </details>
       </div>
 
       <Pathway

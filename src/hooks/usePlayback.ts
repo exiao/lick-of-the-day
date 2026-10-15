@@ -8,6 +8,7 @@ import {
   isSamplerReady,
 } from "../utils/piano-sampler";
 import { durationToBeats, noteOnsets } from "../utils/music";
+import { meterBeats } from "../../functions/_shared/abc";
 import { compVoicing } from "../utils/chords";
 import type { Note, Articulation, Genre, Lick } from "../types/lick";
 import {
@@ -77,6 +78,7 @@ const isPending = (v: Voice | undefined) => v !== undefined && pendingVoices.has
 
 interface UsePlaybackReturn {
   isPlaying: boolean;
+  audioNotice: string | null;
   currentNoteIndex: number;
   /** Beat (0-based, from the top of the lick) under the playhead, or -1. */
   currentBeat: number;
@@ -112,6 +114,7 @@ export function usePlayback(
   lick?: Pick<Lick, "id" | "swing" | "chords" | "timeSignature" | "genre">,
 ): UsePlaybackReturn {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [audioNotice, setAudioNotice] = useState<string | null>(null);
   const [currentNoteIndex, setCurrentNoteIndex] = useState(-1);
   const [currentBeat, setCurrentBeat] = useState(-1);
   const [tempo, setTempoState] = useState(originalTempo);
@@ -126,7 +129,6 @@ export function usePlayback(
   const [stepStore] = useState(createStepStore);
 
   const synthRef = useRef<Tone.PolySynth | null>(null);
-  const bassSynthRef = useRef<Tone.PolySynth | null>(null);
   const clickSynthRef = useRef<Tone.Synth | null>(null);
   const partRef = useRef<Tone.Part | null>(null);
   const chordPartRef = useRef<Tone.Part | null>(null);
@@ -175,19 +177,6 @@ export function usePlayback(
     return synthRef.current;
   }, []);
 
-  // Round, upright-ish bass for the comp's root motion.
-  const getBassSynth = useCallback(() => {
-    if (!bassSynthRef.current) {
-      const T = getTone();
-      bassSynthRef.current = new T.PolySynth(T.Synth, {
-        oscillator: { type: "sine" },
-        envelope: { attack: 0.01, decay: 0.4, sustain: 0.35, release: 0.25 },
-      }).connect(getMasterChain());
-      bassSynthRef.current.volume.value = -6;
-    }
-    return bassSynthRef.current;
-  }, []);
-
   const getClickSynth = useCallback(() => {
     if (!clickSynthRef.current) {
       const T = getTone();
@@ -219,6 +208,7 @@ export function usePlayback(
       heldRef.current.set(pitch, voice);
     };
     if (audioFullyUnlocked()) {
+      setAudioNotice(null);
       attack();
       return;
     }
@@ -228,11 +218,16 @@ export function usePlayback(
     pendingVoices.add(pending);
     heldRef.current.set(pitch, pending);
     void unlockAudio().then((unlocked) => {
+      if (unlocked) setAudioNotice(null);
+      else setAudioNotice("Tap the key again to enable audio.");
       if (!unlocked) return;
       const current = heldRef.current.get(pitch);
       if (current === pending) attack();
       else if (current === undefined) triggerMelody(pitch, "8n");
       // else: a later press of the same key owns it now.
+    }).catch(() => {
+      if (heldRef.current.get(pitch) === pending) heldRef.current.delete(pitch);
+      setAudioNotice("Audio couldn't start. Tap the key again to retry.");
     });
   }, [melodyVoice, triggerMelody]);
 
@@ -277,8 +272,7 @@ export function usePlayback(
 
   /** Beats per bar, the melody's beat length and the whole-bar loop length. */
   const form = useCallback(() => {
-    const ts = lickRef.current?.timeSignature;
-    const beatsPerBar = ts ? parseInt(ts.split("/")[0]) || 4 : 4;
+    const beatsPerBar = meterBeats(lickRef.current?.timeSignature ?? "4/4") ?? 4;
     const totalBeats = notesRef.current.reduce((s, n) => s + durationToBeats(n.duration), 0);
     // Loop on whole bars so the form (and the groove) stays square.
     const loopBeats = Math.max(beatsPerBar, Math.ceil(totalBeats / beatsPerBar) * beatsPerBar);
@@ -326,7 +320,7 @@ export function usePlayback(
     return partEvents.map(e => e.onsetBeats);
   }, [form, triggerMelody]);
 
-  // --- Comp: bass root + 3rd/7th shell, snapped to the melody timeline ---
+  // --- Comp: 3rd/7th piano shell, snapped to the melody timeline ---
   const scheduleComp = useCallback((melodyOnsets: number[]) => {
     chordPartRef.current?.dispose();
     chordPartRef.current = null;
@@ -337,8 +331,8 @@ export function usePlayback(
     const { beatsPerBar, loopBeats } = form();
 
     const chordEvents = chords.flatMap((c, i) => {
-      const voicing = compVoicing(c.chord);
-      if (!voicing) return [];
+      const shell = compVoicing(c.chord);
+      if (!shell) return [];
       const targetBeat = (c.bar - 1) * beatsPerBar + (c.beat - 1);
 
       // Snap to the nearest melody onset within half a beat; otherwise keep
@@ -361,25 +355,22 @@ export function usePlayback(
         : loopBeats;
       const durationBeats = Math.max(0.5, nextTargetBeat - snappedBeat);
 
-      return [{ time: beatsToTransportTime(snappedBeat, beatsPerBar), durationBeats, ...voicing }];
+      return [{ time: beatsToTransportTime(snappedBeat, beatsPerBar), durationBeats, shell }];
     });
 
-    const bass = getBassSynth();
     const chordPart = new Tone.Part(
-      (time, event: { bass: string; shell: string[]; durationBeats: number }) => {
+      (time, event: { shell: string[]; durationBeats: number }) => {
         if (!chordsRef.current) return;
         const secs = Math.max(0.1, (60 / transport.bpm.value) * event.durationBeats - 0.05);
-        // The groove bass owns the low end while it's playing; the comp keeps
-        // its sustained root only when the groove bass is muted.
-        if (!bassRef.current) bass.triggerAttackRelease(event.bass, secs, time, 0.55);
         // Shell voicing through the piano, a touch late and soft, like a comping left hand.
+        // The low end belongs to the Bass toggle alone.
         triggerMelody(event.shell, Math.min(secs, 1.6), time + 0.012, 0.32);
       },
       chordEvents,
     );
     chordPart.start(0);
     chordPartRef.current = chordPart;
-  }, [form, getBassSynth, triggerMelody]);
+  }, [form, triggerMelody]);
 
   // --- Groove: synthesized drums + a bass line that follows the changes ---
   const scheduleGroove = useCallback(() => {
@@ -424,7 +415,16 @@ export function usePlayback(
   }, [form]);
 
   const play = useCallback(async () => {
-    if (!(await unlockAudio())) return;
+    try {
+      if (!(await unlockAudio())) {
+        setAudioNotice("Tap Play again to enable audio.");
+        return;
+      }
+    } catch {
+      setAudioNotice("Audio couldn't start. Tap Play again to retry.");
+      return;
+    }
+    setAudioNotice(null);
     // Keep the transport position and scheduled parts when resuming a pause.
     const existingTransport = getTone().getTransport();
     if (partRef.current && existingTransport.state === "paused") {
@@ -438,6 +438,7 @@ export function usePlayback(
     const transport = Tone.getTransport();
     const { beatsPerBar, totalBeats, loopBeats } = form();
 
+    transport.timeSignature = beatsPerBar;
     transport.bpm.value = tempo;
     transport.swing = swing;
 
@@ -571,8 +572,6 @@ export function usePlayback(
       stop();
       synthRef.current?.dispose();
       synthRef.current = null;
-      bassSynthRef.current?.dispose();
-      bassSynthRef.current = null;
       clickSynthRef.current?.dispose();
       clickSynthRef.current = null;
       drumKitRef.current?.dispose();
@@ -583,7 +582,7 @@ export function usePlayback(
   }, [stop]);
 
   return {
-    isPlaying, currentNoteIndex, currentBeat, play, pause, stop, noteOn, noteOff,
+    isPlaying, audioNotice, currentNoteIndex, currentBeat, play, pause, stop, noteOn, noteOff,
     tempo, setTempo, swing, setSwing, chordsEnabled, setChordsEnabled: setChordsEnabledLive,
     loopEnabled, setLoopEnabled, clickEnabled, setClickEnabled,
     grooveStyle, setGrooveStyle, drumsEnabled, setDrumsEnabled, bassEnabled, setBassEnabled,

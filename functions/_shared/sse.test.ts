@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { AnthropicSSEParser, anthropicDeltaText, sseData, sseDone, sseError } from "./sse";
+import { AnthropicSSEParser, sseData, sseDone, sseError } from "./sse";
 
 describe("AnthropicSSEParser", () => {
   it("splits complete events and yields their data lines", () => {
@@ -23,24 +23,13 @@ describe("AnthropicSSEParser", () => {
     let collected: string[] = [];
     for (const f of frames) collected = collected.concat(p.push(f));
     expect(collected.length).toBe(1);
-    expect(anthropicDeltaText(collected[0])).toBe("abc");
+    expect(JSON.parse(collected[0])).toEqual({ type: "content_block_delta", delta: { type: "text_delta", text: "abc" } });
   });
 
   it("splits events when a proxy normalizes line endings to CRLF", () => {
     const p = new AnthropicSSEParser();
     const out = p.push("event: foo\r\ndata: {\"a\":1}\r\n\r\nevent: bar\r\ndata: {\"b\":2}\r\n\r\n");
     expect(out).toEqual(['{"a":1}', '{"b":2}']);
-  });
-});
-
-describe("anthropicDeltaText", () => {
-  it("extracts text from a content_block_delta", () => {
-    expect(anthropicDeltaText('{"type":"content_block_delta","delta":{"type":"text_delta","text":"hi"}}')).toBe("hi");
-  });
-  it("returns null for non-delta events", () => {
-    expect(anthropicDeltaText('{"type":"message_start"}')).toBeNull();
-    expect(anthropicDeltaText('{"type":"ping"}')).toBeNull();
-    expect(anthropicDeltaText("not json")).toBeNull();
   });
 });
 

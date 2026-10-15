@@ -37,10 +37,31 @@ npm install
 npm run dev
 ```
 
+Vite development and preview servers forward `/api` to `https://dailylick.com`.
+This loads real daily licks and uses the live generation endpoint and its rate
+limit. To use a different backend, set `LICK_API_ORIGIN` before starting Vite.
+API credentials stay in Cloudflare; no local frontend key is required.
+
 ```bash
 npm test          # vitest (parser + SSE contract tests)
 npm run build     # typecheck + vite build
 ```
+
+Browser QA and its coverage map live in `qa/`. The fixture gate runs the built
+app through Vite's actual API proxy, using an isolated loopback service so CI
+does not spend live generation calls. The live check uses the real service.
+
+```bash
+npx playwright install chromium
+npm run qa
+npm run qa:negative # verifies the healthy-service check rejects HTML
+QA_LIVE_BASE_URL=http://127.0.0.1:4173 npm run qa:live
+```
+
+Start the local preview before the live check (`npm run build`, then
+`npm run preview -- --port 4173`). Live QA spends generation quota. Reports,
+screenshots, videos, and traces are kept in `qa/artifacts/`; see
+`qa/feature-map.md` for covered paths and gaps.
 
 ## Deployment
 

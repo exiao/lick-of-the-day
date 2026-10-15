@@ -1,6 +1,4 @@
-// Shared lick-generation config for Cloudflare Pages functions and the cron
-// worker. Mirror of src/utils/lick-config.ts (kept separate to respect the
-// functions/_shared import boundary). Keep both in sync.
+// Lick-generation models and limits shared by Pages, Vercel and the cron worker.
 
 // Haiku 4.5: ~2x faster than Sonnet for lick generation with comparable musical
 // quality (and it follows rhythmic briefs like funk 16ths better in testing).

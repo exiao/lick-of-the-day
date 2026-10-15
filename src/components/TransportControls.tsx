@@ -13,8 +13,6 @@ interface TransportControlsProps {
   swing: number;
   originalSwing: number;
   onSwingChange: (amount: number) => void;
-  chordsEnabled: boolean;
-  onChordsToggle: (enabled: boolean) => void;
   loopEnabled: boolean;
   onLoopToggle: (enabled: boolean) => void;
   clickEnabled: boolean;
@@ -25,7 +23,7 @@ interface TransportControlsProps {
 
 function Toggle({ label, pressed, onToggle, hint }: { label: string; pressed: boolean; onToggle: (v: boolean) => void; hint: string }) {
   return (
-    <button type="button" className="cap h-10 px-3.5" aria-pressed={pressed} onClick={() => onToggle(!pressed)} title={hint}>
+    <button type="button" className="cap h-11 px-1.5 md:px-3.5" aria-pressed={pressed} onClick={() => onToggle(!pressed)} title={hint}>
       <span className="led" aria-hidden="true" />
       {label}
     </button>
@@ -46,8 +44,6 @@ export const TransportControls = memo(function TransportControls({
   swing,
   originalSwing,
   onSwingChange,
-  chordsEnabled,
-  onChordsToggle,
   loopEnabled,
   onLoopToggle,
   clickEnabled,
@@ -55,11 +51,11 @@ export const TransportControls = memo(function TransportControls({
   playDisabled = false,
 }: TransportControlsProps) {
   return (
-    <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-4 sm:justify-between">
-      <div className="well-sm flex items-center gap-3 p-2.5">
+    <div className="grid grid-cols-2 items-center gap-x-4 gap-y-3 md:flex md:justify-between md:gap-6">
+      <div className="well-sm col-start-1 row-start-1 flex items-center gap-2 p-1.5 md:p-2.5">
         <button
           type="button"
-          className="cap cap-primary h-14 w-24 text-base"
+          className="cap cap-primary h-11 min-w-0 flex-1 md:h-14 md:w-24 md:flex-none"
           onClick={isPlaying ? onPause : onPlay}
           disabled={!isPlaying && playDisabled}
           aria-label={isPlaying ? "Pause" : "Play"}
@@ -72,12 +68,12 @@ export const TransportControls = memo(function TransportControls({
           )}
           {playDisabled && !isPlaying ? "Wait" : isPlaying ? "Pause" : "Play"}
         </button>
-        <button type="button" className="cap h-14 w-14" onClick={onStop} aria-label="Stop">
+        <button type="button" className="cap h-11 w-11 shrink-0 md:h-14 md:w-14" onClick={onStop} aria-label="Stop">
           <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="2" fill="currentColor" /></svg>
         </button>
       </div>
 
-      <div className="flex items-start gap-5 sm:gap-7">
+      <div className="transport-knobs col-start-2 row-span-2 row-start-1 flex items-start justify-between gap-2 md:gap-7">
         <Knob
           label="Tempo"
           value={tempo}
@@ -98,9 +94,8 @@ export const TransportControls = memo(function TransportControls({
         />
       </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-2.5">
+      <div className="col-start-1 row-start-2 grid grid-cols-2 gap-2 md:gap-2.5">
         <Toggle label="Loop" pressed={loopEnabled} onToggle={onLoopToggle} hint="Repeat the lick" />
-        <Toggle label="Comp" pressed={chordsEnabled} onToggle={onChordsToggle} hint="Bass and left-hand chords under the lick" />
         <Toggle label="Click" pressed={clickEnabled} onToggle={onClickToggle} hint="Metronome on every beat" />
       </div>
     </div>

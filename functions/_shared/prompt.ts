@@ -1,4 +1,3 @@
-// Duplicated from src/utils/prompt.ts for Cloudflare Functions (can't import from src/)
 type Genre = "jazz" | "blues" | "funk" | "rnb" | "bossa";
 
 const GENRE_TECHNIQUES: Record<Genre, string> = {
